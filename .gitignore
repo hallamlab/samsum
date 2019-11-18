@@ -30,3 +30,13 @@
 *.exe
 *.out
 *.app
+
+# Virtual environments
+ss_venv
+
+# PyCharm files
+.idea
+
+# PyPI remnants
+dist
+*.egg-info
