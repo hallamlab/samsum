@@ -19,7 +19,9 @@ def sam_parser_ext(sam_file: str, multireads=False) -> dict():
         logging.error("SAM file '%s' doesn't exist.\n" % sam_file)
         sys.exit(3)
 
-    mapping_list = _sam_parser.refseq_read_counts(sam_file, multireads)
+    # TODO: Convert to a generator function so _sam_parser returns chunks in a list of 10,000 read strings
+    # mapping_list = _sam_parser.refseq_read_counts(sam_file, multireads)
+    mapping_list = _sam_parser.get_aln_strings(sam_file, multireads)
     if not mapping_list:
         logging.error("No alignments were read from SAM file '%s'\n" % sam_file)
         sys.exit(5)
