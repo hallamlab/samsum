@@ -8,16 +8,19 @@ using namespace std;
 
 
 class FastaReader {
-
-private:
-     string contigs_file;
-public:
-     FastaReader(const string & contigs_file);
-     void get_fasta_sequence_info(map<string, unsigned long> &contigs_dictionary) ;
-     std::string extract_sequence_name(const std::string &name);
-     string getContigsFileName();
+    private:
+        string fasta_file;
+    public:
+        /* class variables */
+        int num_records;
+        map<string, unsigned long> seq_lengths;
+        /* class functions */
+        FastaReader(const string & fasta_file);
+        void get_sequence_lengths() ;
+//        std::string extract_sequence_name(const std::string &name);
+        string getContigsFileName();
 };
 
-unsigned long create_contigs_dictionary(std::string contigs_file, std::map<std::string, CONTIG> &contigs_dictionary);
+unsigned long create_contigs_dictionary(std::string fasta_file, std::map<std::string, CONTIG> &contigs_dictionary);
 
 #endif // __FASTAREADER

@@ -62,19 +62,6 @@ int main( int argc, char **argv ){
             _stats.printStats(stats_out);
         }
     }
-   
-    if ( options.show_status )
-       std::cout << "\nComposite stats for all files " << std::endl;
-
-    if (!options.stats_file.empty())
-       *stats_out << "\nComposite stats for all files " << std::endl;
- 
-    if ( options.show_status )
-        stats.printStats(&std::cout);
-
-    if (!options.stats_file.empty())
-        stats.printStats(stats_out);
- 
 
     if ( options.show_status )
         std::cout << "\nSorting the read matches... ";
@@ -116,46 +103,5 @@ int main( int argc, char **argv ){
 
     if (options.show_status)
         std::cout << "done." << endl;
-
-    char buf[1000];
-    string summary_string;
-    // Store the summary as a string and write it to stdout and optionally the stats file (if provided)
-    std::cout << std::endl;
-    sprintf(buf, "Number of Contigs                         : %ld\n", (long int)contigs_dictionary.size() );
-    summary_string.append(buf);
-    sprintf(buf, "Total Contig Length                       : %ld\n", total_contig_length);
-    summary_string.append(buf);
-    sprintf(buf, "Contig length covered                     : %ld\n", (long int)total_covered_length/100);
-    summary_string.append(buf);
-    sprintf(buf, "Percentage of contig coverage             : %-5.2f%%\n",
-            total_covered_length/(float)total_contig_length);
-    summary_string.append(buf);
-    sprintf(buf, "Percentage of uniquely-aligned reads      : %-5.2f%%\n",
-            100*(float)stats.num_distinct_reads_mapped/stats.num_distinct_reads);
-    summary_string.append(buf);
-    sprintf(buf, "Percentage of multireads                  : %-5.2f%%\n",
-            100*(float)stats.num_multireads/stats.num_distinct_reads);
-    summary_string.append(buf);
-    sprintf(buf, "Percentage of unaligned reads             : %-5.2f%%\n",
-            100*(float)stats.num_distinct_reads_unmapped/stats.num_distinct_reads) ;
-    summary_string.append(buf);
-    sprintf(buf, "Percentage of mapped reads                : %-5.2f%%\n",
-            100*(static_cast<double>(stats.num_mapped_reads)/stats.num_distinct_reads )) ;
-    summary_string.append(buf);
-    sprintf(buf, "Total number of reads                     : %ld\n", stats.num_distinct_reads);
-    summary_string.append(buf);
-    sprintf(buf, "Number of multireads                      : %i\n", stats.num_multireads);
-    summary_string.append(buf);
-    sprintf(buf, "Avg rpkm across contigs in sample         : %.2f\n", rpkm_sum/contigs_dictionary.size());
-    summary_string.append(buf);
-
-    std::cout << summary_string << endl;
-
-    if (!options.stats_file.empty()) {
-       // Write the stats to a file if one was specified
-       *stats_out << "# Mapping stats for the sample: " << options.output_file << std::endl;
-       *stats_out << summary_string << std::endl;
-       Sout.close();
-    }
 
 }

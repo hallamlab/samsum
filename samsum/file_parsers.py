@@ -32,21 +32,30 @@ def sam_parser_ext(sam_file: str, multireads=False) -> dict():
     return reads_mapped
 
 
-def fasta_seq_lengths_ext(fasta_file: str) -> dict():
+def fasta_seq_lengths_ext(fasta_file: str, min_seq_length=0) -> dict():
     """
     Function for calculating the lengths of all sequences in a FASTA file.
     :param fasta_file: Path to a FASTA file to be parsed
+    :param min_seq_length: The minimum length for a reference sequence to be included
     :return: A dictionary of sequence lengths indexed by their respective sequence names
     """
     if not os.path.isfile(fasta_file):
         logging.error("FASTA file '%s' doesn't exist.\n" % fasta_file)
         sys.exit(3)
 
-    ext_seq_lengths = _fasta_module.get_lengths(fasta_file)
+    logging.debug("Using FASTA module to retrieve sequence lengths from FASTA... ")
+    ext_seq_lengths = _fasta_module.get_lengths(fasta_file, min_seq_length)
     if not ext_seq_lengths:
         logging.error("No sequences were parsed from the FASTA file '%s'\n" % fasta_file)
         sys.exit(5)
+    logging.debug("done.\n")
 
+    logging.debug("Converting list of sequence lengths into dictionary... ")
     tmp_it = iter(ext_seq_lengths)
     seq_lengths_map = dict(zip(tmp_it, tmp_it))
+    logging.debug("done.\n")
+
+    print(seq_lengths_map)
+    print(len(seq_lengths_map))
+
     return seq_lengths_map

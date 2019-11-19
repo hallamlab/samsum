@@ -56,7 +56,8 @@ def stats(sys_args):
     parser = ss_args.SAMSumArgumentParser(description="Calculate read coverage stats over reference sequences.")
     parser.add_stats_args()
     args = parser.parse_args(sys_args)
-    ss_log.prep_logging()
+    # TODO: Create the log file based on the output table's path
+    ss_log.prep_logging("samsum_log.txt", args.verbose)
     stats_ss = ss_class.SAMSumBase("stats")
     stats_ss.aln_file = args.am_file
     stats_ss.seq_file = args.fasta_file

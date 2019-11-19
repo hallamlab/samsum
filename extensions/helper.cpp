@@ -5,7 +5,7 @@ using namespace std;
 #define _MAX 1000000000
 
 
-RUN_STATS consume_sam(const std::string &SAM_file, const std::string &format,\
+void consume_sam(const std::string &SAM_file, const std::string &format,\
      vector<MATCH> &all_reads, map<std::string, float > &multireads, bool show_status) {
 
     MatchOutputParser *parser = ParserFactory::createParser(SAM_file, format);
@@ -21,8 +21,6 @@ RUN_STATS consume_sam(const std::string &SAM_file, const std::string &format,\
     if ( show_status )
         std::cout << "Number of lines processed: " << std::endl;
 
-    RUN_STATS stats;
-
     int i;
     struct QUADRUPLE <bool, bool, unsigned int, unsigned int> p;
     for ( i =0; ; i++ ) {
@@ -33,24 +31,24 @@ RUN_STATS consume_sam(const std::string &SAM_file, const std::string &format,\
             break;
 
         if (i >= _MAX) break;
-
-        if (match.mapped)
-            stats.num_mapped_reads++;
-        else
-            stats.num_unmapped_reads++;
-
-        if (match.parity)
-            stats.num_reads_2++;
-        else stats.num_reads_1++;
-
-        if (reads_dict.find(match.query) == reads_dict.end()) {
-            p.first = false;
-            p.second = false;
-            p.third = 0;
-            p.fourth = 0;
-            reads_dict[match.query] = p;
-        }
-        stats.num_alignments++;
+//
+//        if (match.mapped)
+//            stats.num_mapped_reads++;
+//        else
+//            stats.num_unmapped_reads++;
+//
+//        if (match.parity)
+//            stats.num_reads_2++;
+//        else stats.num_reads_1++;
+//
+//        if (reads_dict.find(match.query) == reads_dict.end()) {
+//            p.first = false;
+//            p.second = false;
+//            p.third = 0;
+//            p.fourth = 0;
+//            reads_dict[match.query] = p;
+//        }
+//        stats.num_alignments++;
 
         // if it is not mapped then ignore it
         if (!match.mapped)
@@ -75,25 +73,25 @@ RUN_STATS consume_sam(const std::string &SAM_file, const std::string &format,\
 
     }
 
-    for( map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> >::iterator it = reads_dict.begin();
-         it != reads_dict.end();
-         it++) {
-        if( !(it->second.first && it->second.second))
-            stats.num_singleton_reads++;
-        if( it->second.third > 1) {
-            stats.num_multireads++;
-            multireads[it->first] = 0.0;
-            stats.num_secondary_hits += it->second.third-1;
-        }
-        if( it->second.fourth  > 1) {
-            stats.num_multireads++;
-            multireads[it->first] = 0.0;
-            stats.num_secondary_hits += it->second.fourth-1;
-        }
-    }
-
-    stats.num_distinct_reads_unmapped = stats.num_unmapped_reads;
-    stats.num_distinct_reads_mapped = stats.num_mapped_reads - stats.num_secondary_hits;
+//    for( map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> >::iterator it = reads_dict.begin();
+//         it != reads_dict.end();
+//         it++) {
+//        if( !(it->second.first && it->second.second))
+//            stats.num_singleton_reads++;
+//        if( it->second.third > 1) {
+//            stats.num_multireads++;
+//            multireads[it->first] = 0.0;
+//            stats.num_secondary_hits += it->second.third-1;
+//        }
+//        if( it->second.fourth  > 1) {
+//            stats.num_multireads++;
+//            multireads[it->first] = 0.0;
+//            stats.num_secondary_hits += it->second.fourth-1;
+//        }
+//    }
+//
+//    stats.num_distinct_reads_unmapped = stats.num_unmapped_reads;
+//    stats.num_distinct_reads_mapped = stats.num_mapped_reads - stats.num_secondary_hits;
 
     for ( vector<MATCH>::iterator it = all_reads.begin(); it != all_reads.end(); it++)  {
 
@@ -112,7 +110,7 @@ RUN_STATS consume_sam(const std::string &SAM_file, const std::string &format,\
     }
 
     delete parser;
-    return stats;
+    return;
 }
 
 

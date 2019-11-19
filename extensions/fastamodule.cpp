@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <iostream>
 
+#include "fastareader.h"
+
 using namespace std;
 
 /*
@@ -78,10 +80,22 @@ static PyObject *get_lengths(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    PyObject *seq_lens;
+    PyObject *seq_lens = PyList_New(0);
     /*
-    *
+    * Create a new instance of the FastaReader class
+    * Load the FASTA file using FastaReader::get_sequence_lengths()
+    * Convert the dictionary into a PyList with interleaved sequence names and lengths
     */
     std::cout << "Parsing FASTA file " << fasta_file << std::endl;
+
+    FastaReader fasta(fasta_file);
+    fasta.get_sequence_lengths();
+
+    std::string seq_buffer;
+    map<string, unsigned long>::iterator it_contig_lens;
+    for(it_contig_lens = fasta.seq_lengths.begin(); it_contig_lens != fasta.seq_lengths.end(); it_contig_lens++ ) {
+        PyList_Append(seq_lens, Py_BuildValue("s", seq_buffer.c_str()));
+    }
+
     return seq_lens;
 }
