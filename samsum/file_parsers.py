@@ -55,7 +55,6 @@ def fasta_seq_lengths_ext(fasta_file: str, min_seq_length=0) -> dict():
     seq_lengths_map = dict(zip(tmp_it, tmp_it))
     logging.debug("done.\n")
 
-    print(seq_lengths_map)
-    print(len(seq_lengths_map))
+    logging.info(str(len(seq_lengths_map)) + " sequences were read from " + fasta_file + "\n")
 
     return seq_lengths_map

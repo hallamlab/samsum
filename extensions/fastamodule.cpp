@@ -74,6 +74,12 @@ PyMODINIT_FUNC PyInit__fasta_module(void) {
 
 
 static PyObject *get_lengths(PyObject *self, PyObject *args) {
+    /*
+    * Create a new instance of the FastaReader class
+    * Load the FASTA file using FastaReader::get_sequence_lengths()
+    * Convert the dictionary into a PyList with interleaved sequence names and lengths
+    */
+
     char * fasta_file;  // This could either be a SAM or BAM file
     int min_length;  // The minimum alignment length
     if (!PyArg_ParseTuple(args, "si", &fasta_file, &min_length)) {
@@ -81,20 +87,13 @@ static PyObject *get_lengths(PyObject *self, PyObject *args) {
     }
 
     PyObject *seq_lens = PyList_New(0);
-    /*
-    * Create a new instance of the FastaReader class
-    * Load the FASTA file using FastaReader::get_sequence_lengths()
-    * Convert the dictionary into a PyList with interleaved sequence names and lengths
-    */
-    std::cout << "Parsing FASTA file " << fasta_file << std::endl;
-
     FastaReader fasta(fasta_file);
     fasta.get_sequence_lengths();
 
-    std::string seq_buffer;
     map<string, unsigned long>::iterator it_contig_lens;
     for(it_contig_lens = fasta.seq_lengths.begin(); it_contig_lens != fasta.seq_lengths.end(); it_contig_lens++ ) {
-        PyList_Append(seq_lens, Py_BuildValue("s", seq_buffer.c_str()));
+        PyList_Append(seq_lens, Py_BuildValue("s", it_contig_lens->first.c_str()));
+        PyList_Append(seq_lens, Py_BuildValue("i", it_contig_lens->second));
     }
 
     return seq_lens;
