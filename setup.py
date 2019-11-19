@@ -17,6 +17,20 @@ CLASSIFIERS = [
     "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 
+fasta_module = Extension("_fasta_reader",
+                         depends=["include/fastareader.h", "include/utilities.h"],
+                         sources=["extensions/fastareader.cpp"],
+                         language="c++",
+                         include_dirs=["include/"])
+sambam_module = Extension("_sam_parser",
+                          sources=["extensions/helper.cpp", "extensions/matchoutputparser.cpp",
+                                   "extensions/rpkm.cpp", "extensions/utilities.cpp"],
+                          depends=["include/helper.h", "include/matchoutputparser.h",
+                                   "include/rpkm.h", "include/types.h", "include/utilities.h"],
+                          include_dirs=["include/"],
+                          language="c++")
+
+
 SETUP_METADATA = \
     {
         "name": "samsum",
@@ -32,19 +46,7 @@ SETUP_METADATA = \
         "include_package_data": True,
         "entry_points": {'console_scripts': ['samsum = samsum.__main__:main']},
         "classifiers": CLASSIFIERS,
-        "ext_modules": [Extension("_sam_parser",
-                                  sources=["extensions/helper.c++", "extensions/matchoutputparser.c++",
-                                           "extensions/rpkm.c++", "extensions/utilities.c++"],
-                                  depends=["include/helper.h", "include/matchoutputparser.h",
-                                           "include/rpkm.h", "include/types.h", "include/utilities.h"],
-                                  include_dirs=["./samsum/include"],
-                                  language="c++"),
-                        Extension("_fasta_reader",
-                                  sources=["extensions/fastareader.c++"],
-                                  depends=["include/fastareader.h"],
-                                  language="c++",
-                                  include_dirs=["./samsum/include"])
-                        ],
+        "ext_modules": [fasta_module, sambam_module],
         "install_requires": ["numpy"]
     }
 
