@@ -18,11 +18,9 @@ typedef vector<READ_DATUM> READ_DATA;
 typedef struct _CONTIG {
     /*
      * L is the length of the contig
-     * rpkm is the contig's RPKM value - calculated in main
      * M is the list of all reads aligned to the contig with start, end, boolean for multiread and its name
      */
     unsigned long L;
-    double rpkm;
     int hits;
     READ_DATA M;
 } CONTIG;

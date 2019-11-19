@@ -17,18 +17,19 @@ CLASSIFIERS = [
     "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 
-fasta_module = Extension("_fasta_reader",
-                         depends=["include/fastareader.h", "include/utilities.h"],
-                         sources=["extensions/fastareader.cpp"],
-                         language="c++",
-                         include_dirs=["include/"])
-sambam_module = Extension("_sam_parser",
-                          sources=["extensions/helper.cpp", "extensions/matchoutputparser.cpp",
-                                   "extensions/rpkm.cpp", "extensions/utilities.cpp"],
-                          depends=["include/helper.h", "include/matchoutputparser.h",
-                                   "include/rpkm.h", "include/types.h", "include/utilities.h"],
-                          include_dirs=["include/"],
-                          language="c++")
+fasta_module = Extension("_fasta_module",
+                         sources=["extensions/fastamodule.cpp", "extensions/fastareader.cpp"],
+                         depends=["include/fastareader.h", "include/utilities.h", "types.h"],
+                         include_dirs=["include/"],
+                         language="c++")
+sam_module = Extension("_sam_module",
+                       sources=["extensions/sammodule.cpp",
+                                "extensions/helper.cpp", "extensions/matchoutputparser.cpp",
+                                "extensions/utilities.cpp"],
+                       depends=["include/helper.h", "include/matchoutputparser.h",
+                                "include/types.h", "include/utilities.h"],
+                       include_dirs=["include/"],
+                       language="c++")
 
 
 SETUP_METADATA = \
@@ -46,7 +47,7 @@ SETUP_METADATA = \
         "include_package_data": True,
         "entry_points": {'console_scripts': ['samsum = samsum.__main__:main']},
         "classifiers": CLASSIFIERS,
-        "ext_modules": [fasta_module, sambam_module],
+        "ext_modules": [fasta_module, sam_module],
         "install_requires": ["numpy"]
     }
 

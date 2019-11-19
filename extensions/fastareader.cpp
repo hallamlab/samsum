@@ -1,5 +1,4 @@
 #include "fastareader.h"
-#include <Python.h>
 
 FastaReader::FastaReader( const string & contigs_file) {
     this->contigs_file = contigs_file;

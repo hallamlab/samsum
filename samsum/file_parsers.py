@@ -1,7 +1,7 @@
 __author__ = 'Connor Morgan-Lang'
 
-import _sam_parser
-import _fasta_reader
+import _sam_module
+import _fasta_module
 import os
 import sys
 import logging
@@ -21,7 +21,7 @@ def sam_parser_ext(sam_file: str, multireads=False) -> dict():
 
     # TODO: Convert to a generator function so _sam_parser returns chunks in a list of 10,000 read strings
     # mapping_list = _sam_parser.refseq_read_counts(sam_file, multireads)
-    mapping_list = _sam_parser.get_aln_strings(sam_file, multireads)
+    mapping_list = _sam_module.get_mapped_reads(sam_file, multireads)
     if not mapping_list:
         logging.error("No alignments were read from SAM file '%s'\n" % sam_file)
         sys.exit(5)
@@ -42,7 +42,7 @@ def fasta_seq_lengths_ext(fasta_file: str) -> dict():
         logging.error("FASTA file '%s' doesn't exist.\n" % fasta_file)
         sys.exit(3)
 
-    ext_seq_lengths = _fasta_reader.get_lengths(fasta_file)
+    ext_seq_lengths = _fasta_module.get_lengths(fasta_file)
     if not ext_seq_lengths:
         logging.error("No sequences were parsed from the FASTA file '%s'\n" % fasta_file)
         sys.exit(5)
