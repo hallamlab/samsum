@@ -12,8 +12,7 @@ from samsum.commands import (info, stats)
 usage = """ 
 samsum <command> [<args>]
 ** Commands include:
-sum            Write the number of reads that mapped to each reference sequence
-stats          Write the number of reads, 
+stats          Write the number of reads that mapped to each reference sequence
 ** Other commands:
 info           Display samsum version and other information.
 Use '-h' to get subcommand-specific help, e.g.
@@ -21,7 +20,7 @@ Use '-h' to get subcommand-specific help, e.g.
 
 
 def main():
-    commands = {"sum": stats,
+    commands = {"stats": stats,
                 "info": info}
     parser = argparse.ArgumentParser(description='Summarize read recruitments to reference sequences')
     parser.add_argument('command', nargs='?')

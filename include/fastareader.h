@@ -1,5 +1,6 @@
 #ifndef __FASTAREADER
 #define __FASTAREADER
+#include "types.h"
 #include "utilities.h"
 #include <string.h>
 #include <Python.h>
@@ -75,5 +76,7 @@ public:
      std::string extract_sequence_name(const std::string &name);
      string getContigsFileName();
 };
+
+unsigned long create_contigs_dictionary(std::string contigs_file, std::map<std::string, CONTIG> &contigs_dictionary);
 
 #endif // __FASTAREADER

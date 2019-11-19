@@ -59,3 +59,22 @@ std::string FastaReader::extract_sequence_name(const std::string &name) {
      std::string sname(cstr);
      return sname;
 }
+
+
+unsigned long create_contigs_dictionary(std::string contigs_file, std::map<std::string, CONTIG> &contigs_dictionary) {
+
+     FastaReader fastareader(contigs_file);
+     map<string, unsigned long> contig_lengths;
+     map<string, unsigned long>::iterator it_contig_lens;
+
+     fastareader.get_fasta_sequence_info(contig_lengths);
+     unsigned long genome_length = 0;
+     CONTIG contig;
+     for(it_contig_lens = contig_lengths.begin(); it_contig_lens != contig_lengths.end(); it_contig_lens++ ) {
+        genome_length += it_contig_lens->second;
+        contig.L = it_contig_lens->second;
+        contigs_dictionary[it_contig_lens->first] = contig;
+     }
+
+     return genome_length;
+}

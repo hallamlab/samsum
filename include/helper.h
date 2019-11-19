@@ -6,7 +6,6 @@
 #include <iterator>
 #include <assert.h>
 #include "types.h"
-#include "fastareader.h"
 #include "matchoutputparser.h"
 
 using namespace std;
