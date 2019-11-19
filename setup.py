@@ -18,7 +18,7 @@ CLASSIFIERS = [
 ]
 
 fasta_module = Extension("_fasta_module",
-                         sources=["extensions/fastamodule.cpp", "extensions/fastareader.cpp"],
+                         sources=["extensions/fastamodule.cpp", "extensions/fastareader.cpp", "extensions/utilities.cpp"],
                          depends=["include/fastareader.h", "include/utilities.h", "types.h"],
                          include_dirs=["include/"],
                          language="c++")

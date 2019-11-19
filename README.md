@@ -38,7 +38,7 @@ for its read counts to be included in the output; all stats are otherwise set to
 
 An example command is:
 ```bash
-samsum stats -c ref.fasta -a alignments.sam --m -p 0.5 -o output_dir/samsum_table.tsv
+samsum stats -f ref.fasta -a alignments.sam --multireads -p 0.5 -o output_dir/samsum_table.tsv
 ``` 
 
 This will include all alignments, regardless of their mapping quality but only report alignments for reference sequences

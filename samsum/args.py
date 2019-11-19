@@ -33,3 +33,20 @@ class SAMSumArgumentParser(argparse.ArgumentParser):
         args = super(SAMSumArgumentParser, self).parse_args(args=args, namespace=namespace)
 
         return args
+
+    def add_stats_args(self):
+        self.reqs.add_argument("-f", "--ref_fasta", required=True, dest="fasta_file",
+                               help="Path to the reference file used to generate the SAM/BAM file.")
+        self.reqs.add_argument("-a", "--alignments", required=False, dest="am_file",
+                               help="Path to a SAM/BAM file containing the read alignments to the reference FASTA.")
+        self.seqops.add_argument("-p", "--aln_proportion", required=False, dest="p_aln",
+                                 help="The minimum proportion a reference sequence must be covered for its coverage"
+                                      "stats to be included; they are set to zero otherwise.")
+        self.seqops.add_argument("--multireads", required=False, default=False, action="store_true",
+                                 help="Flag indicating whether reads that mapped ambiguously to multiple positions"
+                                      " (multireads) should be used in the counts.")
+        self.optopt.add_argument("-o", "--output_table", required=False, default="./samsum_table.csv",
+                                 help="Name of a file to write the alignment stats to.")
+        self.optopt.add_argument("-s", "--sep", required=False, default=",",
+                                 help="Field-separator character to be used when writing the output table.")
+        return

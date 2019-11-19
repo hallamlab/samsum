@@ -54,6 +54,7 @@ def stats(sys_args):
     :return: None
     """
     parser = ss_args.SAMSumArgumentParser(description="Calculate read coverage stats over reference sequences.")
+    parser.add_stats_args()
     args = parser.parse_args(sys_args)
     ss_log.prep_logging()
     stats_ss = ss_class.SAMSumBase("stats")
@@ -61,9 +62,10 @@ def stats(sys_args):
     stats_ss.seq_file = args.fasta_file
 
     # TODO: Parse the alignments and return the strings of reads mapped to each reference sequence
-    ss_fp.sam_parser_ext(stats_ss.aln_file, args.multireads)
+    # ss_fp.sam_parser_ext(stats_ss.aln_file, args.multireads)
 
     # TODO: Parse the FASTA file, calculating the length of each reference sequence and return this as a dictionary
+    ss_fp.fasta_seq_lengths_ext(stats_ss.seq_file)
 
     # TODO: Calculate the RPKM, FPKM and TPM for each reference sequence with reads mapped to it
 
