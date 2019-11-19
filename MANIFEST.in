@@ -1,0 +1,4 @@
+include LICENSE requirements.txt README.md
+recursive-include samsum *
+recursive-include include *
+global-exclude .idea
