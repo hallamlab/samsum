@@ -1,7 +1,8 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include <iostream>
+#include "sambamparser.h"
 
 using namespace std;
 
@@ -90,18 +91,32 @@ PyMODINIT_FUNC PyInit__sam_module(void) {
 }
 
 static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
+    /*
+     * Create a new SamFileParser instance
+     * Read the alignments using SamFileParser::consume_sam()
+     *
+    */
     char * aln_file;  // This could either be a SAM or BAM file
     int min_length;  // The minimum alignment length
     int min_map_qual;  // The minimum mapping quality
     if (!PyArg_ParseTuple(args, "sii", &aln_file, &min_length, &min_map_qual)) {
-        return NULL;
+        return nullptr;
     }
 
-    PyObject *all_reads;
-    /*
-    *
-    */
+    PyObject *all_reads = PyList_New(0);
     std::cout << "Parsing alignment file " << aln_file << std::endl;
+
+    vector<MATCH> mapped_reads;
+    mapped_reads.reserve(80000000);
+    map<std::string, float > multireads;
+
+    SamFileParser sam_file(aln_file, "sam");
+    sam_file.consume_sam(mapped_reads, multireads);
+//    map<string, unsigned long>::iterator it_contig_lens;
+//    for(it_contig_lens = fasta.seq_lengths.begin(); it_contig_lens != fasta.seq_lengths.end(); it_contig_lens++ ) {
+//        PyList_Append(seq_lens, Py_BuildValue("s", it_contig_lens->first.c_str()));
+//        PyList_Append(seq_lens, Py_BuildValue("i", it_contig_lens->second));
+//    }
     return all_reads;
 }
 

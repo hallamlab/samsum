@@ -24,9 +24,9 @@ fasta_module = Extension("_fasta_module",
                          language="c++")
 sam_module = Extension("_sam_module",
                        sources=["extensions/sammodule.cpp",
-                                "extensions/helper.cpp", "extensions/matchoutputparser.cpp",
+                                "extensions/helper.cpp", "extensions/sambamparser.cpp",
                                 "extensions/utilities.cpp"],
-                       depends=["include/helper.h", "include/matchoutputparser.h",
+                       depends=["include/helper.h", "include/sambamparser.h",
                                 "include/types.h", "include/utilities.h"],
                        include_dirs=["include/"],
                        language="c++")

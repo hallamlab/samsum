@@ -36,6 +36,7 @@ ss_venv
 
 # PyCharm files
 .idea
+CMakeLists.txt
 
 # PyPI remnants
 dist

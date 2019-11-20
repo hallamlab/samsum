@@ -1,16 +1,17 @@
 #include <map>
 #include <vector>
 #include <algorithm>
+#include <cassert>
 #include "types.h"
 #include "utilities.h"
 #include "helper.h"
-#include <assert.h>
 
 using namespace std;
 bool compare_triplets(const READ_DATUM &a, const READ_DATUM &b) {
    return a.start < b.start ? true : false; 
 }
- 
+
+/*
 int main( int argc, char **argv ){
     // parse options
     Options options;
@@ -33,10 +34,10 @@ int main( int argc, char **argv ){
         Sout.open(options.stats_file.c_str(), std::ifstream::out);
         stats_out = &Sout;
     }
- 
+
     vector<MATCH> all_reads;
     all_reads.reserve(80000000);
-    
+
     // Creating the read multiplicity counts data structure to track reads mapping to multiple reference sequences
     map<std::string, float > multireads;
 
@@ -46,7 +47,7 @@ int main( int argc, char **argv ){
         if( it->empty() )
             continue;
         all_reads.clear();
-        if( options.show_status ) 
+        if( options.show_status )
             std::cout << "\n" << "Parsing alignments from SAM file " << *it << std::endl;
         _stats = consume_sam(*it, options.reads_map_file_format, all_reads, multireads, options.show_status);
 
@@ -105,3 +106,4 @@ int main( int argc, char **argv ){
         std::cout << "done." << endl;
 
 }
+*/

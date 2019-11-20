@@ -6,7 +6,7 @@
 #include <iterator>
 #include <assert.h>
 #include "types.h"
-#include "matchoutputparser.h"
+#include "sambamparser.h"
 
 using namespace std;
 
