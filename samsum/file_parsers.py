@@ -7,12 +7,13 @@ import sys
 import logging
 
 
-def sam_parser_ext(sam_file: str, multireads=False) -> dict():
+def sam_parser_ext(sam_file: str, multireads=False, min_mq=0) -> dict():
     """
     Wrapper function for using the _sam_parser extension to rapidly parse SAM files.
 
     :param sam_file: Path to the SAM file to be parsed
     :param multireads: Boolean flag indicating whether reads that have multiple ambiguous mapping positions are used
+    :param min_mq: The minimum mapping quality for a read to be included in the analysis (as mapped)
     :return: A dictionary mapping reference sequence names to the number of reads aligned to them
     """
     if not os.path.isfile(sam_file):
@@ -21,7 +22,7 @@ def sam_parser_ext(sam_file: str, multireads=False) -> dict():
 
     # TODO: Convert to a generator function so _sam_parser returns chunks in a list of 10,000 read strings
     # mapping_list = _sam_parser.refseq_read_counts(sam_file, multireads)
-    mapping_list = _sam_module.get_mapped_reads(sam_file, multireads)
+    mapping_list = _sam_module.get_mapped_reads(sam_file, multireads, min_mq)
     if not mapping_list:
         logging.error("No alignments were read from SAM file '%s'\n" % sam_file)
         sys.exit(5)

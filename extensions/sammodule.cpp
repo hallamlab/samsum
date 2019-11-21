@@ -70,8 +70,6 @@ static struct PyModuleDef module_def = {
     module_clear,      /* m_clear */
     NULL,              /* m_free */
 };
-//"get_mapped_reads",
-//"Parses a SAM file and returns the read names of every read that was mapped to a reference sequence.",
 
 
 PyMODINIT_FUNC PyInit__sam_module(void) {
@@ -100,18 +98,25 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
     int min_length;  // The minimum alignment length
     int min_map_qual;  // The minimum mapping quality
     if (!PyArg_ParseTuple(args, "sii", &aln_file, &min_length, &min_map_qual)) {
-        return nullptr;
+        return NULL;
     }
 
     PyObject *all_reads = PyList_New(0);
     std::cout << "Parsing alignment file " << aln_file << std::endl;
 
+    bool verbose = true;
     vector<MATCH> mapped_reads;
     mapped_reads.reserve(80000000);
+    map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> > reads_dict;
     map<std::string, float > multireads;
 
     SamFileParser sam_file(aln_file, "sam");
-    sam_file.consume_sam(mapped_reads, multireads);
+    sam_file.consume_sam(mapped_reads, reads_dict, verbose);
+
+    // TODO: Identify multireads with identify_multireads(reads_dict, multireads)
+//    this->num_distinct_reads_mapped = this->num_mapped - num_secondary_hits;
+
+    // TODO: Redistribute read weights using assign_read_weights(mapped_reads)
 //    map<string, unsigned long>::iterator it_contig_lens;
 //    for(it_contig_lens = fasta.seq_lengths.begin(); it_contig_lens != fasta.seq_lengths.end(); it_contig_lens++ ) {
 //        PyList_Append(seq_lens, Py_BuildValue("s", it_contig_lens->first.c_str()));
@@ -130,7 +135,7 @@ static PyObject *get_alignment_strings(PyObject *self, PyObject *args) {
 
     PyObject *all_reads;
     /*
-    *
+     *
     */
     std::cout << "Parsing alignment file " << aln_file << std::endl;
     return all_reads;

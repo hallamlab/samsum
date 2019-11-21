@@ -28,12 +28,12 @@ typedef struct _CONTIG {
 
 typedef struct _MATCH {
     /*
-     * parity is 1 if it is second in the pair
-     * mapped is 1 if the read was not unmapped
-     * orphan is 1 if the mate was not successfully aligned
-     * multi is 1 if the read is not a primary alignment
-     * chimeric is 1 if parts of the read aligned to different loci
-     * singleton is 1 if the mate was not successfully aligned
+      * parity is 1 if it is second in the pair
+      * mapped is 1 if the read was not unmapped
+      * orphan is 1 if the mate was not successfully aligned
+      * multi is 1 if the read is not a primary alignment
+      * chimeric is 1 if parts of the read aligned to different loci
+      * singleton is 1 if the mate was not successfully aligned
      */
     std::string query, subject;
     unsigned int start, end;
