@@ -15,6 +15,27 @@ unsigned long MatchOutputParser::get_Num_Unmapped_Reads() {
 MatchOutputParser::~MatchOutputParser() {
 }
 
+std::string MatchOutputParser::summarise() {
+    char buf[1000];
+    std::string summary_str;
+    summary_str.assign("Summary for " + this->filename + ":\n");
+    sprintf(buf, "\tNumber of alignments: %ld\n", this->num_alignments);
+    summary_str.append(buf);
+    sprintf(buf, "\tNumber of mapped reads: %ld\n", this->num_mapped);
+    summary_str.append(buf);
+    sprintf(buf, "\tNumber of unmapped reads: %ld\n", this->num_unmapped);
+    summary_str.append(buf);
+    sprintf(buf, "\tNumber of forward reads: %ld\n", this->num_fwd);
+    summary_str.append(buf);
+    sprintf(buf, "\tNumber of reverse reads: %ld\n", this->num_rev);
+    summary_str.append(buf);
+    sprintf(buf, "\tNumber of multireads: %ld\n", this->num_multireads);
+    summary_str.append(buf);
+    sprintf(buf, "\tNumber of singleton alignments: %ld\n", this->num_singletons);
+    summary_str.append(buf);
+
+    return summary_str;
+}
 
 SamFileParser::SamFileParser(const std::string &filename, const std::string &format):MatchOutputParser(filename, format) {
     /*
@@ -22,6 +43,7 @@ SamFileParser::SamFileParser(const std::string &filename, const std::string &for
       * Attempts to open the SAM file that was provided as the file name and throws an error, and returns, if unable to
       * Set all SamFileParser variables used for counting alignments while parsing to 0
     */
+     this->filename = filename;
      this->input.open(filename.c_str(), std::ifstream::in);
 
      if(!this->input.good()){
@@ -33,6 +55,8 @@ SamFileParser::SamFileParser(const std::string &filename, const std::string &for
      this->num_unmapped = 0;
      this->num_fwd = 0;
      this->num_rev = 0;
+     this->num_multireads = 0;
+     this->num_singletons = 0;
      this->header_pattern.assign('@', 1);
      this->unmapped_pattern.assign('*', 1);
 }

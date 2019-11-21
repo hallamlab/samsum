@@ -90,9 +90,11 @@ PyMODINIT_FUNC PyInit__sam_module(void) {
 
 static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
     /*
-     * Create a new SamFileParser instance
-     * Read the alignments using SamFileParser::consume_sam()
-     *
+      * Create a new SamFileParser instance
+      * Read the alignments using SamFileParser::consume_sam()
+      * Identify the reads with multiple alignments (mutlireads)
+      * Redistribute the weights of these reads based on its alignment multiplicity
+      * Return a list of interleaved `read_name`s and `reference_name, weight, left-most position, CIGAR`
     */
     char * aln_file;  // This could either be a SAM or BAM file
     int min_length;  // The minimum alignment length
@@ -117,6 +119,13 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
 //    this->num_distinct_reads_mapped = this->num_mapped - num_secondary_hits;
 
     // TODO: Redistribute read weights using assign_read_weights(mapped_reads)
+
+    // Print the various SAM alignment stats
+    std::cout << sam_file.summarise() << std::endl;
+
+    // TODO: Reformat the MATCH objects into the strings required
+
+
 //    map<string, unsigned long>::iterator it_contig_lens;
 //    for(it_contig_lens = fasta.seq_lengths.begin(); it_contig_lens != fasta.seq_lengths.end(); it_contig_lens++ ) {
 //        PyList_Append(seq_lens, Py_BuildValue("s", it_contig_lens->first.c_str()));
@@ -134,9 +143,6 @@ static PyObject *get_alignment_strings(PyObject *self, PyObject *args) {
     }
 
     PyObject *all_reads;
-    /*
-     *
-    */
     std::cout << "Parsing alignment file " << aln_file << std::endl;
     return all_reads;
 }

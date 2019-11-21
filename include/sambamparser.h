@@ -17,6 +17,8 @@ class MatchOutputParser {
         unsigned long num_unmapped;
         unsigned long num_fwd;
         unsigned long num_rev;
+        unsigned long num_multireads;
+        unsigned long num_singletons;
     public:
         /* Class Variables */
         std::string filename;
@@ -28,6 +30,7 @@ class MatchOutputParser {
         /* Class Functions */
         MatchOutputParser(const std::string &filename, const std::string &format);
         virtual ~MatchOutputParser() = 0;
+        std::string summarise();
         unsigned long get_Num_Unmapped_Reads();
         virtual bool nextline(MATCH &match)=0;
 };
