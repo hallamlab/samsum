@@ -19,17 +19,17 @@ std::string MatchOutputParser::summarise() {
     char buf[1000];
     std::string summary_str;
     summary_str.assign("Summary for " + this->filename + ":\n");
-    sprintf(buf, "\tNumber of alignments: %ld\n", this->num_alignments);
+    sprintf(buf, "\tNumber of alignments:           %ld\n", this->num_alignments);
     summary_str.append(buf);
-    sprintf(buf, "\tNumber of mapped reads: %ld\n", this->num_mapped);
+    sprintf(buf, "\tNumber of mapped reads:         %ld\n", this->num_mapped);
     summary_str.append(buf);
-    sprintf(buf, "\tNumber of unmapped reads: %ld\n", this->num_unmapped);
+    sprintf(buf, "\tNumber of unmapped reads:       %ld\n", this->num_unmapped);
     summary_str.append(buf);
-    sprintf(buf, "\tNumber of forward reads: %ld\n", this->num_fwd);
+    sprintf(buf, "\tNumber of forward reads:        %ld\n", this->num_fwd);
     summary_str.append(buf);
-    sprintf(buf, "\tNumber of reverse reads: %ld\n", this->num_rev);
+    sprintf(buf, "\tNumber of reverse reads:        %ld\n", this->num_rev);
     summary_str.append(buf);
-    sprintf(buf, "\tNumber of multireads: %ld\n", this->num_multireads);
+    sprintf(buf, "\tNumber of multireads:           %ld\n", this->num_multireads);
     summary_str.append(buf);
     sprintf(buf, "\tNumber of singleton alignments: %ld\n", this->num_singletons);
     summary_str.append(buf);
@@ -179,11 +179,11 @@ void SamFileParser::consume_sam(vector<MATCH> &all_reads,
             continue;
 
         if (match.parity) {
-            reads_dict[match.query].first = true;
+            reads_dict[match.query].first = true;  // This is a forward read
             reads_dict[match.query].third++;
         }
         else {
-            reads_dict[match.query].second = true;
+            reads_dict[match.query].second = true;  // This is a reverse read
             reads_dict[match.query].fourth++;
         }
 
@@ -199,14 +199,26 @@ void SamFileParser::consume_sam(vector<MATCH> &all_reads,
     if ( show_status )
         std::cout << "\n\033[F\033[J" << i << std::endl;
 
+    cout << "Unique reads parsed: " << reads_dict.size() << endl;
+    cout << "Number of mapped reads: " << all_reads.size() << endl;
+
     return;
 }
 
 
 int identify_multireads(map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> > &reads_dict,
                          map<std::string, float > &multireads) {
-    /*
-      *
+    /* Parameters:
+      * reads_dict: A map indexed by read-names with QUADRUPLE values that store all reads in the SAM file
+      * multireads: An empty map that is passed by reference of strings indexing floats
+     * Functionality:
+      * Count the number of singleton reads (reads that didn't map), multireads, and secondary hits
+      * Counting singletons: iterate through all read names (keys) in reads_dict
+      and if the first and second elements of QUADRUPLE are false, the number of singletons is incremented.
+      * Counting multireads: If the third or fourth variable of the QUADRUPLE is greater than one,
+      this indicates the read was aligned multiple times so multireads is incremented by 1.
+      * Counting secondary hits: The number of alignments of a read is tracked by the third and fourth elements
+      of QUADRUPLE so the number of secondary hits is 1-(QUADRUPLE.third|QUADRUPLE.fourth)
     */
     int num_secondary_hits = 0;
     int num_singleton_reads = 0;
@@ -215,7 +227,7 @@ int identify_multireads(map<std::string, struct QUADRUPLE<bool, bool, unsigned i
     for ( map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> >::iterator it = reads_dict.begin();
           it != reads_dict.end();
           it++) {
-        if( !(it->second.first && it->second.second))
+        if( !(it->second.first && it->second.second) )
             num_singleton_reads++;
         if( it->second.third > 1) {
             num_multireads++;
@@ -235,8 +247,14 @@ int identify_multireads(map<std::string, struct QUADRUPLE<bool, bool, unsigned i
 
 void assign_read_weights(vector<MATCH> &all_reads,
                          map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> > &reads_dict) {
-    /*
-      *
+    /* Parameters:
+      * all_reads: A complete list of MATCH instances, one for each mapped read
+      * reads_dict: A map indexed by read-names with QUADRUPLE values that store all reads in the SAM file
+     * Functionality:
+      * Basically calculates the weights such that the sum of the paired reads is 1 - for FPKM calculation
+      * Iterate through the all_reads vector and depending on whether the read was forward (parity == 0) or reverse
+      (parity == 1) the respective alignment count variable (third|fourth) is used to calculate the weight such that
+      the sum of forward and reverse (if applicable) equals one.
     */
 
     int n = 0;
@@ -248,7 +266,7 @@ void assign_read_weights(vector<MATCH> &all_reads,
             else
                 it->w = 1/static_cast<float>(reads_dict[it->query].third);
         }
-        else  { //parity 1
+        else  {
             if( reads_dict[it->query].first && reads_dict[it->query].second )
                 it->w = 0.5/static_cast<float>(reads_dict[it->query].fourth);
             else

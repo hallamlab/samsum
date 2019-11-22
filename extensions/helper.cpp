@@ -9,9 +9,10 @@ void process_SAM(const std::string & reads_map_file, std::map<string, CONTIG> &c
                  std::vector<MATCH> &all_reads,
                  map<std::string, float > &multireads,
                  bool show_status) {
-    /*
-     * At this point, multireads is a map with only the keys (read names) entered and
-     * has empty vector<string> objects as values - they are populated here.
+    /* Parameters:
+      * multireads: A map indexed by read names and is otherwise empty
+     * Functionality:
+      *
      */
     MATCH match;
 
@@ -33,10 +34,12 @@ void process_SAM(const std::string & reads_map_file, std::map<string, CONTIG> &c
         i++;
 
         if ( contigs_dictionary.find(it->subject)==contigs_dictionary.end() ) {
-            std::cout << " Missing contig " << it->subject << std::endl;
+            std::cout << "Missing contig " << it->subject << std::endl;
             std::cerr << "ERROR : Could not find the matched contig in the contig file " << std::endl;
             exit(1);
         }
+
+        // Update the READ_DATUM instance with mutli (multiread) boolean value
         read_datum.name = it->query;
         if ( multireads.find(it->query) != multireads.end() ) {
             multireads[it->query] += 1;
@@ -45,6 +48,7 @@ void process_SAM(const std::string & reads_map_file, std::map<string, CONTIG> &c
         else
             read_datum.multi = false;
 
+        // Where is this data coming from?
         if (  it->start < it->end ) {
             read_datum.start = it->start;
             read_datum.end = it->end;
@@ -73,7 +77,7 @@ unsigned int getMaxReadSize( std::map<string, vector<MATCH> > &orf_dictionary,
 } 
 
 
-std::vector<READ_DATUM>::iterator  binary_search(std::vector<READ_DATUM> &A, int seekValue) {
+std::vector<READ_DATUM>::iterator binary_search(std::vector<READ_DATUM> &A, int seekValue) {
   // continually narrow search until just one element remains
   unsigned long imin, imax;
   imin = 0;
