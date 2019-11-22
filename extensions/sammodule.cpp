@@ -115,13 +115,16 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
     SamFileParser sam_file(aln_file, "sam");
     sam_file.consume_sam(mapped_reads, reads_dict, verbose);
 
-    // TODO: Identify multireads with identify_multireads(reads_dict, multireads)
-//    this->num_distinct_reads_mapped = this->num_mapped - num_secondary_hits;
+    // Identify multireads with and count the number of secondary adn supplementary alignments
+    long num_secondary_hits = identify_multireads(reads_dict, multireads, sam_file.num_singletons);
+    sam_file.num_distinct_reads_mapped = sam_file.num_mapped - num_secondary_hits;
 
-    // TODO: Redistribute read weights using assign_read_weights(mapped_reads)
+    // TODO: Redistribute read weights using multiple alignment information in reads_dict
+    // assign_read_weights(mapped_reads, reads_dict)
 
     // Print the various SAM alignment stats
-    std::cout << sam_file.summarise() << std::endl;
+    if ( verbose )
+        std::cout << sam_file.summarise() << std::endl;
 
     // TODO: Reformat the MATCH objects into the strings required
 

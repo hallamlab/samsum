@@ -161,3 +161,10 @@ void substring_coverage(std::map<string, CONTIG> &contigs_dictionary, const std:
     coverage.sequence_length  = sequence_length;
     coverage.uncovered_length =  uncovered_length;
 }
+
+void format_matches_for_service(vector<MATCH> &all_reads) {
+    for ( vector<MATCH>::iterator it = all_reads.begin(); it != all_reads.end(); it++)  {
+
+    }
+    return;
+}

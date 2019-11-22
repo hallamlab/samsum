@@ -57,6 +57,7 @@ SamFileParser::SamFileParser(const std::string &filename, const std::string &for
      this->num_rev = 0;
      this->num_multireads = 0;
      this->num_singletons = 0;
+     this->num_distinct_reads_mapped;
      this->header_pattern.assign('@', 1);
      this->unmapped_pattern.assign('*', 1);
 }
@@ -136,9 +137,13 @@ bool SamFileParser::nextline(MATCH &match) {
 void SamFileParser::consume_sam(vector<MATCH> &all_reads,
                                 map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> > &reads_dict,
                                 bool show_status) {
-    /*
-      * Basic function for parsing a SAM file
-      * All mapped reads are saved as a MATCH instance and these objects are stored in the all_reads vector
+    /* Parameters:
+      * all_reads: Pointer to a vector of MATCH objects that has yet to be populated
+      * reads_dict: Pointer to a map indexed by read-names with QUADRUPLE values that store all reads in the SAM file
+      * show_stats: Boolean indicating whether the number of reads parsed should be printed to screen
+     * Functionality:
+      * Basic function for parsing a SAM file.
+      * All mapped reads are saved as a MATCH instance and these objects are stored in all_reads.
       * The number of mapped, unmapped, forward, and reverse reads are counted.
       * These are counts are non-unique so double counts could arise from reads with multiple alignments
     */
@@ -206,8 +211,8 @@ void SamFileParser::consume_sam(vector<MATCH> &all_reads,
 }
 
 
-int identify_multireads(map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> > &reads_dict,
-                         map<std::string, float > &multireads) {
+long identify_multireads(map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> > &reads_dict,
+                         map<std::string, float > &multireads, unsigned long &num_singleton_reads) {
     /* Parameters:
       * reads_dict: A map indexed by read-names with QUADRUPLE values that store all reads in the SAM file
       * multireads: An empty map that is passed by reference of strings indexing floats
@@ -221,7 +226,6 @@ int identify_multireads(map<std::string, struct QUADRUPLE<bool, bool, unsigned i
       of QUADRUPLE so the number of secondary hits is 1-(QUADRUPLE.third|QUADRUPLE.fourth)
     */
     int num_secondary_hits = 0;
-    int num_singleton_reads = 0;
     int num_multireads = 0;
 
     for ( map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> >::iterator it = reads_dict.begin();
@@ -240,6 +244,10 @@ int identify_multireads(map<std::string, struct QUADRUPLE<bool, bool, unsigned i
             num_secondary_hits += it->second.fourth-1;
         }
     }
+
+    cout << multireads.size() << endl;
+    cout << num_multireads << endl;
+    cout << num_singleton_reads << endl;
 
     return num_secondary_hits;
 }
@@ -272,6 +280,7 @@ void assign_read_weights(vector<MATCH> &all_reads,
             else
                 it->w = 1/static_cast<float>(reads_dict[it->query].fourth);
         }
+        n++;
     }
 
     if (n == 0)
