@@ -116,8 +116,12 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
     sam_file.consume_sam(mapped_reads, reads_dict, verbose);
 
     // Identify multireads with and count the number of secondary adn supplementary alignments
-    long num_secondary_hits = identify_multireads(reads_dict, multireads, sam_file.num_singletons);
+    long num_secondary_hits = identify_multireads(reads_dict, multireads,
+                                                  sam_file.num_multireads, sam_file.num_singletons);
+    sam_file.unique_queries = reads_dict.size();
+    sam_file.secondary_alns = num_secondary_hits;
     sam_file.num_distinct_reads_mapped = sam_file.num_mapped - num_secondary_hits;
+//    sam_file.num_multireads = multireads.size();
 
     // TODO: Redistribute read weights using multiple alignment information in reads_dict
     // assign_read_weights(mapped_reads, reads_dict)

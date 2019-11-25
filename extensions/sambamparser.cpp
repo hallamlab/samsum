@@ -25,13 +25,17 @@ std::string MatchOutputParser::summarise() {
     summary_str.append(buf);
     sprintf(buf, "\tNumber of unmapped reads:       %ld\n", this->num_unmapped);
     summary_str.append(buf);
-    sprintf(buf, "\tNumber of forward reads:        %ld\n", this->num_fwd);
+    sprintf(buf, "\tUnique queries:                 %ld\n", this->unique_queries);
     summary_str.append(buf);
-    sprintf(buf, "\tNumber of reverse reads:        %ld\n", this->num_rev);
+    sprintf(buf, "\tForward read alignments:        %ld\n", this->num_fwd);
+    summary_str.append(buf);
+    sprintf(buf, "\tReverse read alignments:        %ld\n", this->num_rev);
     summary_str.append(buf);
     sprintf(buf, "\tNumber of multireads:           %ld\n", this->num_multireads);
     summary_str.append(buf);
-    sprintf(buf, "\tNumber of singleton alignments: %ld\n", this->num_singletons);
+    sprintf(buf, "\tSecondary alignments:           %ld\n", this->secondary_alns);
+    summary_str.append(buf);
+    sprintf(buf, "\tOrphan alignments:              %ld\n", this->num_singletons);
     summary_str.append(buf);
 
     return summary_str;
@@ -51,13 +55,15 @@ SamFileParser::SamFileParser(const std::string &filename, const std::string &for
          return ;
      }
      this->num_alignments = 0;
+     this->unique_queries = 0;
      this->num_mapped = 0;
      this->num_unmapped = 0;
      this->num_fwd = 0;
      this->num_rev = 0;
      this->num_multireads = 0;
+     this->secondary_alns = 0;
      this->num_singletons = 0;
-     this->num_distinct_reads_mapped;
+     this->num_distinct_reads_mapped = 0;
      this->header_pattern.assign('@', 1);
      this->unmapped_pattern.assign('*', 1);
 }
@@ -72,14 +78,14 @@ bool SamFileParser::getMateInfo(unsigned int i, MATCH &match)  {
     */
 
     unsigned int a = i;
-    bool singleton = 0;
+    bool orphan = 0;
     a = a >> 2;
     match.mapped = !(a&1); 
-    singleton = a&1;
+    orphan = a&1;
 
     a = a >> 1;
-    match.orphan = a&1; 
-    singleton = singleton^(a&1);
+    match.singleton = a&1; 
+    orphan = orphan^(a&1);
 
     a = a >> 3;
     if ( a&1 )  {
@@ -96,7 +102,7 @@ bool SamFileParser::getMateInfo(unsigned int i, MATCH &match)  {
 
     a = a >> 4;
     match.chimeric = a&1; 
-    match.singleton = singleton;
+    match.singleton = orphan;
     return true;
 }
 
@@ -150,7 +156,7 @@ void SamFileParser::consume_sam(vector<MATCH> &all_reads,
     MATCH match;
 
     if ( show_status )
-        std::cout << "Number of SAM lines processed: " << std::endl;
+        std::cout << "Number of SAM alignment lines processed: " << std::endl;
 
     int i;
     struct QUADRUPLE <bool, bool, unsigned int, unsigned int> p;
@@ -204,50 +210,42 @@ void SamFileParser::consume_sam(vector<MATCH> &all_reads,
     if ( show_status )
         std::cout << "\n\033[F\033[J" << i << std::endl;
 
-    cout << "Unique reads parsed: " << reads_dict.size() << endl;
-    cout << "Number of mapped reads: " << all_reads.size() << endl;
-
     return;
 }
 
 
 long identify_multireads(map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> > &reads_dict,
-                         map<std::string, float > &multireads, unsigned long &num_singleton_reads) {
+                         map<std::string, float > &multireads, unsigned long &multi, unsigned long &num_singletons) {
     /* Parameters:
       * reads_dict: A map indexed by read-names with QUADRUPLE values that store all reads in the SAM file
       * multireads: An empty map that is passed by reference of strings indexing floats
      * Functionality:
-      * Count the number of singleton reads (reads that didn't map), multireads, and secondary hits
+      * Count the number of orphan reads (reads with mates that didn't map), multireads, and secondary hits
       * Counting singletons: iterate through all read names (keys) in reads_dict
-      and if the first and second elements of QUADRUPLE are false, the number of singletons is incremented.
+      and if either the first or second elements of QUADRUPLE are false, the number of singletons is incremented.
       * Counting multireads: If the third or fourth variable of the QUADRUPLE is greater than one,
       this indicates the read was aligned multiple times so multireads is incremented by 1.
       * Counting secondary hits: The number of alignments of a read is tracked by the third and fourth elements
       of QUADRUPLE so the number of secondary hits is 1-(QUADRUPLE.third|QUADRUPLE.fourth)
     */
-    int num_secondary_hits = 0;
-    int num_multireads = 0;
+    long num_secondary_hits = 0;
 
     for ( map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> >::iterator it = reads_dict.begin();
           it != reads_dict.end();
           it++) {
         if( !(it->second.first && it->second.second) )
-            num_singleton_reads++;
+            num_singletons++;
         if( it->second.third > 1) {
-            num_multireads++;
+            multi++;
             multireads[it->first] = 0.0;
             num_secondary_hits += it->second.third-1;
         }
         if( it->second.fourth  > 1) {
-            num_multireads++;
+            multi++;
             multireads[it->first] = 0.0;
             num_secondary_hits += it->second.fourth-1;
         }
     }
-
-    cout << multireads.size() << endl;
-    cout << num_multireads << endl;
-    cout << num_singleton_reads << endl;
 
     return num_secondary_hits;
 }

@@ -17,9 +17,11 @@ class MatchOutputParser {
         unsigned long num_rev;
     public:
         /* Class Variables */
+        unsigned long unique_queries;
         unsigned long num_mapped;
         unsigned long num_unmapped;
         unsigned long num_multireads;
+        unsigned long secondary_alns;
         unsigned long num_singletons;
         unsigned long num_distinct_reads_mapped;
         std::string filename;
@@ -53,6 +55,6 @@ class SamFileParser: virtual public MatchOutputParser {
 };
 
 long identify_multireads(map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> > &reads_dict,
-                         map<std::string, float > &multireads, unsigned long &num_singleton_reads);
+                         map<std::string, float > &multireads, unsigned long &multi, unsigned long &num_singleton_reads);
 
 #endif //_MATHOUTPUTPARSER
