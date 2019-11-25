@@ -43,7 +43,7 @@ typedef struct _MATCH {
     bool multi;
     bool chimeric;  // Whether part of the read aligned to multiple different reference sequences
     bool singleton; // Whether its mate was aligned or not
-    float  w; // The weight of that read, based on the number of alignments
+    float w; // The weight of that read, based on the number of alignments
     _MATCH(): w(0) { } 
 } MATCH;
 
