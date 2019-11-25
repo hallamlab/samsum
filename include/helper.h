@@ -23,6 +23,6 @@ void substring_coverage(std::map<string, CONTIG> &contigs_dictionary, const std:
                         COVERAGE &coverage, unsigned int maxReadLength,
                         map<std::string, float > &multireads, bool multi_reads);
 
-void format_matches_for_service(vector<MATCH> &all_reads);
+vector<std::string> format_matches_for_service(vector<MATCH> &all_reads);
 
 #endif //_HELPER

@@ -31,6 +31,8 @@ std::string MatchOutputParser::summarise() {
     summary_str.append(buf);
     sprintf(buf, "\tReverse read alignments:        %ld\n", this->num_rev);
     summary_str.append(buf);
+    sprintf(buf, "\tUnpaired read alignments:       %ld\n", this->num_unpaired);
+    summary_str.append(buf);
     sprintf(buf, "\tNumber of multireads:           %ld\n", this->num_multireads);
     summary_str.append(buf);
     sprintf(buf, "\tSecondary alignments:           %ld\n", this->secondary_alns);
@@ -60,6 +62,7 @@ SamFileParser::SamFileParser(const std::string &filename, const std::string &for
      this->num_unmapped = 0;
      this->num_fwd = 0;
      this->num_rev = 0;
+     this->num_unpaired = 0;
      this->num_multireads = 0;
      this->secondary_alns = 0;
      this->num_singletons = 0;
@@ -72,45 +75,52 @@ SamFileParser::~SamFileParser() {
    this->input.close();
 }
 
-bool SamFileParser::getMateInfo(unsigned int i, MATCH &match)  {
-    /*
-      * Details for the match object are outlined in types.h
+bool SamFileParser::getMateInfo(unsigned int bitflag, MATCH &match)  {
+    /* Parameters:
+      * bitflag: The second column in a SAM file with bitwise encodings of mapping information
+      * match: A MATCH instance
+     * Functionality:
+      * Perform bit-wise calculations to get information on the read's alignment, mate pairing, etc.
+      * Returns `true` if either the first or second read in pair mapped, else `false`.
+      * Details for the MATCH object are in types.h
     */
 
-    unsigned int a = i;
+    unsigned int a = bitflag;
     bool orphan = 0;
-    a = a >> 2;
-    match.mapped = !(a&1); 
-    orphan = a&1;
+    a = a >> 2;  // Skip the "read mapped" and "mapped in proper pair" bits
+    match.mapped = !(a&1);  // mapped == 1 if the read was mapped b/c the third (0x4) bit isn't set
+    orphan = a&1;  // orphan == 0 if the read was unmapped
 
-    a = a >> 1;
-    match.singleton = a&1; 
-    orphan = orphan^(a&1);
+    a = a >> 1;  // Move to the next, "mate unmapped" bit
+    orphan = orphan^(a&1);  // `orphan` is 1 if the mate was unmapped (or doesn't exist) XOR `orphan` is set to 1
 
-    a = a >> 3;
+    a = a >> 3;  // Move to the sixth (0x64) "first in pair" bit
     if ( a&1 )  {
-         match.parity = 0; 
-         a = a >> 1;
+        match.parity = 0;
+        a = a >> 1;
     }
     else {
-         a = a >> 1;
-         if ( a&1 )
-             match.parity  = 1;
-         else
-             return false;
+        a = a >> 1;  // Move to the seventh (0x128) "second in pair" bit
+        if ( a&1 )
+            match.parity  = 1;
+        else
+            return false;
     }
 
-    a = a >> 4;
-    match.chimeric = a&1; 
+    a = a >> 4;  // Move to the eleventh (0x2048) "supplementary alignment" bit position
+    match.chimeric = a&1;  // This hints at a possible chimera, but it would have to be validated downstream
     match.singleton = orphan;
     return true;
 }
 
 bool SamFileParser::nextline(MATCH &match) {
-    /*
-      * Function for iterating through lines in a SAM file
-      * match instance provided has been instantiated
-      * while loop iterates until the SAM header is passed then reads a single line if the line has >= 9 fields
+    /* Parameters:
+      * match: Reference to a MATCH instance that is to be populated with alignment information
+     * Functionality:
+      * Function for adding values of a short-read alignment in a SAM file to a match instance.
+      * Specifically, the `paired`, `query`, `subject`, `start`, and `end` values are populated.
+      * If the line of the SamFileParser matches the header_pattern, lines are skipped until they no longer match
+      and the line has >= 9 tab-separated fields.
     */
      string line;
 
@@ -130,10 +140,10 @@ bool SamFileParser::nextline(MATCH &match) {
     
      if ( _success )  {
          match.query =  fields[0];
-         match.subject = std::string(fields[2]);
+         match.subject = fields[2];
          match.start = atoi(fields[3]);
          match.end =  match.start + std::string(fields[9]).size();
-         getMateInfo(static_cast<unsigned int>(atoi(fields[1])), match);
+         match.paired = getMateInfo(static_cast<unsigned int>(atoi(fields[1])), match);
 
          return true;
      }
@@ -172,9 +182,13 @@ void SamFileParser::consume_sam(vector<MATCH> &all_reads,
         else
             this->num_unmapped++;
 
-        if (match.parity)
-            this->num_rev++;
-        else this->num_fwd++;
+        if (!match.paired)
+            this->num_unpaired++;
+        else {
+            if (match.parity)
+                this->num_rev++;
+            else this->num_fwd++;
+        }
 
         if (reads_dict.find(match.query) == reads_dict.end()) {
             p.first = false;
@@ -266,6 +280,7 @@ void assign_read_weights(vector<MATCH> &all_reads,
     int n = 0;
 
     for ( vector<MATCH>::iterator it = all_reads.begin(); it != all_reads.end(); it++)  {
+//        cout << reads_dict[it->query].third << ' ' << reads_dict[it->query].fourth << endl;
         if ( it->parity == 0  ) {
             if( reads_dict[it->query].first && reads_dict[it->query].second )
                 it->w = 0.5/static_cast<float>(reads_dict[it->query].third);
@@ -279,6 +294,7 @@ void assign_read_weights(vector<MATCH> &all_reads,
                 it->w = 1/static_cast<float>(reads_dict[it->query].fourth);
         }
         n++;
+//        cout << it->query << ' ' << it->w << endl;
     }
 
     if (n == 0)

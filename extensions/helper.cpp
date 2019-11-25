@@ -162,9 +162,25 @@ void substring_coverage(std::map<string, CONTIG> &contigs_dictionary, const std:
     coverage.uncovered_length =  uncovered_length;
 }
 
-void format_matches_for_service(vector<MATCH> &all_reads) {
-    for ( vector<MATCH>::iterator it = all_reads.begin(); it != all_reads.end(); it++)  {
+vector<std::string> format_matches_for_service(vector<MATCH> &all_reads) {
+    /* Parameters:
+      * all_reads: A vector populated by MATCH instances that contain information to be converted into strings
+     * Functionality:
+      * Iterates through all MATCH instances in all_reads and generates two strings for each: the name of the query
+      and the relevant fields that are to be returned into Python.
+    */
+    vector<std::string> query_info;
+    char buf[1000];
 
+    cout << "Formatting alignment strings... ";
+
+    for ( vector<MATCH>::iterator it = all_reads.begin(); it != all_reads.end(); it++)  {
+        query_info.push_back(it->query);
+        sprintf(buf, "%s\t%d\t%f", it->subject, it->start, it->w);
+        query_info.push_back(buf);
     }
-    return;
+
+    cout << "done.\n" << endl;
+
+    return query_info;
 }

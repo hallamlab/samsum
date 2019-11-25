@@ -28,6 +28,7 @@ typedef struct _CONTIG {
 
 typedef struct _MATCH {
     /*
+      * paired is true if the read has a mate pair, else false (from a single-end run)
       * parity is 0 if it is the forward read, 1 if it is reverse in the pair
       * mapped is 1 if the read was not unmapped
       * orphan is 1 if the mate was not successfully aligned
@@ -37,6 +38,7 @@ typedef struct _MATCH {
      */
     std::string query, subject;
     unsigned int start, end;
+    bool paired;
     bool parity; // Forward or reverse
     bool mapped; // Did it map to a reference sequence
     bool orphan;

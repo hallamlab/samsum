@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <iostream>
 #include "sambamparser.h"
+#include "helper.h"
 
 using namespace std;
 
@@ -103,7 +104,7 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    PyObject *all_reads = PyList_New(0);
+    PyObject *mapping_info_py = PyList_New(0);
     std::cout << "Parsing alignment file " << aln_file << std::endl;
 
     bool verbose = true;
@@ -114,6 +115,7 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
 
     SamFileParser sam_file(aln_file, "sam");
     sam_file.consume_sam(mapped_reads, reads_dict, verbose);
+//    exit(0);
 
     // Identify multireads with and count the number of secondary adn supplementary alignments
     long num_secondary_hits = identify_multireads(reads_dict, multireads,
@@ -132,15 +134,15 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
     if ( verbose )
         std::cout << sam_file.summarise() << std::endl;
 
-    // TODO: Reformat the MATCH objects into the strings required
-
-
-//    map<string, unsigned long>::iterator it_contig_lens;
-//    for(it_contig_lens = fasta.seq_lengths.begin(); it_contig_lens != fasta.seq_lengths.end(); it_contig_lens++ ) {
-//        PyList_Append(seq_lens, Py_BuildValue("s", it_contig_lens->first.c_str()));
-//        PyList_Append(seq_lens, Py_BuildValue("i", it_contig_lens->second));
+    // Reformat the MATCH objects into the strings required
+//    vector<std::string> query_info = format_matches_for_service(mapped_reads);
+//
+//    vector<std::string>::iterator qi_it;
+//    for(qi_it = query_info.begin(); qi_it != query_info.end(); qi_it++ ) {
+//        cout << *qi_it << endl;
+//        PyList_Append(mapping_info_py, Py_BuildValue("s", *qi_it));
 //    }
-    return all_reads;
+    return mapping_info_py;
 }
 
 static PyObject *get_alignment_strings(PyObject *self, PyObject *args) {
@@ -151,7 +153,7 @@ static PyObject *get_alignment_strings(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    PyObject *all_reads;
+    PyObject *mapping_info_py;
     std::cout << "Parsing alignment file " << aln_file << std::endl;
-    return all_reads;
+    return mapping_info_py;
 }

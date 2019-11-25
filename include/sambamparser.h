@@ -15,6 +15,7 @@ class MatchOutputParser {
         unsigned long num_alignments;
         unsigned long num_fwd;
         unsigned long num_rev;
+        unsigned long num_unpaired;
     public:
         /* Class Variables */
         unsigned long unique_queries;
