@@ -44,10 +44,12 @@ std::string MatchOutputParser::summarise() {
 }
 
 SamFileParser::SamFileParser(const std::string &filename, const std::string &format):MatchOutputParser(filename, format) {
-    /*
+    /* Parameters:
+      * filename: Name of the SAM file to be parsed
+     * Functionality:
       * Constructor for SamFileParser class
       * Attempts to open the SAM file that was provided as the file name and throws an error, and returns, if unable to
-      * Set all SamFileParser variables used for counting alignments while parsing to 0
+      * Sets all SamFileParser variables used for counting alignments while parsing to 0
     */
      this->filename = filename;
      this->input.open(filename.c_str(), std::ifstream::in);
@@ -130,7 +132,7 @@ bool SamFileParser::nextline(MATCH &match) {
              continue;
 
          fields.clear();
-         split(line, fields, this->buf,'\t');
+         split(line, fields, this->buf, '\t');
 
          if (fields.size() < 9) continue;
 
@@ -280,8 +282,7 @@ void assign_read_weights(vector<MATCH> &all_reads,
     int n = 0;
 
     for ( vector<MATCH>::iterator it = all_reads.begin(); it != all_reads.end(); it++)  {
-//        cout << reads_dict[it->query].third << ' ' << reads_dict[it->query].fourth << endl;
-        if ( it->parity == 0  ) {
+        if ( it->parity == 0  || it->paired == false ) {
             if( reads_dict[it->query].first && reads_dict[it->query].second )
                 it->w = 0.5/static_cast<float>(reads_dict[it->query].third);
             else
@@ -294,7 +295,6 @@ void assign_read_weights(vector<MATCH> &all_reads,
                 it->w = 1/static_cast<float>(reads_dict[it->query].fourth);
         }
         n++;
-//        cout << it->query << ' ' << it->w << endl;
     }
 
     if (n == 0)

@@ -104,7 +104,7 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    PyObject *mapping_info_py = PyList_New(0);
+    PyObject *mapping_info_py = PyList_New(1000);
     std::cout << "Parsing alignment file " << aln_file << std::endl;
 
     bool verbose = true;
@@ -115,7 +115,6 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
 
     SamFileParser sam_file(aln_file, "sam");
     sam_file.consume_sam(mapped_reads, reads_dict, verbose);
-//    exit(0);
 
     // Identify multireads with and count the number of secondary adn supplementary alignments
     long num_secondary_hits = identify_multireads(reads_dict, multireads,
@@ -135,13 +134,24 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
         std::cout << sam_file.summarise() << std::endl;
 
     // Reformat the MATCH objects into the strings required
-//    vector<std::string> query_info = format_matches_for_service(mapped_reads);
-//
-//    vector<std::string>::iterator qi_it;
-//    for(qi_it = query_info.begin(); qi_it != query_info.end(); qi_it++ ) {
-//        cout << *qi_it << endl;
-//        PyList_Append(mapping_info_py, Py_BuildValue("s", *qi_it));
-//    }
+    vector<std::string> query_info = format_matches_for_service(mapped_reads);
+
+    cout << "Converting strings to Python objects... ";
+    long x = 0;
+    vector<std::string>::iterator qi_it;
+    std::string str;
+    for (qi_it = query_info.begin(); qi_it != query_info.end(); qi_it++ ) {
+        str = *qi_it;
+        if (PyList_Append(mapping_info_py, Py_BuildValue("s", str.c_str())) == -1)
+            x++;
+    }
+    cout << "done." << endl;
+    if (x > 0) {
+        sprintf(sam_file.buf, "WARNING: Failed to append %ld/%ld items into mapped reads list.", x, query_info.size());
+        cerr << sam_file.buf << endl;
+    }
+    cout << "Returning list from get_mapped_reads" << endl;
+
     return mapping_info_py;
 }
 
