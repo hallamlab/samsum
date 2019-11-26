@@ -27,7 +27,6 @@ def sam_parser_ext(sam_file: str, multireads=False, min_mq=0) -> dict():
         logging.error("No alignments were read from SAM file '%s'\n" % sam_file)
         sys.exit(5)
 
-    print("Converting to dict...")
     tmp_it = iter(mapping_list)
     reads_mapped = dict(zip(tmp_it, tmp_it))
 

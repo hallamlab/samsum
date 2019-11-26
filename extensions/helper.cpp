@@ -172,15 +172,11 @@ vector<std::string> format_matches_for_service(vector<MATCH> &all_reads) {
     vector<std::string> query_info;
     char buf[1000];
 
-    cout << "Formatting alignment strings... ";
-
     for ( vector<MATCH>::iterator it = all_reads.begin(); it != all_reads.end(); it++)  {
         query_info.push_back(it->query);
         sprintf(buf, "%s\t%d\t%f", it->subject.c_str(), it->start, it->w);
         query_info.push_back(buf);
     }
-
-    cout << "done.\n" << endl;
 
     return query_info;
 }

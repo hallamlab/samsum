@@ -104,7 +104,7 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    PyObject *mapping_info_py = PyList_New(1000);
+    PyObject *mapping_info_py = PyList_New(0);
     std::cout << "Parsing alignment file " << aln_file << std::endl;
 
     bool verbose = true;
@@ -127,16 +127,20 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
     sam_file.unique_queries = reads_dict.size();
     sam_file.secondary_alns = num_secondary_hits;
     sam_file.num_distinct_reads_mapped = sam_file.num_mapped - num_secondary_hits;
-//    sam_file.num_multireads = multireads.size();
 
     // Print the various SAM alignment stats
     if ( verbose )
-        std::cout << sam_file.summarise() << std::endl;
+        std::cout << sam_file.summarise();
 
     // Reformat the MATCH objects into the strings required
+    if ( verbose )
+        cout << "Formatting alignment strings... ";
     vector<std::string> query_info = format_matches_for_service(mapped_reads);
+    if ( verbose )
+        cout << "done." << endl;
 
-    cout << "Converting strings to Python objects... ";
+    if ( verbose )
+        cout << "Converting strings to Python objects... ";
     long x = 0;
     vector<std::string>::iterator qi_it;
     std::string str;
@@ -145,12 +149,12 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
         if (PyList_Append(mapping_info_py, Py_BuildValue("s", str.c_str())) == -1)
             x++;
     }
-    cout << "done." << endl;
+    if ( verbose )
+        cout << "done." << endl;
     if (x > 0) {
         sprintf(sam_file.buf, "WARNING: Failed to append %ld/%ld items into mapped reads list.", x, query_info.size());
         cerr << sam_file.buf << endl;
     }
-    cout << "Returning list from get_mapped_reads" << endl;
 
     return mapping_info_py;
 }
