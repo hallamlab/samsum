@@ -48,7 +48,7 @@ SETUP_METADATA = \
         "entry_points": {'console_scripts': ['samsum = samsum.__main__:main']},
         "classifiers": CLASSIFIERS,
         "ext_modules": [fasta_module, sam_module],
-        "install_requires": ["numpy"]
+        "install_requires": ["numpy", "pytest"]
     }
 
 setup(**SETUP_METADATA)

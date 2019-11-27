@@ -1,3 +1,19 @@
 language: python
-rvm:
-  - 3.5
+os: linux
+dist: xenial
+
+branches:
+  only:
+    - master
+
+python:
+  - "3.5"
+  - "3.6"
+  - "3.7"
+  - "pypy3"
+
+install:
+  - pip install -r requirements.txt
+
+# command to run tests
+script: samsum_test
