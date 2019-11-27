@@ -37,7 +37,7 @@ class SAMSumArgumentParser(argparse.ArgumentParser):
     def add_stats_args(self):
         self.reqs.add_argument("-f", "--ref_fasta", required=True, dest="fasta_file",
                                help="Path to the reference file used to generate the SAM/BAM file.")
-        self.reqs.add_argument("-a", "--alignments", required=False, dest="am_file",
+        self.reqs.add_argument("-a", "--alignments", required=True, dest="am_file",
                                help="Path to a SAM/BAM file containing the read alignments to the reference FASTA.")
         self.seqops.add_argument("-p", "--aln_proportion", required=False, dest="p_aln",
                                  help="The minimum proportion a reference sequence must be covered for its coverage"
