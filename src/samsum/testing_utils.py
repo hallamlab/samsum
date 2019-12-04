@@ -13,6 +13,5 @@ def get_test_data(filename):
     except ResolutionError:
         pass
     if not filepath or not os.path.isfile(filepath):
-        filepath = os.path.join(os.path.dirname(__file__), 'test-data',
-                                filename)
+        filepath = os.path.join(os.path.dirname(__file__), 'tests/test-data', filename)
     return filepath

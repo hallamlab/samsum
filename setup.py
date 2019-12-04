@@ -46,10 +46,10 @@ SETUP_METADATA = \
         "url": "https://github.com/hallamlab/samsum",
         "license": "GPL-3.0",
         "packages": find_packages('src', exclude=["tests"]),
-        "package_dir": {'': 'src'},
-        "py_modules": [splitext(basename(path))[0] for path in glob('src/*.py')],
         "include_package_data": True,
-        "data_files": {'tests/test-data/pytest_1.sam': ''},
+        "package_dir": {'samsum': 'src/samsum'},  # Necessary for proper importing
+        "package_data": {'tests': ["tests/test-data/*.sam"]},
+        "py_modules": [splitext(basename(path))[0] for path in glob('src/*.py')],
         "entry_points": {'console_scripts': ['samsum = samsum.__main__:main']},
         "classifiers": CLASSIFIERS,
         "ext_modules": [fasta_module, sam_module],
