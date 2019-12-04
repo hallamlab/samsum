@@ -1,5 +1,5 @@
 include LICENSE requirements.txt README.md
-recursive-include samsum *
-recursive-include include *
+recursive-include src/samsum *
+recursive-include src/include *
 recursive-include tests/test-data *
 global-exclude .idea

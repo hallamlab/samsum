@@ -9,11 +9,20 @@ branches:
 python:
   - "3.5"
   - "3.6"
-  - "3.7"
   - "pypy3"
 
 install:
-  - pip install -r requirements.txt
+  - python -mpip install --progress-bar=off tox -rci/requirements.txt
+  - virtualenv --version
+  - easy_install --version
+  - pip --version
+  - tox --version
 
 # command to run tests
-script: samsum_test
+script:
+  - tox -v
+
+notifications:
+  email:
+    on_success: never
+    on_failure: always

@@ -1,3 +1,6 @@
+from glob import glob
+from os.path import basename
+from os.path import splitext
 from setuptools import Extension
 from setuptools import setup, find_packages
 
@@ -18,17 +21,17 @@ CLASSIFIERS = [
 ]
 
 fasta_module = Extension("samsum._fasta_module",
-                         sources=["extensions/fastamodule.cpp", "extensions/fastareader.cpp", "extensions/utilities.cpp"],
-                         depends=["include/fastareader.h", "include/utilities.h", "types.h"],
-                         include_dirs=["include/"],
+                         sources=["src/extensions/fastamodule.cpp", "src/extensions/fastareader.cpp", "src/extensions/utilities.cpp"],
+                         depends=["fastareader.h", "utilities.h", "types.h"],
+                         include_dirs=["src/include/"],
                          language="c++")
 sam_module = Extension("samsum._sam_module",
-                       sources=["extensions/sammodule.cpp",
-                                "extensions/helper.cpp", "extensions/sambamparser.cpp",
-                                "extensions/utilities.cpp"],
-                       depends=["include/helper.h", "include/sambamparser.h",
-                                "include/types.h", "include/utilities.h"],
-                       include_dirs=["include/"],
+                       sources=["src/extensions/sammodule.cpp",
+                                "src/extensions/helper.cpp", "src/extensions/sambamparser.cpp",
+                                "src/extensions/utilities.cpp"],
+                       depends=["src/include/helper.h", "src/include/sambamparser.h",
+                                "src/include/types.h", "src/include/utilities.h"],
+                       include_dirs=["src/include/"],
                        language="c++")
 
 
@@ -43,10 +46,11 @@ SETUP_METADATA = \
         "author_email": "c.morganlang@gmail.com",
         "url": "https://github.com/hallamlab/samsum",
         "license": "GPL-3.0",
-        "packages": find_packages(exclude=["tests"]),
+        "packages": find_packages('src', exclude=["tests"]),
+        "package_dir": {'': 'src'},
+        "py_modules": [splitext(basename(path))[0] for path in glob('src/*.py')],
         "include_package_data": True,
         "data_files": {'tests/test-data/pytest_1.sam': "tests/"},
-        # "package_data": {'tests/test-data': ['pytest_1.sam']},
         "entry_points": {'console_scripts': ['samsum = samsum.__main__:main']},
         "classifiers": CLASSIFIERS,
         "ext_modules": [fasta_module, sam_module],
