@@ -41,3 +41,4 @@ CMakeLists.txt
 # PyPI remnants
 dist
 *.egg-info
+.tox
