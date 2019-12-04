@@ -2,7 +2,6 @@
 
 import os
 import sys
-import pkg_resources
 from pkg_resources import Requirement, resource_filename, ResolutionError
 import traceback
 
@@ -10,7 +9,7 @@ import traceback
 def get_test_data(filename):
     filepath = None
     try:
-        filepath = resource_filename(Requirement.parse("samsum"), "samsum/tests/test-data/" + filename)
+        filepath = resource_filename(Requirement.parse("samsum"), "tests/test-data/" + filename)
     except ResolutionError:
         pass
     if not filepath or not os.path.isfile(filepath):

@@ -1,8 +1,8 @@
-import _sam_module
-import _fasta_module
+
 import os
 import sys
 import logging
+from samsum import _fasta_module, _sam_module
 
 __author__ = 'Connor Morgan-Lang'
 
