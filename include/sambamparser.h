@@ -47,9 +47,9 @@ class SamFileParser: virtual public MatchOutputParser {
         std::string unmapped_pattern;
         /* Class Functions */
         SamFileParser(const std::string &filename, const std::string &format);
-        void consume_sam(vector<MATCH> &all_reads,
-                         map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> > &reads_dict,
-                         bool verbose);
+        int consume_sam(vector<MATCH> &all_reads,
+                        map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> > &reads_dict,
+                        bool verbose);
         virtual bool nextline(MATCH &match);
         bool getMateInfo(unsigned int i, MATCH &match);
         ~SamFileParser();

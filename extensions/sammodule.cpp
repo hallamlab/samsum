@@ -114,7 +114,9 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
     map<std::string, float > multireads;
 
     SamFileParser sam_file(aln_file, "sam");
-    sam_file.consume_sam(mapped_reads, reads_dict, verbose);
+    int status = sam_file.consume_sam(mapped_reads, reads_dict, verbose);
+    if ( status > 0 )
+        return mapping_info_py;
 
     // Identify multireads with and count the number of secondary adn supplementary alignments
     long num_secondary_hits = identify_multireads(reads_dict, multireads,

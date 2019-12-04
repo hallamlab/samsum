@@ -53,11 +53,6 @@ SamFileParser::SamFileParser(const std::string &filename, const std::string &for
     */
      this->filename = filename;
      this->input.open(filename.c_str(), std::ifstream::in);
-
-     if(!this->input.good()){
-         std::cerr << "ERROR: Unable to open '"<< filename <<"' for reading." << std::endl;
-         return ;
-     }
      this->num_alignments = 0;
      this->unique_queries = 0;
      this->num_mapped = 0;
@@ -71,6 +66,7 @@ SamFileParser::SamFileParser(const std::string &filename, const std::string &for
      this->num_distinct_reads_mapped = 0;
      this->header_pattern.assign('@', 1);
      this->unmapped_pattern.assign('*', 1);
+     return;
 }
 
 SamFileParser::~SamFileParser() {
@@ -152,7 +148,7 @@ bool SamFileParser::nextline(MATCH &match) {
     return false;
 }
 
-void SamFileParser::consume_sam(vector<MATCH> &all_reads,
+int SamFileParser::consume_sam(vector<MATCH> &all_reads,
                                 map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> > &reads_dict,
                                 bool show_status) {
     /* Parameters:
@@ -166,6 +162,11 @@ void SamFileParser::consume_sam(vector<MATCH> &all_reads,
       * These are counts are non-unique so double counts could arise from reads with multiple alignments
     */
     MATCH match;
+
+     if(!this->input.good()) {
+         std::cerr << "ERROR: Unable to open '"<< filename <<"' for reading." << std::endl;
+         return 1;
+     }
 
     if ( show_status )
         std::cout << "Number of SAM alignment lines processed: " << std::endl;
@@ -220,13 +221,14 @@ void SamFileParser::consume_sam(vector<MATCH> &all_reads,
         }
         catch (...) {
             cout << "Failing " << match.query << "   " << all_reads.size() << endl;
+            return 1;
         }
     }
 
     if ( show_status )
         std::cout << "\n\033[F\033[J" << i << std::endl;
 
-    return;
+    return 0;
 }
 
 
