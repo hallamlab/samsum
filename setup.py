@@ -29,8 +29,7 @@ sam_module = Extension("samsum._sam_module",
                        sources=["src/extensions/sammodule.cpp",
                                 "src/extensions/helper.cpp", "src/extensions/sambamparser.cpp",
                                 "src/extensions/utilities.cpp"],
-                       depends=["src/include/helper.h", "src/include/sambamparser.h",
-                                "src/include/types.h", "src/include/utilities.h"],
+                       depends=["helper.h", "sambamparser.h", "types.h", "utilities.h"],
                        include_dirs=["src/include/"],
                        language="c++")
 
@@ -50,7 +49,7 @@ SETUP_METADATA = \
         "package_dir": {'': 'src'},
         "py_modules": [splitext(basename(path))[0] for path in glob('src/*.py')],
         "include_package_data": True,
-        "data_files": {'tests/test-data/pytest_1.sam': "tests/"},
+        "data_files": {'tests/test-data/pytest_1.sam': ''},
         "entry_points": {'console_scripts': ['samsum = samsum.__main__:main']},
         "classifiers": CLASSIFIERS,
         "ext_modules": [fasta_module, sam_module],
