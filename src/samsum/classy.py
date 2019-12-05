@@ -1,6 +1,9 @@
 __author__ = 'Connor Morgan-Lang'
 
 
+from samsum import utilities as ss_utils
+
+
 class RefSequence:
     def __init__(self, ref_seq: str):
         self.name = ref_seq
@@ -34,6 +37,7 @@ class SAMSumBase:
     """
     def __init__(self, subcmd_name) -> None:
         self.subcmd = subcmd_name
+        self.executables = {}
         self.aln_file = ""
         self.seq_file = ""
         self.output_sep = ','
@@ -42,6 +46,10 @@ class SAMSumBase:
     def get_info(self) -> str:
         info_string = ""
         return info_string
+
+    def furnish_with_arguments(self, args) -> None:
+        self.executables["bwa"] = ss_utils.which("bwa")
+        return
 
 
 class AlignmentDat:
