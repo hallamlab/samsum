@@ -23,7 +23,7 @@ def test_get_mapped_reads():
 
 def test_load_sam():
     from samsum import classy
-    test_aln_data = ["refseq_name", 1, 1.0]
+    test_aln_data = ["refseq_name", "1", "1.0"]
     test_aln_obj = classy.AlignmentDat("readname")
     test_aln_obj.load_sam(test_aln_data)
     assert test_aln_obj.start == 1

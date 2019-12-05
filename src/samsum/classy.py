@@ -65,6 +65,6 @@ class AlignmentDat:
         """
         fields = aln_fields
         self.ref = fields[0]
-        self.start = fields[1]
-        self.weight = fields[2]
+        self.start = int(fields[1])
+        self.weight = float(fields[2])
         return

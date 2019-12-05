@@ -74,8 +74,8 @@ def stats(sys_args):
     alignments = ss_utils.load_alignments(mapped_dict)
     mapped_dict.clear()
     ss_utils.load_reference_coverage(references, alignments)
-    for ref_seq in references:  # type: ss_class.RefSequence
-        print(ref_seq.get_info())
+    for ref_seq in references:  # type: str
+        print(references[ref_seq].get_info())
         sys.exit()
 
     # TODO: Calculate the percent sequence coverage for each reference sequence

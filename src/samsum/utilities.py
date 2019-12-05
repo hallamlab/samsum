@@ -134,7 +134,7 @@ def load_reference_coverage(references: dict, alignments: list) -> None:
     :return:
     """
     for aln in alignments:  # type: classy.AlignmentDat
-        if aln.ref not in alignments:
+        if aln.ref not in references:
             logging.error("Reference sequence from SAM file not found in FASTA: %s\n" % aln.ref)
             sys.exit(3)
         ref_seq = references[aln.ref]  # type: classy.RefSequence
