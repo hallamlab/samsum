@@ -18,3 +18,15 @@ def test_get_mapped_reads():
     assert isinstance(test_sam, str)
     mapping_list = _sam_module.get_mapped_reads(test_sam, False, 0)
     assert (len(mapping_list) == 14)
+    return
+
+
+def test_load_sam():
+    from samsum import classy
+    test_aln_data = ["refseq_name", 1, 1.0]
+    test_aln_obj = classy.AlignmentDat("readname")
+    test_aln_obj.load_sam(test_aln_data)
+    assert test_aln_obj.start == 1
+    assert test_aln_obj.weight == 1.0
+    assert test_aln_obj.ref == "refseq_name"
+    return
