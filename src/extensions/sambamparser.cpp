@@ -140,6 +140,7 @@ bool SamFileParser::nextline(MATCH &match) {
          match.query =  fields[0];
          match.subject = fields[2];
          match.start = atoi(fields[3]);
+         match.cigar = fields[5];
          match.end =  match.start + std::string(fields[9]).size();
          match.paired = getMateInfo(static_cast<unsigned int>(atoi(fields[1])), match);
 

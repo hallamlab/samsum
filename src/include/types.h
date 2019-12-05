@@ -36,7 +36,7 @@ typedef struct _MATCH {
       * chimeric is 1 if parts of the read aligned to different loci
       * singleton is 1 if the mate was not successfully aligned
      */
-    std::string query, subject;
+    std::string query, subject, cigar;
     unsigned int start, end;
     bool paired;
     bool parity; // Forward or reverse
