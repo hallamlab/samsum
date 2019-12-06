@@ -1,9 +1,7 @@
 """Modified from sourmash's sourmash/tests/sourmash_tst_utils.py"""
 
 import os
-import sys
 from pkg_resources import Requirement, resource_filename, ResolutionError
-import traceback
 
 
 def get_test_data(filename):

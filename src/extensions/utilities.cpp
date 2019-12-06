@@ -38,7 +38,7 @@ void split(const string  &strn, std::vector<char *> &v, char *buf, char d) {
 bool matchString(const string &str, const string & stringtomatch, bool fromstart) {
 
     unsigned long pos = str.find(stringtomatch);
-    if(fromstart && pos ==0 ) return true;
+    if ( fromstart && pos == 0 ) return true;
 
     return !fromstart && pos >= 0;
 

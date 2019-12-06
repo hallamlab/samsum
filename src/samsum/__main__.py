@@ -9,7 +9,7 @@ import logging
 
 from samsum.commands import (info, stats)
 
-usage = """ 
+usage = """
 samsum <command> [<args>]
 ** Commands include:
 stats          Write the number of reads that mapped to each reference sequence

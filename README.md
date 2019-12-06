@@ -25,9 +25,9 @@ while also keeping track of the reads that remain unmapped.
 This all occurs within the C++ Python extension.
 It will then read the reference FASTA file to gather the lengths of each reference sequence.
 Combining the read counts and sequence lengths, it will then calculate:
-- reads per kilobase per million mappable reads (RPKM)
-- fragments per kilobase per million (FPKM)
-- transcripts per milllion (TPM)
+  - reads per kilobase per million mappable reads (RPKM)
+  - fragments per kilobase per million (FPKM)
+  - transcripts per milllion (TPM)
 
 ### Command-line options
 By default, reads with multiple identical alignments (i.e. mapping quality is 0) are not included in these calculations.
