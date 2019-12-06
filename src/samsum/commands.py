@@ -76,6 +76,8 @@ def stats(sys_args):
     mapped_dict.clear()
     ss_aln_utils.load_reference_coverage(references, alignments)
     for ref_seq in references:  # type: str
+        if references[ref_seq].reads_mapped == 0:
+            continue
         print(references[ref_seq].get_info())
         sys.exit()
 

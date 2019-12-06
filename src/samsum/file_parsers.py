@@ -14,12 +14,13 @@ def sam_parser_ext(sam_file: str, multireads=False, min_mq=0) -> dict():
     :param sam_file: Path to the SAM file to be parsed
     :param multireads: Boolean flag indicating whether reads that have multiple ambiguous mapping positions are used
     :param min_mq: The minimum mapping quality for a read to be included in the analysis (as mapped)
-    :return: A dictionary mapping reference sequence names to the number of reads aligned to them
+    :return: A dictionary mapping query sequence (read) names to a list of alignment data strings
     """
     if not os.path.isfile(sam_file):
         logging.error("SAM file '%s' doesn't exist.\n" % sam_file)
         sys.exit(3)
 
+    reads_mapped = dict()
     # TODO: Convert to a generator function so _sam_parser returns chunks in a list of 10,000 read strings
     # mapping_list = _sam_parser.refseq_read_counts(sam_file, multireads)
     mapping_list = _sam_module.get_mapped_reads(sam_file, multireads, min_mq)
@@ -28,8 +29,12 @@ def sam_parser_ext(sam_file: str, multireads=False, min_mq=0) -> dict():
         sys.exit(5)
 
     tmp_it = iter(mapping_list)
-    reads_mapped = dict(zip(tmp_it, tmp_it))
-
+    for query, aln_dat in zip(tmp_it, tmp_it):
+        try:
+            reads_mapped[query].append(aln_dat)
+        except KeyError:
+            reads_mapped[query] = [aln_dat]
+    logging.debug("%d of unique read names returned by _sam_module.\n" % len(reads_mapped))
     return reads_mapped
 
 

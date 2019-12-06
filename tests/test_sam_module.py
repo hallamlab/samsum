@@ -21,12 +21,24 @@ def test_get_mapped_reads():
     return
 
 
-def test_load_sam():
+@pytest.fixture()
+def alignment_dat_example():
     from samsum import classy
-    test_aln_data = ["refseq_name", "1", "1.0"]
-    test_aln_obj = classy.AlignmentDat("readname")
-    test_aln_obj.load_sam(test_aln_data)
-    assert test_aln_obj.start == 1
-    assert test_aln_obj.weight == 1.0
-    assert test_aln_obj.ref == "refseq_name"
+    ex_instance = classy.AlignmentDat("query_read_name")
+    return ex_instance
+
+
+def test_load_sam(alignment_dat_example):
+    test_aln_data = ["refseq_name", "1", "5S145M", "1.0"]
+    alignment_dat_example.load_sam(test_aln_data)
+    assert alignment_dat_example.start == 1
+    assert alignment_dat_example.weight == 1.0
+    assert alignment_dat_example.ref == "refseq_name"
+    return
+
+
+def test_cigar_length(alignment_dat_example):
+    cigar_str = "101S19M30S"
+    alignment_dat_example.cigar = cigar_str
+    assert alignment_dat_example.cigar_length() == 150
     return
