@@ -42,3 +42,6 @@ def test_cigar_length(alignment_dat_example):
     alignment_dat_example.cigar = cigar_str
     assert alignment_dat_example.cigar_length() == 150
     return
+
+
+# TODO: Write test to ensure the RefSequence.rightmost doesn't exceed its length from alignment_dat_example.load_sam()

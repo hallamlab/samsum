@@ -57,4 +57,5 @@ def load_reference_coverage(references: dict, alignments: list) -> None:
             ref_seq.leftmost = aln.start
         if aln.end > ref_seq.rightmost:
             ref_seq.rightmost = aln.end
+        ref_seq.alignments.append(aln)
     return

@@ -15,6 +15,7 @@ class RefSequence:
         self.rpkm = 0.0
         self.fpkm = 0.0
         self.tpm = 0.0
+        self.alignments = []
         return
 
     def get_info(self):
@@ -27,8 +28,23 @@ class RefSequence:
                                     "TPM  = %f" % self.tpm]) + "\n"
         return summary_str
 
-    def calculate_coverage(self):
-        return
+    def proportion_covered(self) -> float:
+        """
+        Calculate the proportion of the RefSequence that was covered by mapped reads
+        :return: Float representing the proportion of the Reference Sequence that was covered
+        """
+        return (self.rightmost-self.leftmost)/self.length
+
+    def calc_coverage(self) -> float:
+        """
+        Calculate a 'dumb' coverage value of simply the number of base-pairs mapped
+        (by summing the number of bp contained in the reads) and dividing by the length of sequence (RefSequence.length)
+        :return:
+        """
+        bases_mapped = 0
+        for aln_dat in self.alignments:  # type: AlignmentDat
+            bases_mapped += (aln_dat.end - aln_dat.start)
+        return bases_mapped/self.length
 
 
 class SAMSumBase:
@@ -44,7 +60,9 @@ class SAMSumBase:
         return
 
     def get_info(self) -> str:
-        info_string = ""
+        info_string = "Info for " + self.subcmd + ":\n"
+        info_string += "\n\t".join(["Alignment file: '%s'" % self.aln_file,
+                                    "Reference sequence file: '%s'" % self.seq_file])
         return info_string
 
     def furnish_with_arguments(self, args) -> None:
