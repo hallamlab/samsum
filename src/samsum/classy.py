@@ -12,7 +12,7 @@ class RefSequence:
         self.rightmost = 0
         self.reads_mapped = 0
         self.weight_total = 0.0
-        self.rpkm = 0.0
+        self.rpk = 0.0
         self.fpkm = 0.0
         self.tpm = 0.0
         self.alignments = []
@@ -23,10 +23,20 @@ class RefSequence:
         summary_str += "\n\t".join(["Length = " + str(self.length) + "bp",
                                     "Number of reads mapped = " + str(self.reads_mapped),
                                     "Covered from %d to %d" % (self.leftmost, self.rightmost),
-                                    "RPKM = %f" % self.rpkm,
+                                    "RPKM = %f" % float(self.rpk/1E6),
                                     "FPKM = %f" % self.fpkm,
                                     "TPM  = %f" % self.tpm]) + "\n"
         return summary_str
+
+    def aggregate(self, ref_seq) -> None:
+        self.length += ref_seq.length
+        self.leftmost = min([self.leftmost, ref_seq.leftmost])
+        self.rightmost = min([self.rightmost, ref_seq.rightmost])
+        self.weight_total += ref_seq.weight_total
+        self.fpkm += ref_seq.fpkm
+        self.rpk += ref_seq.rpk
+        self.tpm += ref_seq.tpm
+        self.alignments += ref_seq.alignments
 
     def proportion_covered(self) -> float:
         """
@@ -46,6 +56,31 @@ class RefSequence:
             bases_mapped += (aln_dat.end - aln_dat.start)
         return bases_mapped/self.length
 
+    def calc_rpk(self, num_reads):
+        self.rpk = num_reads / (self.length / 1E3)
+
+    def calc_fpkm(self, num_reads):
+        mmr = float(num_reads/1E6)
+        if self.weight_total == 0:
+            self.fpkm = 0
+        else:
+            self.fpkm = float((self.weight_total/self.length)/mmr)
+        return
+
+    def calc_tpm(self, denominator) -> None:
+        """
+        Divide the read counts by the length of each gene in kilobases.
+        Count up all the RPK values in a sample and divide this number by 1,000,000.
+        Divide the RPK values by the “per million” scaling factor.
+
+        :param denominator: The per-million scaling factor
+        :return: None
+        """
+        if self.weight_total == 0:
+            return
+        self.tpm = self.rpk/denominator
+        return
+
 
 class SAMSumBase:
     """
@@ -57,6 +92,7 @@ class SAMSumBase:
         self.aln_file = ""
         self.seq_file = ""
         self.output_sep = ','
+        self.num_reads = 0
         return
 
     def get_info(self) -> str:
