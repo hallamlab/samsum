@@ -145,6 +145,7 @@ class AlignmentDat:
         self.ref = fields[0]
         self.start = int(fields[1])
         self.cigar = fields[2]
+        # TODO: Use an orientation field to correctly calculate the end position
         self.end = self.start + self.cigar_length()
         self.weight = float(fields[3])
         if self.weight > 1:
