@@ -71,10 +71,16 @@ def stats(sys_args):
     # Parse the alignments and return the strings of reads mapped to each reference sequence
     mapped_dict = ss_fp.sam_parser_ext(stats_ss.aln_file, args.multireads)
 
-    # TODO: Calculate the RPKM, FPKM and TPM for each reference sequence with reads mapped to it
-    alignments = ss_aln_utils.load_alignments(mapped_dict)
+    # Convert the alignment strings returned by the sam_parser_ext into ss_class.AlignmentDat instances
+    alignments, num_unmapped, mapped_weight_sum = ss_aln_utils.load_alignments(mapped_dict)
     mapped_dict.clear()
+
+    # Calculate the RPKM, FPKM and TPM for each reference sequence with reads mapped to it
+    stats_ss.num_reads = num_unmapped + mapped_weight_sum
+    print(stats_ss.get_info())
     ss_aln_utils.load_reference_coverage(references, alignments)
+    ss_aln_utils.calculate_normalization_metrics(references, stats_ss.num_reads)
+    # TODO: Calculate the percent sequence coverage for each reference sequence
     for seq_name in references:  # type: str
         ref_seq = references[seq_name]  # type: ss_class.RefSequence
         if ref_seq.reads_mapped == 0:
@@ -83,8 +89,6 @@ def stats(sys_args):
         print("Proportion covered = " + str(round(ref_seq.proportion_covered(), 3)))
         print("Coverage = " + str(round(ref_seq.calc_coverage(), 3)))
         sys.exit()
-
-    # TODO: Calculate the percent sequence coverage for each reference sequence
 
     # TODO: Write the summary table with each of the above metrics as well as variance for each
 

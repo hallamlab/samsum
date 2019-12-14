@@ -1,6 +1,6 @@
 __author__ = 'Connor Morgan-Lang'
 
-
+import logging
 from samsum import utilities as ss_utils
 
 
@@ -96,10 +96,12 @@ class SAMSumBase:
         return
 
     def get_info(self) -> str:
-        info_string = "Info for " + self.subcmd + ":\n"
+        info_string = "Info for " + self.subcmd + ":\n\t"
         info_string += "\n\t".join(["Alignment file: '%s'" % self.aln_file,
                                     "Reference sequence file: '%s'" % self.seq_file])
-        return info_string
+        if self.num_reads:
+            info_string += "\n\tNumber of reads: %d" % self.num_reads
+        return info_string + "\n"
 
     def furnish_with_arguments(self, args) -> None:
         self.executables["bwa"] = ss_utils.which("bwa")
@@ -145,4 +147,13 @@ class AlignmentDat:
         self.cigar = fields[2]
         self.end = self.start + self.cigar_length()
         self.weight = float(fields[3])
+        if self.weight > 1:
+            logging.debug("Weight for '%s' is greater than 1 (%s).\n" % (self.query, str(self.weight)))
         return
+
+    def get_info(self) -> str:
+        info_string = "Info for alignment data:\n\t"
+        info_string += "\n\t".join(["Query name: '%s'" % self.query,
+                                    "Reference name: '%s'" % self.ref,
+                                    "Weight: %d" % self.weight])
+        return info_string
