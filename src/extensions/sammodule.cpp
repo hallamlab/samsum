@@ -130,6 +130,13 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
     sam_file.secondary_alns = num_secondary_hits;
     sam_file.num_distinct_reads_mapped = sam_file.num_mapped - num_secondary_hits;
 
+    // Add a match object that stores the number of unmapped reads
+    MATCH unmapped;
+    unmapped.w = sam_file.num_unmapped;
+    unmapped.query = "NA";
+    unmapped.subject = "UNMAPPED";
+    mapped_reads.push_back(unmapped);
+
     // Print the various SAM alignment stats
     if ( verbose )
         std::cout << sam_file.summarise();

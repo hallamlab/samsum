@@ -94,13 +94,13 @@ bool SamFileParser::getMateInfo(unsigned int bitflag, MATCH &match)  {
 
     a = a >> 3;  // Move to the sixth (0x64) "first in pair" bit
     if ( a&1 )  {
-        match.parity = 0;
+        match.parity = false;
         a = a >> 1;
     }
     else {
         a = a >> 1;  // Move to the seventh (0x128) "second in pair" bit
         if ( a&1 )
-            match.parity  = 1;
+            match.parity  = true;
         else
             return false;
     }
@@ -135,14 +135,18 @@ bool SamFileParser::nextline(MATCH &match) {
          _success = true;
          break;
      }
-    
+
      if ( _success )  {
          match.query =  fields[0];
          match.subject = fields[2];
          match.start = atoi(fields[3]);
          match.cigar = fields[5];
-         match.end =  match.start + std::string(fields[9]).size();
          match.paired = getMateInfo(static_cast<unsigned int>(atoi(fields[1])), match);
+         // TODO: test to ensure the end position is calculated correctly
+         if ( match.parity ) // Read is second in pair and will be aligned right-to-left
+            match.end =  match.start - std::string(fields[9]).size();
+         else
+            match.end =  match.start + std::string(fields[9]).size();
 
          return true;
      }
@@ -207,7 +211,7 @@ int SamFileParser::consume_sam(vector<MATCH> &all_reads,
         if (!match.mapped)
             continue;
 
-        if (match.parity) {
+        if (!match.parity) {
             reads_dict[match.query].first = true;  // This is a forward read
             reads_dict[match.query].third++;
         }
@@ -277,26 +281,24 @@ void assign_read_weights(vector<MATCH> &all_reads,
       * reads_dict: A map indexed by read-names with QUADRUPLE values that store all reads in the SAM file
      * Functionality:
       * Basically calculates the weights such that the sum of the paired reads is 1 - for FPKM calculation
-      * Iterate through the all_reads vector and depending on whether the read was forward (parity == 0) or reverse
-      (parity == 1) the respective alignment count variable (third|fourth) is used to calculate the weight such that
+      * Iterate through the all_reads vector and depending on whether the read was forward (parity == false) or reverse
+      (parity == true) the respective alignment count variable (third|fourth) is used to calculate the weight such that
       the sum of forward and reverse (if applicable) equals one.
     */
 
     int n = 0;
-
+    int numerator = 0;
     for ( vector<MATCH>::iterator it = all_reads.begin(); it != all_reads.end(); it++)  {
-        if ( it->parity == 0  || it->paired == false ) {
-            if( reads_dict[it->query].first && reads_dict[it->query].second )
-                it->w = 0.5/static_cast<float>(reads_dict[it->query].third);
-            else
-                it->w = 1/static_cast<float>(reads_dict[it->query].third);
-        }
-        else  {
-            if( reads_dict[it->query].first && reads_dict[it->query].second )
-                it->w = 0.5/static_cast<float>(reads_dict[it->query].fourth);
-            else
-                it->w = 1/static_cast<float>(reads_dict[it->query].fourth);
-        }
+        // Is the read from a paired-end library AND did both of the reads map?
+        if ( reads_dict[it->query].first && reads_dict[it->query].second )
+            numerator = 0.5;
+        else
+            numerator = 1;
+        // Calculate the read's weight based on the number of times it aligned
+        if ( it->parity )  // This read is reverse
+            it->w = numerator/static_cast<float>(reads_dict[it->query].fourth);
+        else  // This read is forward
+            it->w = numerator/static_cast<float>(reads_dict[it->query].third);
         n++;
     }
 
