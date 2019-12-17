@@ -1,6 +1,7 @@
 __author__ = 'Connor Morgan-Lang'
 
 import logging
+import sys
 from samsum import utilities as ss_utils
 
 
@@ -110,7 +111,7 @@ class SAMSumBase:
 
 class AlignmentDat:
     """
-    A class that stores alignmment information
+    A class that stores alignment information
     """
     def __init__(self, query_name: str) -> None:
         self.query = query_name
@@ -126,10 +127,11 @@ class AlignmentDat:
         acc = 0
         i = 0
         buffer = ""
+        consume_ref = ["M", "D", "N", "=", "X"]
         while i < len(self.cigar):
             if self.cigar[i].isdigit():
                 buffer += self.cigar[i]
-            elif buffer:
+            elif buffer and self.cigar[i] in consume_ref:
                 acc += int(buffer)
                 buffer = ""
             i += 1
@@ -145,9 +147,8 @@ class AlignmentDat:
         self.ref = fields[0]
         self.start = int(fields[1])
         self.cigar = fields[2]
-        # TODO: Use an orientation field to correctly calculate the end position
-        self.end = self.start + self.cigar_length()
-        self.weight = float(fields[3])
+        self.end = self.start + self.cigar_length() - 1  # Need to subtract since SAM alignments are 1-based
+        self.weight = float(fields[4])
         if self.weight > 1:
             logging.debug("Weight for '%s' is greater than 1 (%s).\n" % (self.query, str(self.weight)))
         return
@@ -156,5 +157,6 @@ class AlignmentDat:
         info_string = "Info for alignment data:\n\t"
         info_string += "\n\t".join(["Query name: '%s'" % self.query,
                                     "Reference name: '%s'" % self.ref,
+                                    "Start-End: %d - %d" % (self.start, self.end),
                                     "Weight: %d" % self.weight])
         return info_string

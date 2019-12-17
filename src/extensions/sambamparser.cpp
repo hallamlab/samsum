@@ -287,13 +287,12 @@ void assign_read_weights(vector<MATCH> &all_reads,
     */
 
     int n = 0;
-    int numerator = 0;
+    float numerator = 1.0;
     for ( vector<MATCH>::iterator it = all_reads.begin(); it != all_reads.end(); it++)  {
         // Is the read from a paired-end library AND did both of the reads map?
         if ( reads_dict[it->query].first && reads_dict[it->query].second )
             numerator = 0.5;
-        else
-            numerator = 1;
+
         // Calculate the read's weight based on the number of times it aligned
         if ( it->parity )  // This read is reverse
             it->w = numerator/static_cast<float>(reads_dict[it->query].fourth);

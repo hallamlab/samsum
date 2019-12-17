@@ -135,6 +135,7 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
     unmapped.w = sam_file.num_unmapped;
     unmapped.query = "NA";
     unmapped.subject = "UNMAPPED";
+    unmapped.parity = 0;
     mapped_reads.push_back(unmapped);
 
     // Print the various SAM alignment stats

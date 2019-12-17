@@ -17,7 +17,7 @@ def test_get_mapped_reads():
     test_sam = utils.get_test_data('pytest_1.sam')
     assert isinstance(test_sam, str)
     mapping_list = _sam_module.get_mapped_reads(test_sam, False, 0)
-    assert (len(mapping_list) == 14)
+    assert (len(mapping_list) == 16)
     return
 
 
@@ -29,11 +29,19 @@ def alignment_dat_example():
 
 
 def test_load_sam(alignment_dat_example):
-    test_aln_data = ["refseq_name", "1", "5S145M", "1.0"]
+    test_aln_data = ["refseq_name", "1", "5S145M", "0", "1.0"]
     alignment_dat_example.load_sam(test_aln_data)
     assert alignment_dat_example.start == 1
     assert alignment_dat_example.weight == 1.0
     assert alignment_dat_example.ref == "refseq_name"
+    return
+
+
+def test_load_unmapped(alignment_dat_example):
+    test_unmapped_data = ['UNMAPPED', '-530976544', '', '0', '415858.0']
+    alignment_dat_example.load_sam(test_unmapped_data)
+    assert alignment_dat_example.weight == 415858.0
+    assert alignment_dat_example.ref == "UNMAPPED"
     return
 
 
