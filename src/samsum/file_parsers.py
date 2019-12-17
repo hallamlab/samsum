@@ -2,7 +2,7 @@
 import os
 import sys
 import logging
-from samsum import _fasta_module, _sam_module
+from samsum import _fasta_module, _sam_module, classy
 
 __author__ = 'Connor Morgan-Lang'
 
@@ -64,3 +64,41 @@ def fasta_seq_lengths_ext(fasta_file: str, min_seq_length=0) -> dict():
     logging.info(str(len(seq_lengths_map)) + " sequences were read from " + fasta_file + "\n")
 
     return seq_lengths_map
+
+
+def write_summary_table(references: dict, output_table: str, sep=",") -> None:
+    """
+    Writes the output file most people care about - the table summarizing abundance metrics for each reference sequence.
+    Takes a dictionary of sequence names indexing their RefSequence instances and writes specific data for each.
+    Current header is:
+    [RefSequence.name, Query.name, ProportionCovered, Reads, RPKM, FPKM, TPM]
+    Included in this table as the first row are the unmapped reads (UNMAPPED) with relevant information where possible
+
+    :param references: A dictionary of RefSequence instances indexed by the reference sequence names (headers)
+    :param output_table: A string representing the path of the file to write to
+    :param sep: Field separator to use. The default is a comma.
+    :return: None
+    """
+    header = ["RefSequence", "QueryName", "ProportionCovered", "Coverage", "Reads", "RPKM", "FPKM", "TPM"]
+    buffer = sep.join(header) + "\n"
+
+    try:
+        ot_handler = open(output_table, 'w')
+    except IOError:
+        logging.error("Unable to open output table '%s' for writing.\n" % output_table)
+        sys.exit(3)
+
+    for seq_name in references:  # type: str
+        ref_seq = references[seq_name]  # type: classy.RefSequence
+        prop_covered = ref_seq.proportion_covered()
+        data_fields = [prop_covered, ref_seq.depth, ref_seq.reads_mapped,
+                       ref_seq.rpk, ref_seq.fpkm, ref_seq.tpm]
+
+        buffer += sep.join([ref_seq.name, "query"] +
+                           [str(round(x, 3)) for x in data_fields]) + "\n"
+        if len(buffer) > 1E6:
+            ot_handler.write(buffer)
+            buffer = ""
+    ot_handler.write(buffer)
+
+    return

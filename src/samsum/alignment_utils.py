@@ -103,3 +103,12 @@ def calculate_normalization_metrics(genome_dict: dict, sampled_reads: int) -> No
         ref_seq.calc_tpm(denominator)
 
     return
+
+
+def calculate_coverage(genome_dict: dict) -> None:
+    for seq_name in genome_dict:  # type: str
+        ref_seq = genome_dict[seq_name]  # type: classy.RefSequence
+        if ref_seq.reads_mapped == 0:
+            continue
+        ref_seq.calc_coverage()
+    return

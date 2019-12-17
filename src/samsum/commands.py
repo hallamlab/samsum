@@ -4,7 +4,6 @@ __author__ = 'Connor Morgan-Lang'
 import logging
 import samsum
 import numpy
-import sys
 import samsum.args as ss_args
 import samsum.classy as ss_class
 import samsum.logger as ss_log
@@ -80,16 +79,11 @@ def stats(sys_args):
     logging.debug(stats_ss.get_info())
     ss_aln_utils.load_reference_coverage(references, alignments)
     ss_aln_utils.calculate_normalization_metrics(references, stats_ss.num_reads)
-    # TODO: Calculate the percent sequence coverage for each reference sequence
-    for seq_name in references:  # type: str
-        ref_seq = references[seq_name]  # type: ss_class.RefSequence
-        if ref_seq.reads_mapped == 0:
-            continue
-        print(ref_seq.get_info())
-        print("Proportion covered = " + str(round(ref_seq.proportion_covered(), 3)))
-        print("Coverage = " + str(round(ref_seq.calc_coverage(), 3)))
-        sys.exit()
 
-    # TODO: Write the summary table with each of the above metrics as well as variance for each
+    # Calculate the proportion sequence coverage for each reference sequence
+    ss_aln_utils.calculate_coverage(references)
+
+    # Write the summary table with each of the above metrics as well as variance for each
+    ss_fp.write_summary_table(references, args.output_table, args.sep)
 
     return

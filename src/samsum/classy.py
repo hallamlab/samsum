@@ -1,7 +1,6 @@
 __author__ = 'Connor Morgan-Lang'
 
 import logging
-import sys
 from samsum import utilities as ss_utils
 
 
@@ -12,6 +11,7 @@ class RefSequence:
         self.leftmost = seq_length
         self.rightmost = 0
         self.reads_mapped = 0
+        self.depth = 0.0
         self.weight_total = 0.0
         self.rpk = 0.0
         self.fpkm = 0.0
@@ -24,7 +24,7 @@ class RefSequence:
         summary_str += "\n\t".join(["Length = " + str(self.length) + "bp",
                                     "Number of reads mapped = " + str(self.reads_mapped),
                                     "Covered from %d to %d" % (self.leftmost, self.rightmost),
-                                    "RPKM = %f" % float(self.rpk/1E6),
+                                    "RPK = %f" % self.rpk,
                                     "FPKM = %f" % self.fpkm,
                                     "TPM  = %f" % self.tpm]) + "\n"
         return summary_str
@@ -46,16 +46,17 @@ class RefSequence:
         """
         return (self.rightmost-self.leftmost)/self.length
 
-    def calc_coverage(self) -> float:
+    def calc_coverage(self) -> None:
         """
         Calculate a 'dumb' coverage value of simply the number of base-pairs mapped
         (by summing the number of bp contained in the reads) and dividing by the length of sequence (RefSequence.length)
-        :return:
+        :return: None
         """
         bases_mapped = 0
         for aln_dat in self.alignments:  # type: AlignmentDat
             bases_mapped += (aln_dat.end - aln_dat.start)
-        return bases_mapped/self.length
+        self.depth = bases_mapped/self.length
+        return
 
     def calc_rpk(self, num_reads):
         self.rpk = num_reads / (self.length / 1E3)
