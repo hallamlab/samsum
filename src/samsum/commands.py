@@ -76,8 +76,8 @@ def stats(sys_args):
     mapped_dict.clear()
 
     # Calculate the RPKM, FPKM and TPM for each reference sequence with reads mapped to it
-    stats_ss.num_reads = num_unmapped + mapped_weight_sum
-    print(stats_ss.get_info())
+    stats_ss.num_reads = num_unmapped + (2*mapped_weight_sum)
+    logging.debug(stats_ss.get_info())
     ss_aln_utils.load_reference_coverage(references, alignments)
     ss_aln_utils.calculate_normalization_metrics(references, stats_ss.num_reads)
     # TODO: Calculate the percent sequence coverage for each reference sequence

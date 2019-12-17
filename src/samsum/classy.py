@@ -160,5 +160,5 @@ class AlignmentDat:
         info_string += "\n\t".join(["Query name: '%s'" % self.query,
                                     "Reference name: '%s'" % self.ref,
                                     "Start-End: %d - %d" % (self.start, self.end),
-                                    "Weight: %d" % self.weight])
+                                    "Weight: %f" % self.weight])
         return info_string
