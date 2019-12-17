@@ -53,3 +53,10 @@ def test_cigar_length(alignment_dat_example):
 
 
 # TODO: Write test to ensure the RefSequence.rightmost doesn't exceed its length from alignment_dat_example.load_sam()
+
+def test_output_table():
+    from samsum import classy
+    # TODO: Assert the header and the output rows contain the same number of fields
+    # TODO: Assert the header follows the expected format
+    return
+

@@ -84,6 +84,7 @@ def stats(sys_args):
     ss_aln_utils.calculate_coverage(references)
 
     # Write the summary table with each of the above metrics as well as variance for each
-    ss_fp.write_summary_table(references, args.output_table, args.sep)
+    ss_fp.write_summary_table(references, args.output_table,
+                              ss_utils.file_prefix(stats_ss.aln_file), num_unmapped, args.sep)
 
     return

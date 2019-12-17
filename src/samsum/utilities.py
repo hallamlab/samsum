@@ -8,6 +8,10 @@ import os
 import re
 
 
+def file_prefix(file_path: str) -> str:
+    return os.path.basename('.'.join(file_path.split('.')[:-1]))
+
+
 def is_exe(fpath):
     return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
 
