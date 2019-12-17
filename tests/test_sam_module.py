@@ -48,7 +48,7 @@ def test_load_unmapped(alignment_dat_example):
 def test_cigar_length(alignment_dat_example):
     cigar_str = "101S19M30S"
     alignment_dat_example.cigar = cigar_str
-    assert alignment_dat_example.cigar_length() == 150
+    assert alignment_dat_example.cigar_length() == 19
     return
 
 

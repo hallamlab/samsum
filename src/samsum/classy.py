@@ -134,6 +134,8 @@ class AlignmentDat:
             elif buffer and self.cigar[i] in consume_ref:
                 acc += int(buffer)
                 buffer = ""
+            else:
+                buffer = ""
             i += 1
         return acc
 
