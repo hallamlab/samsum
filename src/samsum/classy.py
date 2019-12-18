@@ -44,6 +44,8 @@ class RefSequence:
         Calculate the proportion of the RefSequence that was covered by mapped reads
         :return: Float representing the proportion of the Reference Sequence that was covered
         """
+        if self.reads_mapped == 0:
+            return 0
         return (self.rightmost-self.leftmost)/self.length
 
     def calc_coverage(self) -> None:
@@ -120,25 +122,31 @@ class AlignmentDat:
         self.cigar = ""
         self.start = 0
         self.end = 0
+        self.read_length = 0
         self.percent_id = 0.0
         self.weight = 0.0
         return
 
-    def cigar_length(self):
-        acc = 0
+    def decode_cigar(self):
+        self.read_length = 0
+        aln_len = 0
         i = 0
         buffer = ""
-        consume_ref = ["M", "D", "N", "=", "X"]
+        consume_ref = {"M", "D", "N", "=", "X"}  # type: set
+        consume_query = {"M", "I", "S", "=", "X"}  # type: set
         while i < len(self.cigar):
             if self.cigar[i].isdigit():
                 buffer += self.cigar[i]
-            elif buffer and self.cigar[i] in consume_ref:
-                acc += int(buffer)
+            elif buffer:
+                if self.cigar[i] in consume_ref:
+                    aln_len += int(buffer)
+                if self.cigar[i] in consume_query:
+                    self.read_length += int(buffer)
                 buffer = ""
             else:
                 buffer = ""
             i += 1
-        return acc
+        return aln_len
 
     def load_sam(self, aln_fields: list) -> None:
         """
@@ -150,7 +158,8 @@ class AlignmentDat:
         self.ref = fields[0]
         self.start = int(fields[1])
         self.cigar = fields[2]
-        self.end = self.start + self.cigar_length() - 1  # Need to subtract since SAM alignments are 1-based
+        aln_len = self.decode_cigar()
+        self.end = self.start + aln_len - 1  # Need to subtract since SAM alignments are 1-based
         self.weight = float(fields[4])
         if self.weight > 1:
             logging.debug("Weight for '%s' is greater than 1 (%s).\n" % (self.query, str(self.weight)))
@@ -161,5 +170,6 @@ class AlignmentDat:
         info_string += "\n\t".join(["Query name: '%s'" % self.query,
                                     "Reference name: '%s'" % self.ref,
                                     "Start-End: %d - %d" % (self.start, self.end),
+                                    "Length: %d " % self.read_length,
                                     "Weight: %f" % self.weight])
         return info_string

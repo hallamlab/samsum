@@ -71,17 +71,22 @@ def stats(sys_args):
     mapped_dict = ss_fp.sam_parser_ext(stats_ss.aln_file, args.multireads)
 
     # Convert the alignment strings returned by the sam_parser_ext into ss_class.AlignmentDat instances
-    alignments, num_unmapped, mapped_weight_sum = ss_aln_utils.load_alignments(mapped_dict)
+    alignments, num_unmapped, mapped_weight_sum = ss_aln_utils.load_alignments(mapped_dict, args.min_aln)
     mapped_dict.clear()
 
-    # Calculate the RPKM, FPKM and TPM for each reference sequence with reads mapped to it
     stats_ss.num_reads = num_unmapped + (2*mapped_weight_sum)
     logging.debug(stats_ss.get_info())
     ss_aln_utils.load_reference_coverage(references, alignments)
-    ss_aln_utils.calculate_normalization_metrics(references, stats_ss.num_reads)
+    alignments.clear()
 
     # Calculate the proportion sequence coverage for each reference sequence
     ss_aln_utils.calculate_coverage(references)
+
+    # Filter out alignments that with either short alignments or are from low-coverage reference sequences
+    filtered_alignments = ss_aln_utils.proportion_filter(references, args.p_cov)
+
+    # Calculate the RPKM, FPKM and TPM for each reference sequence with reads mapped to it
+    ss_aln_utils.calculate_normalization_metrics(references, stats_ss.num_reads)
 
     # Write the summary table with each of the above metrics as well as variance for each
     ss_fp.write_summary_table(references, args.output_table,

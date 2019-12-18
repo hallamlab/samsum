@@ -35,18 +35,33 @@ class SAMSumArgumentParser(argparse.ArgumentParser):
         return args
 
     def add_stats_args(self):
-        self.reqs.add_argument("-f", "--ref_fasta", required=True, dest="fasta_file",
+        self.reqs.add_argument("-f", "--ref_fasta",
+                               required=True, dest="fasta_file",
                                help="Path to the reference file used to generate the SAM/BAM file.")
-        self.reqs.add_argument("-a", "--alignments", required=True, dest="am_file",
+        self.reqs.add_argument("-a", "--alignments",
+                               required=True, dest="am_file",
                                help="Path to a SAM/BAM file containing the read alignments to the reference FASTA.")
-        self.seqops.add_argument("-p", "--aln_proportion", required=False, dest="p_aln",
-                                 help="The minimum proportion a reference sequence must be covered for its coverage"
-                                      "stats to be included; they are set to zero otherwise.")
-        self.seqops.add_argument("--multireads", required=False, default=False, action="store_true",
+        self.seqops.add_argument("-p", "--seq_coverage",
+                                 required=False, dest="p_cov",
+                                 default=50, type=int,
+                                 help="The minimum percentage a reference sequence must be covered for its coverage"
+                                      "stats to be included; they are set to zero otherwise. (DEFAULT = 50%%)")
+        self.seqops.add_argument("-l", "--aln_percent",
+                                 required=False, dest="min_aln",
+                                 default=10, type=int,
+                                 help="The minimum percentage of a read's length that must be aligned to be included. "
+                                      "(DEFAULT = 10%%)")
+        self.seqops.add_argument("--multireads",
+                                 required=False,
+                                 default=False, action="store_true",
                                  help="Flag indicating whether reads that mapped ambiguously to multiple positions"
                                       " (multireads) should be used in the counts.")
-        self.optopt.add_argument("-o", "--output_table", required=False, default="./samsum_table.csv",
+        self.optopt.add_argument("-o", "--output_table",
+                                 required=False,
+                                 default="./samsum_table.csv",
                                  help="Name of a file to write the alignment stats to.")
-        self.optopt.add_argument("-s", "--sep", required=False, default=",",
+        self.optopt.add_argument("-s", "--sep",
+                                 required=False,
+                                 default=",",
                                  help="Field-separator character to be used when writing the output table.")
         return

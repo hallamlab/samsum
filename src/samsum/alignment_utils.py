@@ -23,10 +23,11 @@ def load_references(refseq_lengths: dict) -> dict:
     return references
 
 
-def load_alignments(mapped_dict: dict) -> (list, int, int):
+def load_alignments(mapped_dict: dict, min_aln: int) -> (list, int, int):
     """
 
     :param mapped_dict:
+    :param min_aln:
     :return:
     """
     alignments = []
@@ -41,14 +42,15 @@ def load_alignments(mapped_dict: dict) -> (list, int, int):
             query_seq = classy.AlignmentDat(read_name)
             query_seq.load_sam(map_stats)
             if query_seq.ref == "UNMAPPED":
-                num_unmapped = query_seq.weight
+                num_unmapped += query_seq.weight
+                continue
+            if 100*(query_seq.end-query_seq.start)/query_seq.read_length < min_aln:
+                num_unmapped += 2*query_seq.weight
                 continue
             alignments.append(query_seq)
             mapped_sum += query_seq.weight
     logging.info("done.\n")
 
-    print("Num unique", len(mapped_dict))
-    print("Mapped sum", mapped_sum)
     return alignments, num_unmapped, mapped_sum
 
 
@@ -59,6 +61,8 @@ def load_reference_coverage(references: dict, alignments: list) -> None:
     :param alignments:
     :return:
     """
+    logging.info("Associating read alignments with their respective reference sequences... ")
+
     for aln in alignments:  # type: classy.AlignmentDat
         if aln.ref not in references:
             logging.error("Reference sequence from SAM file not found in FASTA: %s\n" % aln.ref)
@@ -71,6 +75,8 @@ def load_reference_coverage(references: dict, alignments: list) -> None:
         if aln.end > ref_seq.rightmost:
             ref_seq.rightmost = aln.end
         ref_seq.alignments.append(aln)
+
+    logging.info("done.\n")
     return
 
 
@@ -112,3 +118,13 @@ def calculate_coverage(genome_dict: dict) -> None:
             continue
         ref_seq.calc_coverage()
     return
+
+
+def proportion_filter(references: dict, p_aln: int) -> int:
+    filtered_alignments = 0
+    logging.info("Filtering out reference sequences with coverage below " + str(p_aln) + "%... ")
+    # TODO: Finish this function
+    for seq_name in references:
+        ref_seq = references[seq_name]  # type: classy.RefSequence
+    logging.info("done.\n")
+    return filtered_alignments

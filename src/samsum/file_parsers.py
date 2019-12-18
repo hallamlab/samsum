@@ -93,7 +93,7 @@ def write_summary_table(references: dict, output_table: str, samsum_exp: str, un
         logging.error("Unable to open output table '%s' for writing.\n" % output_table)
         sys.exit(3)
 
-    for seq_name in references:  # type: str
+    for seq_name in sorted(references, key=lambda x: references[x].tpm, reverse=True):  # type: str
         ref_seq = references[seq_name]  # type: ss_class.RefSequence
         prop_covered = ref_seq.proportion_covered()
         data_fields = [prop_covered, ref_seq.depth, ref_seq.reads_mapped,

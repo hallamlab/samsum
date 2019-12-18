@@ -34,6 +34,8 @@ def test_load_sam(alignment_dat_example):
     assert alignment_dat_example.start == 1
     assert alignment_dat_example.weight == 1.0
     assert alignment_dat_example.ref == "refseq_name"
+    assert alignment_dat_example.end == 145
+    assert alignment_dat_example.decode_cigar() == 145
     return
 
 
@@ -45,10 +47,16 @@ def test_load_unmapped(alignment_dat_example):
     return
 
 
-def test_cigar_length(alignment_dat_example):
-    cigar_str = "101S19M30S"
-    alignment_dat_example.cigar = cigar_str
-    assert alignment_dat_example.cigar_length() == 19
+def test_decode_cigar(alignment_dat_example):
+    cigar_str_1 = "101S19M30S"
+    alignment_dat_example.cigar = cigar_str_1
+    assert alignment_dat_example.decode_cigar() == 19
+    assert alignment_dat_example.read_length == 150
+    cigar_str_2 = "101S19M30H"
+    alignment_dat_example.cigar = cigar_str_2
+    assert alignment_dat_example.decode_cigar() == 19
+    assert alignment_dat_example.read_length == 120
+
     return
 
 
