@@ -19,17 +19,17 @@ std::string MatchOutputParser::summarise() {
     char buf[1000];
     std::string summary_str;
     summary_str.assign("Summary for " + this->filename + ":\n");
-    sprintf(buf, "\tNumber of alignments:           %ld\n", this->num_alignments);
+    sprintf(buf, "\tNumber of lines:                %ld\n", this->num_alignments);
     summary_str.append(buf);
-    sprintf(buf, "\tNumber of mapped reads:         %ld\n", this->num_mapped);
+    sprintf(buf, "\tNumber of read alignments:      %ld\n", this->num_mapped);
     summary_str.append(buf);
     sprintf(buf, "\tNumber of unmapped reads:       %ld\n", this->num_unmapped);
     summary_str.append(buf);
     sprintf(buf, "\tUnique queries:                 %ld\n", this->unique_queries);
     summary_str.append(buf);
-    sprintf(buf, "\tForward read alignments:        %ld\n", this->num_fwd);
+    sprintf(buf, "\tForward read lines:             %ld\n", this->num_fwd);
     summary_str.append(buf);
-    sprintf(buf, "\tReverse read alignments:        %ld\n", this->num_rev);
+    sprintf(buf, "\tReverse read lines:             %ld\n", this->num_rev);
     summary_str.append(buf);
     sprintf(buf, "\tUnpaired read alignments:       %ld\n", this->num_unpaired);
     summary_str.append(buf);
@@ -140,6 +140,7 @@ bool SamFileParser::nextline(MATCH &match) {
          match.query =  fields[0];
          match.subject = fields[2];
          match.start = atoi(fields[3]);
+         match.mq = atoi(fields[4]);
          match.cigar = fields[5];
          match.paired = getMateInfo(static_cast<unsigned int>(atoi(fields[1])), match);
          // TODO: test to ensure the end position is calculated correctly
@@ -155,10 +156,12 @@ bool SamFileParser::nextline(MATCH &match) {
 
 int SamFileParser::consume_sam(vector<MATCH> &all_reads,
                                 map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> > &reads_dict,
+                                float &unmapped_weight_sum,
                                 bool show_status) {
     /* Parameters:
       * all_reads: Pointer to a vector of MATCH objects that has yet to be populated
       * reads_dict: Pointer to a map indexed by read-names with QUADRUPLE values that store all reads in the SAM file
+      * unmapped_weight_sum: Reference to a float tracking the number of unmapped fragments
       * show_stats: Boolean indicating whether the number of reads parsed should be printed to screen
      * Functionality:
       * Basic function for parsing a SAM file.
@@ -208,8 +211,13 @@ int SamFileParser::consume_sam(vector<MATCH> &all_reads,
         this->num_alignments++;
 
         // if it is not mapped then ignore it
-        if (!match.mapped)
+        if (!match.mapped) {
+            if (match.paired)
+                unmapped_weight_sum += 0.5;
+            else
+                unmapped_weight_sum++;
             continue;
+        }
 
         if (!match.parity) {
             reads_dict[match.query].first = true;  // This is a forward read
@@ -274,6 +282,19 @@ long identify_multireads(map<std::string, struct QUADRUPLE<bool, bool, unsigned 
 }
 
 
+float calculate_weight(int parity, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> &pair) {
+    float numerator = 1.0;
+    // Is the read from a paired-end library AND did both of the reads map?
+    if ( pair.first && pair.second )
+        numerator = 0.5;
+    // Calculate the read's weight based on the number of times it aligned
+    if ( parity )  // This read is reverse
+        return numerator/static_cast<float>(pair.fourth);
+    else  // This read is forward
+        return numerator/static_cast<float>(pair.third);
+}
+
+
 void assign_read_weights(vector<MATCH> &all_reads,
                          map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> > &reads_dict) {
     /* Parameters:
@@ -285,19 +306,9 @@ void assign_read_weights(vector<MATCH> &all_reads,
       (parity == true) the respective alignment count variable (third|fourth) is used to calculate the weight such that
       the sum of forward and reverse (if applicable) equals one.
     */
-
     int n = 0;
-    float numerator = 1.0;
     for ( vector<MATCH>::iterator it = all_reads.begin(); it != all_reads.end(); it++)  {
-        // Is the read from a paired-end library AND did both of the reads map?
-        if ( reads_dict[it->query].first && reads_dict[it->query].second )
-            numerator = 0.5;
-
-        // Calculate the read's weight based on the number of times it aligned
-        if ( it->parity )  // This read is reverse
-            it->w = numerator/static_cast<float>(reads_dict[it->query].fourth);
-        else  // This read is forward
-            it->w = numerator/static_cast<float>(reads_dict[it->query].third);
+        it->w = calculate_weight(it->parity, reads_dict[it->query]);
         n++;
     }
 

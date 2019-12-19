@@ -74,7 +74,7 @@ def stats(sys_args):
     alignments, num_unmapped, mapped_weight_sum = ss_aln_utils.load_alignments(mapped_dict, args.min_aln)
     mapped_dict.clear()
 
-    stats_ss.num_reads = num_unmapped + (2*mapped_weight_sum)
+    stats_ss.num_frags = num_unmapped + mapped_weight_sum
     logging.debug(stats_ss.get_info())
     ss_aln_utils.load_reference_coverage(references, alignments)
     alignments.clear()
@@ -83,10 +83,10 @@ def stats(sys_args):
     ss_aln_utils.calculate_coverage(references)
 
     # Filter out alignments that with either short alignments or are from low-coverage reference sequences
-    filtered_alignments = ss_aln_utils.proportion_filter(references, args.p_cov)
+    num_unmapped += ss_aln_utils.proportion_filter(references, args.p_cov)
 
     # Calculate the RPKM, FPKM and TPM for each reference sequence with reads mapped to it
-    ss_aln_utils.calculate_normalization_metrics(references, stats_ss.num_reads)
+    ss_aln_utils.calculate_normalization_metrics(references, stats_ss.num_frags)
 
     # Write the summary table with each of the above metrics as well as variance for each
     ss_fp.write_summary_table(references, args.output_table,

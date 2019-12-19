@@ -85,6 +85,16 @@ class RefSequence:
         self.tpm = self.rpk/denominator
         return
 
+    def clear_alignments(self) -> None:
+        self.reads_mapped = 0
+        self.depth = 0.0
+        self.weight_total = 0.0
+        self.rpk = 0.0
+        self.fpkm = 0.0
+        self.tpm = 0.0
+        self.alignments.clear()
+        return
+
 
 class SAMSumBase:
     """
@@ -97,6 +107,7 @@ class SAMSumBase:
         self.seq_file = ""
         self.output_sep = ','
         self.num_reads = 0
+        self.num_frags = 0
         return
 
     def get_info(self) -> str:

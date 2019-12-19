@@ -37,7 +37,7 @@ typedef struct _MATCH {
       * singleton is 1 if the mate was not successfully aligned
      */
     std::string query, subject, cigar;
-    unsigned int start, end;
+    unsigned int start, end, mq;
     bool paired;
     bool parity; // Forward or reverse
     bool mapped; // Did it map to a reference sequence
