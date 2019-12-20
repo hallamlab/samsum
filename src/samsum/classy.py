@@ -22,7 +22,8 @@ class RefSequence:
     def get_info(self):
         summary_str = "Reference sequence '%s':\n\t" % self.name
         summary_str += "\n\t".join(["Length = " + str(self.length) + "bp",
-                                    "Number of reads mapped = " + str(self.reads_mapped),
+                                    "Number of reads mapped = " + str(self.reads_mapped) +
+                                    " (%f fragments)" % self.weight_total,
                                     "Covered from %d to %d" % (self.leftmost, self.rightmost),
                                     "RPK = %f" % self.rpk,
                                     "FPKM = %f" % self.fpkm,

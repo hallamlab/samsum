@@ -60,7 +60,20 @@ def test_decode_cigar(alignment_dat_example):
     return
 
 
+def test_ref_sequence_abundances():
+    from samsum import commands
+    from samsum import classy as ss_class
+    test_sam = utils.get_test_data("samsum_test_2.sam")
+    test_aln = utils.get_test_data("samsum_test_2.fasta")
+    ref_seq_abunds = commands.ref_sequence_abundances(aln_file=test_sam, seq_file=test_aln,
+                                                      min_aln=10, p_cov=10, map_qual=0)
+    e10 = ref_seq_abunds['AB-755_P22_E10_NODE_6_length_36342_cov_2156.57_ID_21']  # type: ss_class.RefSequence
+    assert e10.reads_mapped == 10
+    assert e10.weight_total == 5.0
+    return
+
 # TODO: Write test to ensure the RefSequence.rightmost doesn't exceed its length from alignment_dat_example.load_sam()
+
 
 def test_output_table():
     from samsum import classy
