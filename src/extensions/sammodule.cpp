@@ -125,14 +125,8 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
 
     // Redistribute read weights using multiple alignment information in reads_dict
     assign_read_weights(mapped_reads, reads_dict);
-
-    // TODO: Filter out reads that failed the mapping quality score or secondary alignments
-//    * min_map_qual: An integer representing the minimum mapping quality for an alignment to be included
-//        if (match.mq < min_map_qual) {
-//            unmapped_weight_sum += calculate_weight(match.parity, reads_dict[match.query]);
-//            continue;
-//        }
-//    cout << "Sum of unmapped weights = " << unmapped_weight_sum << endl;
+    remove_low_quality_matches(mapped_reads, min_map_qual, unmapped_weight_sum);
+    cout << "Sum of unmapped weights = " << unmapped_weight_sum << endl;
 
     // Set the SamFileParser values
     sam_file.unique_queries = reads_dict.size();

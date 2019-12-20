@@ -25,4 +25,6 @@ void substring_coverage(std::map<string, CONTIG> &contigs_dictionary, const std:
 
 vector<std::string> format_matches_for_service(vector<MATCH> &all_reads);
 
+void remove_low_quality_matches(vector<MATCH> &mapped_reads, unsigned int min_map_qual, float &unmapped_weight_sum);
+
 #endif //_HELPER

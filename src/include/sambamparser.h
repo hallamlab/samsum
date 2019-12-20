@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <fstream>
 #include "utilities.h"
+#include "helper.h"
 #include "types.h"
 
 using namespace std;
