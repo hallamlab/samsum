@@ -41,16 +41,20 @@ class SAMSumArgumentParser(argparse.ArgumentParser):
         self.reqs.add_argument("-a", "--alignments",
                                required=True, dest="am_file",
                                help="Path to a SAM/BAM file containing the read alignments to the reference FASTA.")
+        self.seqops.add_argument("-l", "--aln_percent",
+                                 required=False, dest="min_aln",
+                                 default=10, type=int,
+                                 help="The minimum percentage of a read's length that must be aligned to be included."
+                                      " (DEFAULT = 10%%)")
         self.seqops.add_argument("-p", "--seq_coverage",
                                  required=False, dest="p_cov",
                                  default=50, type=int,
                                  help="The minimum percentage a reference sequence must be covered for its coverage"
-                                      "stats to be included; they are set to zero otherwise. (DEFAULT = 50%%)")
-        self.seqops.add_argument("-l", "--aln_percent",
-                                 required=False, dest="min_aln",
-                                 default=10, type=int,
-                                 help="The minimum percentage of a read's length that must be aligned to be included. "
-                                      "(DEFAULT = 10%%)")
+                                      " stats to be included; they are set to zero otherwise. (DEFAULT = 50%%)")
+        self.seqops.add_argument("-q", "--map_quality",
+                                 required=False, dest="map_qual",
+                                 default=0, type=int,
+                                 help="The minimum mapping quality threshold for an alignment to pass. (DEFAULT = 0)")
         self.seqops.add_argument("--multireads",
                                  required=False,
                                  default=False, action="store_true",
@@ -59,9 +63,11 @@ class SAMSumArgumentParser(argparse.ArgumentParser):
         self.optopt.add_argument("-o", "--output_table",
                                  required=False,
                                  default="./samsum_table.csv",
-                                 help="Name of a file to write the alignment stats to.")
+                                 help="Name of a file to write the alignment stats to."
+                                      " (DEFAULT = ./samsum_table.csv)")
         self.optopt.add_argument("-s", "--sep",
                                  required=False,
-                                 default=",",
-                                 help="Field-separator character to be used when writing the output table.")
+                                 default=",", type=str,
+                                 help="Field-separator character to be used when writing the output table."
+                                      " (DEFAULT = ',')")
         return

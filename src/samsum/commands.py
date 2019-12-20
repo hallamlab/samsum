@@ -68,7 +68,7 @@ def stats(sys_args):
     refseq_lengths.clear()
 
     # Parse the alignments and return the strings of reads mapped to each reference sequence
-    mapped_dict = ss_fp.sam_parser_ext(stats_ss.aln_file, args.multireads, 60)
+    mapped_dict = ss_fp.sam_parser_ext(stats_ss.aln_file, args.multireads, args.map_qual)
 
     # Convert the alignment strings returned by the sam_parser_ext into ss_class.AlignmentDat instances
     alignments, num_unmapped, mapped_weight_sum = ss_aln_utils.load_alignments(mapped_dict, args.min_aln)
