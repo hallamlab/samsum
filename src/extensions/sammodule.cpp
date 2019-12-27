@@ -126,7 +126,6 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
     // Redistribute read weights using multiple alignment information in reads_dict
     assign_read_weights(mapped_reads, reads_dict);
     remove_low_quality_matches(mapped_reads, min_map_qual, unmapped_weight_sum);
-    cout << "Sum of unmapped weights = " << unmapped_weight_sum << endl;
 
     // Set the SamFileParser values
     sam_file.unique_queries = reads_dict.size();
@@ -135,7 +134,7 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
 
     // Add a match object that stores the number of unmapped reads
     MATCH unmapped;
-    unmapped.w = sam_file.num_unmapped;
+    unmapped.w = unmapped_weight_sum;
     unmapped.query = "NA";
     unmapped.subject = "UNMAPPED";
     unmapped.parity = 0;

@@ -53,7 +53,6 @@ def load_alignments(mapped_dict: dict, min_aln: int) -> (list, int, int):
             mapped_sum += query_seq.weight
     logging.info("done.\n")
 
-    # print("Sum of mapped weights = ", mapped_sum)
     return alignments, num_unmapped, mapped_sum
 
 

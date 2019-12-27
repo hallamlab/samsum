@@ -187,6 +187,7 @@ int SamFileParser::consume_sam(vector<MATCH> &all_reads,
 
         if (!this->nextline(match))
             break;
+        this->num_alignments++;
 
         if (match.mapped)
             this->num_mapped++;
@@ -208,7 +209,17 @@ int SamFileParser::consume_sam(vector<MATCH> &all_reads,
             p.fourth = 0;
             reads_dict[match.query] = p;
         }
-        this->num_alignments++;
+
+        if (!match.parity) {
+            reads_dict[match.query].first = true;  // This is a forward read
+            if (match.mapped)
+                reads_dict[match.query].third++;
+        }
+        else {
+            reads_dict[match.query].second = true;  // This is a reverse read
+            if (match.mapped)
+                reads_dict[match.query].fourth++;
+        }
 
         // if it is not mapped then ignore it
         if (!match.mapped) {
@@ -217,15 +228,6 @@ int SamFileParser::consume_sam(vector<MATCH> &all_reads,
             else
                 unmapped_weight_sum++;
             continue;
-        }
-
-        if (!match.parity) {
-            reads_dict[match.query].first = true;  // This is a forward read
-            reads_dict[match.query].third++;
-        }
-        else {
-            reads_dict[match.query].second = true;  // This is a reverse read
-            reads_dict[match.query].fourth++;
         }
 
         // store it to process later by looking up the dictionary

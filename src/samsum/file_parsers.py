@@ -67,7 +67,7 @@ def fasta_seq_lengths_ext(fasta_file: str, min_seq_length=0) -> dict():
     return seq_lengths_map
 
 
-def write_summary_table(references: dict, output_table: str, samsum_exp: str, unmapped_reads: int, sep=",") -> None:
+def write_summary_table(references: dict, output_table: str, samsum_exp: str, unmapped_reads: float, sep=",") -> None:
     """
     Writes the output file most people care about - the table summarizing abundance metrics for each reference sequence.
     Takes a dictionary of sequence names indexing their RefSequence instances and writes specific data for each.
@@ -82,10 +82,10 @@ def write_summary_table(references: dict, output_table: str, samsum_exp: str, un
     :param sep: Field separator to use. The default is a comma.
     :return: None
     """
-    header = ["QueryName", "RefSequence", "ProportionCovered", "Coverage", "Reads", "RPKM", "FPKM", "TPM"]
+    header = ["QueryName", "RefSequence", "ProportionCovered", "Coverage", "Fragments", "FPKM", "TPM"]
     buffer = sep.join(header) + "\n"
     # Add the unmapped reads data
-    buffer += sep.join([samsum_exp, "UNMAPPED", "NA", "NA", str(unmapped_reads), "NA", "NA", "NA"]) + "\n"
+    buffer += sep.join([samsum_exp, "UNMAPPED", "NA", "NA", str(unmapped_reads), "NA", "NA"]) + "\n"
 
     try:
         ot_handler = open(output_table, 'w')
@@ -96,7 +96,7 @@ def write_summary_table(references: dict, output_table: str, samsum_exp: str, un
     for seq_name in sorted(references, key=lambda x: references[x].tpm, reverse=True):  # type: str
         ref_seq = references[seq_name]  # type: ss_class.RefSequence
         prop_covered = ref_seq.proportion_covered()
-        data_fields = [prop_covered, ref_seq.depth, ref_seq.reads_mapped,
+        data_fields = [prop_covered, ref_seq.depth, ref_seq.weight_total,
                        ref_seq.rpk, ref_seq.fpkm, ref_seq.tpm]
 
         buffer += sep.join([samsum_exp, ref_seq.name] +
