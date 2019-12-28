@@ -2,6 +2,7 @@ __author__ = 'Connor Morgan-Lang'
 
 import logging
 from samsum import utilities as ss_utils
+from samsum import alignment_utils as ss_aln_utils
 
 
 class RefSequence:
@@ -17,6 +18,7 @@ class RefSequence:
         self.fpkm = 0.0
         self.tpm = 0.0
         self.alignments = []
+        self.tiles = []
         return
 
     def get_info(self):
@@ -40,14 +42,65 @@ class RefSequence:
         self.tpm += ref_seq.tpm
         self.alignments += ref_seq.alignments
 
+    def merge_tiles(self) -> None:
+        """
+        Checks for Tile instances with overlapping ranges. Tile instances must have a 'start' and 'end' variable.
+
+        :return: None
+        """
+        i = 0
+        while i < len(self.tiles):
+            tiles = sorted(self.tiles, key=lambda x: x.start)
+            tile_i = tiles[i]  # type: Tile
+            j = i + 1
+            while j < len(tiles):
+                tile_j = tiles[j]  # type: Tile
+                if ss_aln_utils.overlapping_intervals((tile_i.start, tile_i.end), (tile_j.start, tile_j.end)):
+                    # print("Merging:")
+                    # print(tile_i.get_info(), "and", tile_j.get_info())
+                    tile_i.merge(tile_j)
+                    tiles.pop(j)
+                else:
+                    j += 1
+            i += 1
+        return
+
     def proportion_covered(self) -> float:
         """
-        Calculate the proportion of the RefSequence that was covered by mapped reads
+        Calculate the proportion of the RefSequence that was covered by mapped reads.
+
+        The algorithm works as follows:
+            1. For each AlignmentDat instance in self.alignments:
+                bin it into a continuously aligned regions (Tile)
+            2. Merge the Tile instances from step one into the most contiguous possible
+            3. Calculate the combined lengths of Tiles across the reference sequence and divide by its length
+
         :return: Float representing the proportion of the Reference Sequence that was covered
         """
         if self.reads_mapped == 0:
             return 0
-        return (self.rightmost-self.leftmost)/self.length
+        self.tiles.clear()
+        for aln_dat in sorted(self.alignments, key=lambda x: x.start):  # type: AlignmentDat
+            tile = Tile()
+            tile.load_from_alignment_dat(aln_dat)
+            i = 0
+            while i < len(self.tiles):
+                aln_coords = self.tiles[i]  # type: Tile
+                if ss_aln_utils.overlapping_intervals((aln_coords.start, aln_coords.end), (aln_dat.start, aln_dat.end)):
+                    aln_coords = self.tiles.pop(i)
+                    tile.merge(aln_coords)
+                    i = len(self.tiles)  # Increase i to the length of self.tiles to exit while loop
+                i += 1
+            self.tiles.append(tile)
+
+        # Since coordinates are not compared as the tiles are merged the tiles can overlap necessitating a final merge
+        self.merge_tiles()
+
+        # Calculate the combined lengths of all tiles across the reference sequence
+        total_tiled = 0
+        for tile in self.tiles:
+            total_tiled += (tile.end - tile.start)
+        return total_tiled/self.length
 
     def calc_coverage(self) -> None:
         """
@@ -124,19 +177,37 @@ class SAMSumBase:
         return
 
 
-class AlignmentDat:
+class Tile:
+    def __init__(self):
+        self.start = 0
+        self.end = 0
+        self.weight = 0.0
+
+    def get_info(self):
+        return "%d - %d: %f" % (self.start, self.end, self.weight)
+
+    def load_from_alignment_dat(self, aln_dat):
+        self.start = aln_dat.start
+        self.end = aln_dat.end
+        self.weight = aln_dat.weight
+
+    def merge(self, another):
+        self.start = min(self.start, another.start)
+        self.end = max(self.end, another.end)
+        self.weight += another.weight
+
+
+class AlignmentDat(Tile):
     """
     A class that stores alignment information
     """
     def __init__(self, query_name: str) -> None:
+        super().__init__()
         self.query = query_name
         self.ref = ""
         self.cigar = ""
-        self.start = 0
-        self.end = 0
         self.read_length = 0
         self.percent_id = 0.0
-        self.weight = 0.0
         return
 
     def decode_cigar(self):

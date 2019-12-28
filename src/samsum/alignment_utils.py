@@ -133,10 +133,19 @@ def proportion_filter(references: dict, p_aln: int) -> float:
     """
     discarded_weight = 0.0
     logging.info("Filtering out reference sequences with coverage below " + str(p_aln) + "%... ")
-    for seq_name in references:
+    for seq_name in sorted(references):
         ref_seq = references[seq_name]  # type: classy.RefSequence
         if 100*ref_seq.proportion_covered() < p_aln:
             discarded_weight += ref_seq.weight_total
             ref_seq.clear_alignments()
     logging.info("done.\n")
     return discarded_weight
+
+
+def overlapping_intervals(coord_set_one, coord_set_two):
+    s_one, e_one = coord_set_one
+    s_two, e_two = coord_set_two
+    if s_one <= s_two <= e_one or s_one <= e_two <= e_one:
+        return True
+    else:
+        return False
