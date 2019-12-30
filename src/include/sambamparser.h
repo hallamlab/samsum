@@ -51,6 +51,7 @@ class SamFileParser: virtual public MatchOutputParser {
         int consume_sam(vector<MATCH> &all_reads,
                         map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> > &reads_dict,
                         float &unmapped_weight_sum,
+                        bool multireads,
                         bool verbose);
         virtual bool nextline(MATCH &match);
         bool getMateInfo(unsigned int i, MATCH &match);

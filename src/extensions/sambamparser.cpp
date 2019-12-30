@@ -157,11 +157,13 @@ bool SamFileParser::nextline(MATCH &match) {
 int SamFileParser::consume_sam(vector<MATCH> &all_reads,
                                 map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> > &reads_dict,
                                 float &unmapped_weight_sum,
+                                bool multireads,
                                 bool show_status) {
     /* Parameters:
       * all_reads: Pointer to a vector of MATCH objects that has yet to be populated
       * reads_dict: Pointer to a map indexed by read-names with QUADRUPLE values that store all reads in the SAM file
       * unmapped_weight_sum: Reference to a float tracking the number of unmapped fragments
+      * multireads: Boolean flag indicating whether reads that have multiple ambiguous mapping positions are used
       * show_stats: Boolean indicating whether the number of reads parsed should be printed to screen
      * Functionality:
       * Basic function for parsing a SAM file.

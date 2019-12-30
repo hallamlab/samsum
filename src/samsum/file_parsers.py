@@ -8,12 +8,13 @@ from samsum import classy as ss_class
 __author__ = 'Connor Morgan-Lang'
 
 
-def sam_parser_ext(sam_file: str, multireads=False, min_mq=0) -> dict():
+def sam_parser_ext(sam_file: str, multireads=False, aln_percent=0, min_mq=0) -> dict():
     """
     Wrapper function for using the _sam_parser extension to rapidly parse SAM files.
 
     :param sam_file: Path to the SAM file to be parsed
     :param multireads: Boolean flag indicating whether reads that have multiple ambiguous mapping positions are used
+    :param aln_percent: The minimum percentage of a read's length that must be aligned to be included.
     :param min_mq: The minimum mapping quality for a read to be included in the analysis (as mapped)
     :return: A dictionary mapping query sequence (read) names to a list of alignment data strings
     """
@@ -22,9 +23,7 @@ def sam_parser_ext(sam_file: str, multireads=False, min_mq=0) -> dict():
         sys.exit(3)
 
     reads_mapped = dict()
-    # TODO: Convert to a generator function so _sam_parser returns chunks in a list of 10,000 read strings
-    # mapping_list = _sam_parser.refseq_read_counts(sam_file, multireads)
-    mapping_list = _sam_module.get_mapped_reads(sam_file, multireads, min_mq)
+    mapping_list = _sam_module.get_mapped_reads(sam_file, multireads, aln_percent, min_mq)
     if not mapping_list:
         logging.error("No alignments were read from SAM file '%s'\n" % sam_file)
         sys.exit(5)

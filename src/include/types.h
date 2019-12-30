@@ -6,25 +6,6 @@
 
 using namespace std;
 
-typedef struct _READ_DATUM {
-    unsigned int start,
-            end;
-    bool multi;
-    std::string name;
-} READ_DATUM;
-
-typedef vector<READ_DATUM> READ_DATA;
-
-typedef struct _CONTIG {
-    /*
-     * L is the length of the contig
-     * M is the list of all reads aligned to the contig with start, end, boolean for multiread and its name
-     */
-    unsigned long L;
-    int hits;
-    READ_DATA M;
-} CONTIG;
-
 
 typedef struct _MATCH {
     /*
@@ -58,10 +39,4 @@ struct QUADRUPLE {
      D fourth;
 };
 
-
-typedef struct _COVERAGE {
-    float coverage;
-    float numreads;
-    unsigned int sequence_length, uncovered_length;
-} COVERAGE;
 #endif //__RPKM_TYPE

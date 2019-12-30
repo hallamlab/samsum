@@ -98,9 +98,10 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
       * Return a list of interleaved `read_name`s and `reference_name, weight, left-most position, CIGAR`
     */
     char * aln_file;  // This could either be a SAM or BAM file
-    int min_length;  // The minimum alignment length
+    bool all_alignments;  // A flag indicating whether secondary and supplementary alignments should be used (True)
+    int aln_percent;  // The minimum alignment length - this currently isn't used here
     int min_map_qual;  // The minimum mapping quality
-    if (!PyArg_ParseTuple(args, "sii", &aln_file, &min_length, &min_map_qual)) {
+    if (!PyArg_ParseTuple(args, "sbii", &aln_file, &all_alignments, &aln_percent, &min_map_qual)) {
         return NULL;
     }
 
@@ -115,7 +116,7 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
     map<std::string, float > multireads;
 
     SamFileParser sam_file(aln_file, "sam");
-    int status = sam_file.consume_sam(mapped_reads, reads_dict, unmapped_weight_sum, verbose);
+    int status = sam_file.consume_sam(mapped_reads, reads_dict, unmapped_weight_sum, all_alignments, verbose);
     if ( status > 0 )
         return mapping_info_py;
 

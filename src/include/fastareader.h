@@ -21,6 +21,4 @@ class FastaReader {
         string getContigsFileName();
 };
 
-unsigned long create_contigs_dictionary(std::string fasta_file, std::map<std::string, CONTIG> &contigs_dictionary);
-
 #endif // __FASTAREADER
