@@ -85,6 +85,7 @@ bool SamFileParser::getMateInfo(unsigned int bitflag, MATCH &match)  {
 
     unsigned int a = bitflag;
     bool orphan = 0;
+    bool non_primary = 0;  // This is True if neither of the non-primary or supplementary alignment bits are set
     a = a >> 2;  // Skip the "read mapped" and "mapped in proper pair" bits
     match.mapped = !(a&1);  // mapped == 1 if the read was mapped b/c the third (0x4) bit isn't set
     orphan = a&1;  // orphan == 0 if the read was unmapped
@@ -105,7 +106,10 @@ bool SamFileParser::getMateInfo(unsigned int bitflag, MATCH &match)  {
             return false;
     }
 
-    a = a >> 4;  // Move to the eleventh (0x2048) "supplementary alignment" bit position
+    a = a >> 1;  // Move to the eighth, "not primary alignment" position
+    non_primary = a&1;  // Should be 0 if it is the primary alignment
+    a = a >> 3;  // Move to the eleventh (0x2048) "supplementary alignment" bit position
+    match.multi = non_primary^(a&1);  // Is a multiread if it is either a non-primary XOR secondary alignment
     match.chimeric = a&1;  // This hints at a possible chimera, but it would have to be validated downstream
     match.singleton = orphan;
     return true;
@@ -143,7 +147,7 @@ bool SamFileParser::nextline(MATCH &match) {
          match.mq = atoi(fields[4]);
          match.cigar = fields[5];
          match.paired = getMateInfo(static_cast<unsigned int>(atoi(fields[1])), match);
-         // TODO: test to ensure the end position is calculated correctly
+         // TODO: test to ensure the end position is calculated correctly. It currently isn't.
          if ( match.parity ) // Read is second in pair and will be aligned right-to-left
             match.end =  match.start - std::string(fields[9]).size();
          else
@@ -211,6 +215,9 @@ int SamFileParser::consume_sam(vector<MATCH> &all_reads,
             p.fourth = 0;
             reads_dict[match.query] = p;
         }
+
+        if (match.multi && !multireads)  // Drop secondary and supplementary alignments
+            continue;
 
         if (!match.parity) {
             reads_dict[match.query].first = true;  // This is a forward read
