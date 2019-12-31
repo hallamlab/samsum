@@ -39,7 +39,7 @@ def test_get_mapped_reads():
     from samsum import _sam_module
     test_sam = utils.get_test_data('pytest_1.sam')
     assert isinstance(test_sam, str)
-    mapping_list = _sam_module.get_mapped_reads(test_sam, False, 0)
+    mapping_list = _sam_module.get_mapped_reads(test_sam, False, 10, 0)
     assert (len(mapping_list) == 16)
     return
 
@@ -93,13 +93,3 @@ def test_proportion_covered(reference_sequence_example):
     assert reference_sequence_example.reads_mapped == 4
     proportion = reference_sequence_example.proportion_covered()
     assert proportion == 0.72
-
-# TODO: Write test to ensure the RefSequence.rightmost doesn't exceed its length from alignment_dat_example.load_sam()
-
-
-def test_output_table():
-    from samsum import classy
-    # TODO: Assert the header and the output rows contain the same number of fields
-    # TODO: Assert the header follows the expected format
-    return
-
