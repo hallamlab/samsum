@@ -42,3 +42,4 @@ CMakeLists.txt
 dist
 *.egg-info
 .tox
+.coverage

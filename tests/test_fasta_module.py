@@ -1,5 +1,4 @@
 from samsum import testing_utils as utils
-from samsum import classy as ss_class
 
 
 def test_ref_sequence_length():
@@ -19,6 +18,6 @@ def test_ref_sequence_length():
     mapped_dict = ss_fp.sam_parser_ext(test_aln, True)
     # Convert the alignment strings returned by the sam_parser_ext into ss_class.AlignmentDat instances
     alignments, num_unmapped, mapped_weight_sum = ss_aln_utils.load_alignments(mapped_dict, 10)
-    for aln_dat in alignments:  # type: ss_class.AlignmentDat
+    for aln_dat in alignments:  # type: samsum.classy.AlignmentDat
         assert aln_dat.end < ref_seq_lengths[aln_dat.ref]
     return
