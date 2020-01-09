@@ -21,3 +21,11 @@ def test_ref_sequence_length():
     for aln_dat in alignments:  # type: samsum.classy.AlignmentDat
         assert aln_dat.end < ref_seq_lengths[aln_dat.ref]
     return
+
+
+def test_fasta_reader():
+    from samsum import file_parsers as ss_fp
+    test_seq = utils.get_test_data("fasta_test.fa")
+    ref_seq_lengths = ss_fp.fasta_seq_lengths_ext(fasta_file=test_seq)
+    assert ref_seq_lengths == {"contig_1": 16, "contig_2": 25}
+    return

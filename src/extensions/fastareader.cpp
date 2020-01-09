@@ -28,11 +28,11 @@ void FastaReader::get_sequence_lengths() {
                 name = extract_sequence_name(name);
                 this->seq_lengths[name] = content.size() ;
                 name.clear();
+                content.clear();
             }
             if( !line.empty() ){
                 name = line.substr(1);
             }
-            content.clear();
         } else if( !name.empty() ){
             if( line.find(' ') != std::string::npos ){ // Invalid sequence--no spaces allowed
                 name.clear();
