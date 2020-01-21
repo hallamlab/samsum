@@ -81,7 +81,9 @@ def write_summary_table(references: dict, output_table: str, samsum_exp: str, un
     :param sep: Field separator to use. The default is a comma.
     :return: None
     """
-    header = ["QueryName", "RefSequence", "ProportionCovered", "Coverage", "Fragments", "FPKM", "TPM", "contig_len", "rpk", "rpk_sum", "denominator"]
+    header = ["QueryName", "RefSequence", "ProportionCovered", "Coverage", "Fragments", "FPKM", "TPM",
+              "contig_len", "rpk", "rpk_sum", "denominator"
+              ]
     buffer = sep.join(header) + "\n"
     # Add the unmapped reads data
     buffer += sep.join([samsum_exp, "UNMAPPED", "NA", "NA", str(unmapped_reads), "NA", "NA"]) + "\n"
