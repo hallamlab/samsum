@@ -128,7 +128,7 @@ def stats(sys_args):
     num_unmapped += ss_aln_utils.proportion_filter(references, args.p_cov)
 
     # Calculate the RPKM, FPKM and TPM for each reference sequence with reads mapped to it
-    ss_aln_utils.calculate_normalization_metrics(references, stats_ss.num_frags)
+    ss_aln_utils.calculate_normalization_metrics(references)
 
     # Write the summary table with each of the above metrics as well as variance for each
     ss_fp.write_summary_table(references, args.output_table,

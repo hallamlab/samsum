@@ -116,6 +116,7 @@ class RefSequence:
 
     def calc_rpk(self, num_reads):
         self.rpk = num_reads / (self.length / 1E3)
+        return
 
     def calc_fpkm(self, num_reads):
         mmr = float(num_reads/1E6)
