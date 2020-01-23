@@ -81,9 +81,7 @@ def write_summary_table(references: dict, output_table: str, samsum_exp: str, un
     :param sep: Field separator to use. The default is a comma.
     :return: None
     """
-    header = ["QueryName", "RefSequence", "ProportionCovered", "Coverage", "Fragments", "FPKM", "TPM",
-              "contig_len", "rpk", "rpk_sum", "denominator"
-              ]
+    header = ["QueryName", "RefSequence", "ProportionCovered", "Coverage", "Fragments", "FPKM", "TPM"]
     buffer = sep.join(header) + "\n"
     # Add the unmapped reads data
     buffer += sep.join([samsum_exp, "UNMAPPED", "NA", "NA", str(unmapped_reads), "NA", "NA"]) + "\n"
@@ -93,18 +91,13 @@ def write_summary_table(references: dict, output_table: str, samsum_exp: str, un
     except IOError:
         logging.error("Unable to open output table '%s' for writing.\n" % output_table)
         sys.exit(3)
-    rpk_sum = 0
-    for seq_name in references:
-        ref_seq = references[seq_name]
-        rpk_sum += ref_seq.rpk
 
-    denom = rpk_sum / 1e6
     for seq_name in sorted(references, key=lambda x: references[x].tpm, reverse=True):  # type: str
         ref_seq = references[seq_name]  # type: ss_class.RefSequence
         prop_covered = ref_seq.proportion_covered()
         data_fields = [prop_covered, ref_seq.depth, ref_seq.weight_total, ref_seq.fpkm,
-                        ref_seq.tpm, ref_seq.length, ref_seq.rpk, rpk_sum, denom
-                        ]
+                        ref_seq.tpm
+                       ]
 
         buffer += sep.join([samsum_exp, ref_seq.name] +
                            [str(round(x, 3)) for x in data_fields]) + "\n"

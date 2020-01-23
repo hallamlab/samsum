@@ -98,14 +98,14 @@ def calculate_normalization_metrics(genome_dict: dict) -> None:
     rpk_sum = 0  # The total reads per kilobase (RPK) of all reference sequences
     for header in sorted(genome_dict.keys()):
         ref_seq = genome_dict[header]  # type: classy.RefSequence
-        ref_seq.calc_rpk(ref_seq.reads_mapped)
+        ref_seq.calc_rpk(ref_seq.weight_total)
         rpk_sum += ref_seq.rpk
 
     for header in sorted(genome_dict.keys()):
         ref_seq = genome_dict[header]  # type: classy.RefSequence
         if ref_seq.weight_total == 0:
             continue
-        ref_seq.calc_fpkm(ref_seq.reads_mapped)
+        ref_seq.calc_fpkm(ref_seq.weight_total)
 
     denominator = rpk_sum / 1E6
     for header in genome_dict.keys():
