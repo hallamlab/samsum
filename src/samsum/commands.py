@@ -4,12 +4,29 @@ __author__ = 'Connor Morgan-Lang'
 import logging
 import samsum
 import numpy
+import resource
+
 import samsum.args as ss_args
 import samsum.classy as ss_class
 import samsum.logger as ss_log
 import samsum.file_parsers as ss_fp
 import samsum.utilities as ss_utils
 import samsum.alignment_utils as ss_aln_utils
+
+
+def memory_limit(p_mem):
+    soft, hard = resource.getrlimit(resource.RLIMIT_AS)
+    resource.setrlimit(resource.RLIMIT_AS, (get_memory() * 1024 / p_mem, hard))
+
+
+def get_memory():
+    with open('/proc/meminfo', 'r') as mem:
+        free_memory = 0
+        for i in mem:
+            sline = i.split()
+            if str(sline[0]) in ('MemFree:', 'Buffers:', 'Cached:'):
+                free_memory += int(sline[1])
+    return free_memory
 
 
 def info(sys_args):
@@ -95,6 +112,7 @@ def stats(sys_args):
     :param sys_args: List of arguments parsed from the command-line.
     :return: None
     """
+
     parser = ss_args.SAMSumArgumentParser(description="Calculate read coverage stats over reference sequences.")
     parser.add_stats_args()
     args = parser.parse_args(sys_args)
@@ -111,31 +129,36 @@ def stats(sys_args):
 
     # Parse the alignments and return the strings of reads mapped to each reference sequence
     mapped_dict = ss_fp.sam_parser_ext(stats_ss.aln_file, args.multireads, args.map_qual)
+    memory_limit(10) # Limitates maximun memory usage to 10% of RAM
+    try:
+        # Convert the alignment strings returned by the sam_parser_ext into ss_class.AlignmentDat instances
+        alignments, num_unmapped, mapped_weight_sum = ss_aln_utils.load_alignments(mapped_dict, args.min_aln)
+        mapped_dict.clear()
 
-    # Convert the alignment strings returned by the sam_parser_ext into ss_class.AlignmentDat instances
-    alignments, num_unmapped, mapped_weight_sum = ss_aln_utils.load_alignments(mapped_dict, args.min_aln)
-    mapped_dict.clear()
+        stats_ss.num_frags = num_unmapped + mapped_weight_sum
+        logging.debug(stats_ss.get_info())
+        ss_aln_utils.load_reference_coverage(references, alignments)
+        alignments.clear()
 
-    stats_ss.num_frags = num_unmapped + mapped_weight_sum
-    logging.debug(stats_ss.get_info())
-    ss_aln_utils.load_reference_coverage(references, alignments)
-    alignments.clear()
+        # Calculate the proportion sequence coverage for each reference sequence
+        ss_aln_utils.calculate_coverage(references)
 
-    # Calculate the proportion sequence coverage for each reference sequence
-    ss_aln_utils.calculate_coverage(references)
+        # Filter out alignments that with either short alignments or are from low-coverage reference sequences
+        num_unmapped += ss_aln_utils.proportion_filter(references, args.p_cov)
 
-    # Filter out alignments that with either short alignments or are from low-coverage reference sequences
-    num_unmapped += ss_aln_utils.proportion_filter(references, args.p_cov)
+        # Calculate the RPKM, FPKM and TPM for each reference sequence with reads mapped to it
+        ss_aln_utils.calculate_normalization_metrics(references)
 
-    # Calculate the RPKM, FPKM and TPM for each reference sequence with reads mapped to it
-    ss_aln_utils.calculate_normalization_metrics(references)
+        # Write the summary table with each of the above metrics as well as variance for each
+        ss_fp.write_summary_table(references, args.output_table,
+                                  ss_utils.file_prefix(stats_ss.aln_file), num_unmapped, args.sep)
 
-    # Write the summary table with each of the above metrics as well as variance for each
-    ss_fp.write_summary_table(references, args.output_table,
-                              ss_utils.file_prefix(stats_ss.aln_file), num_unmapped, args.sep)
 
-    # for seq_name in sorted(references):
-    #     ref_seq = references[seq_name]  # type: ss_class.RefSequence
-    #     if ref_seq.reads_mapped != 0:
-    #         print(ref_seq.get_info())
-    return
+    except MemoryError:
+        sys.stderr.write('\n\nERROR: Memory Exception\n')
+        sys.exit(1)
+        # for seq_name in sorted(references):
+        #     ref_seq = references[seq_name]  # type: ss_class.RefSequence
+        #     if ref_seq.reads_mapped != 0:
+        #         print(ref_seq.get_info())
+        return
