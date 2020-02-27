@@ -23,23 +23,26 @@ def load_references(refseq_lengths: dict) -> dict:
     return references
 
 
-def load_alignments(mapped_dict: dict, min_aln: int) -> (list, int, int):
+def load_alignments(mapped_dict: dict, min_aln: int) -> (list, float, float):
     """
+    Converts the alignment strings for each query sequence into AlignmentDat instances. Sums the weights for unmapped
+    (including those that fell below the minimum aligned percentage) and mapped reads.
 
-    :param mapped_dict:
-    :param min_aln:
-    :return:
+    :param mapped_dict: A dictionary containing read names as keys and lists of SAM alignment rows as values. The format
+     of these alignment rows is controlled by _sam_module.get_mapped_reads and must be accepted by AlignmentDat.load_sam
+    :param min_aln: The minimum proportion of a read that must be aligned to a reference sequence to be included.
+     If its aligned percentage falls below this threshold that query's alignment is not appended to the *alignments*
+     list and its weight attribute is added to num_unmapped
+    :return: A list of AlignmentDat instances, total alignment weights for unmapped reads and mapped reads
     """
     alignments = []
-    num_unmapped = 0
-    mapped_total = 0
+    num_unmapped = 0.0
+    mapped_total = 0.0
     logging.info("Instantiating alignment data... ")
 
     for read_name in mapped_dict:
         for aln_dat in mapped_dict[read_name]:
-            map_stats = aln_dat.split("\t")
-            query_seq = classy.AlignmentDat(read_name)
-            query_seq.load_sam(map_stats)
+            query_seq = classy.AlignmentDat(read_name, aln_dat.split("\t"))
             if query_seq.ref == "UNMAPPED":
                 num_unmapped += query_seq.weight
                 continue
@@ -56,30 +59,53 @@ def load_alignments(mapped_dict: dict, min_aln: int) -> (list, int, int):
     return alignments, num_unmapped, mapped_total
 
 
-def load_reference_coverage(references: dict, alignments: list) -> None:
+def load_reference_coverage(refseq_dict: dict, mapped_dict: dict, min_aln: int) -> (float, float):
     """
+    Converts the alignment strings for each query sequence into AlignmentDat instances. Sums the weights for unmapped
+    (including those that fell below the minimum aligned percentage) and mapped reads.
 
-    :param references:
-    :param alignments:
-    :return:
+    :param refseq_dict: A dictionary of RefSequence instances indexed by headers (sequence names)
+    :param mapped_dict: A dictionary containing read names as keys and lists of SAM alignment rows as values. The format
+     of these alignment rows is controlled by _sam_module.get_mapped_reads and must be accepted by AlignmentDat.load_sam
+    :param min_aln: The minimum proportion of a read that must be aligned to a reference sequence to be included.
+     If its aligned percentage falls below this threshold that query's alignment is not appended to the *alignments*
+     list and its weight attribute is added to num_unmapped
+    :return: Total alignment weights for unmapped reads and mapped reads
     """
     logging.info("Associating read alignments with their respective reference sequences... ")
+    num_unmapped = 0.0
+    mapped_total = 0.0
 
-    for aln in alignments:  # type: classy.AlignmentDat
-        if aln.ref not in references:
-            logging.error("Reference sequence from SAM file not found in FASTA: %s\n" % aln.ref)
-            sys.exit(3)
-        ref_seq = references[aln.ref]  # type: classy.RefSequence
-        ref_seq.reads_mapped += 1
-        ref_seq.weight_total += aln.weight
-        if aln.start < ref_seq.leftmost:
-            ref_seq.leftmost = aln.start
-        if aln.end > ref_seq.rightmost:
-            ref_seq.rightmost = aln.end
-        ref_seq.alignments.append(aln)
+    for read_name in mapped_dict:
+        for aln_dat in mapped_dict[read_name]:
+            query_seq = classy.AlignmentDat(read_name, aln_dat.split("\t"))
+
+            if query_seq.ref == "UNMAPPED":
+                num_unmapped += query_seq.weight
+                continue
+
+            if 100 * (query_seq.end - query_seq.start) / query_seq.read_length < min_aln:
+                num_unmapped += query_seq.weight
+                continue
+
+            try:
+                ref_seq = refseq_dict[query_seq.ref]  # type: classy.RefSequence
+            except KeyError:
+                logging.error("Reference sequence from SAM file not found in FASTA: %s\n" % query_seq.ref)
+                sys.exit(3)
+
+            if query_seq.start < ref_seq.leftmost:
+                ref_seq.leftmost = query_seq.start
+            if query_seq.end > ref_seq.rightmost:
+                ref_seq.rightmost = query_seq.end
+            ref_seq.alignments.append(query_seq)
+
+            ref_seq.reads_mapped += 1
+            ref_seq.weight_total += query_seq.weight
+            mapped_total += query_seq.weight
 
     logging.info("done.\n")
-    return
+    return num_unmapped, mapped_total
 
 
 def calculate_normalization_metrics(genome_dict: dict) -> None:
@@ -129,7 +155,7 @@ def proportion_filter(references: dict, p_aln: int) -> float:
     Removes all read alignments from a RefSequence with too little coverage, controlled by p_aln.
     The RefSequence.weight_total is then added to the discarded_weight, to be added to num_unmapped
 
-    :param references: A dictionary of RefSeq instances indexed by headers (sequence names)
+    :param references: A dictionary of RefSequence instances indexed by headers (sequence names)
     :param p_aln: The minimum percentage of the reference sequence required to be covered by reads
     :return: The summed weight of each of the reads that were removed from low-coverage RefSequences
     """

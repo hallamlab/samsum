@@ -68,19 +68,14 @@ def ref_sequence_abundances(aln_file: str, seq_file: str, map_qual=0, p_cov=50, 
     # Parse the alignments and return the strings of reads mapped to each reference sequence
     mapped_dict = ss_fp.sam_parser_ext(aln_file, multireads, map_qual)
 
-    # Convert the alignment strings returned by the sam_parser_ext into ss_class.AlignmentDat instances
-    alignments, num_unmapped, mapped_weight_sum = ss_aln_utils.load_alignments(mapped_dict, min_aln)
+    ss_aln_utils.load_reference_coverage(refseq_dict=references, mapped_dict=mapped_dict, min_aln=min_aln)
     mapped_dict.clear()
-
-    num_frags = num_unmapped + mapped_weight_sum
-    ss_aln_utils.load_reference_coverage(references, alignments)
-    alignments.clear()
 
     # Calculate the proportion sequence coverage for each reference sequence
     ss_aln_utils.calculate_coverage(references)
 
     # Filter out alignments that with either short alignments or are from low-coverage reference sequences
-    num_unmapped += ss_aln_utils.proportion_filter(references, p_cov)
+    ss_aln_utils.proportion_filter(references, p_cov)
 
     # Calculate the RPKM, FPKM and TPM for each reference sequence with reads mapped to it
     ss_aln_utils.calculate_normalization_metrics(references)
@@ -112,14 +107,12 @@ def stats(sys_args):
     # Parse the alignments and return the strings of reads mapped to each reference sequence
     mapped_dict = ss_fp.sam_parser_ext(stats_ss.aln_file, args.multireads, args.map_qual)
 
-    # Convert the alignment strings returned by the sam_parser_ext into ss_class.AlignmentDat instances
-    alignments, num_unmapped, mapped_weight_sum = ss_aln_utils.load_alignments(mapped_dict, args.min_aln)
-    mapped_dict.clear()
-
-    stats_ss.num_frags = num_unmapped + mapped_weight_sum
     logging.debug(stats_ss.get_info())
-    ss_aln_utils.load_reference_coverage(references, alignments)
-    alignments.clear()
+    num_unmapped, mapped_weight_sum = ss_aln_utils.load_reference_coverage(refseq_dict=references,
+                                                                           mapped_dict=mapped_dict,
+                                                                           min_aln=args.min_aln)
+    mapped_dict.clear()
+    stats_ss.num_frags = num_unmapped + mapped_weight_sum
 
     # Calculate the proportion sequence coverage for each reference sequence
     ss_aln_utils.calculate_coverage(references)

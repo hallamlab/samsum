@@ -106,6 +106,7 @@ class RefSequence:
         """
         Calculate a 'dumb' coverage value of simply the number of base-pairs mapped
         (by summing the number of bp contained in the reads) and dividing by the length of sequence (RefSequence.length)
+
         :return: None
         """
         bases_mapped = 0
@@ -202,13 +203,14 @@ class AlignmentDat(Tile):
     """
     A class that stores alignment information
     """
-    def __init__(self, query_name: str) -> None:
+    def __init__(self, query_name: str, alignment_fields: list) -> None:
         super().__init__()
         self.query = query_name
         self.ref = ""
         self.cigar = ""
         self.read_length = 0
         self.percent_id = 0.0
+        self.load_sam(alignment_fields)
         return
 
     def decode_cigar(self):
@@ -235,6 +237,7 @@ class AlignmentDat(Tile):
     def load_sam(self, aln_fields: list) -> None:
         """
         Function for loading a string parsed from SAM alignments and is returned from _sam_module.get_mapped_reads
+
         :param aln_fields: A list with various fields from a SAM file controlled by _sam_module.get_mapped_reads
         :return: None
         """

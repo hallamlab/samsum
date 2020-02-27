@@ -8,7 +8,7 @@ from samsum import classy as ss_class
 __author__ = 'Connor Morgan-Lang'
 
 
-def sam_parser_ext(sam_file: str, multireads=False, aln_percent=0, min_mq=0) -> dict():
+def sam_parser_ext(sam_file: str, multireads=False, aln_percent=0, min_mq=0) -> dict:
     """
     Wrapper function for using the _sam_parser extension to rapidly parse SAM files.
 
@@ -38,9 +38,10 @@ def sam_parser_ext(sam_file: str, multireads=False, aln_percent=0, min_mq=0) -> 
     return reads_mapped
 
 
-def fasta_seq_lengths_ext(fasta_file: str, min_seq_length=0) -> dict():
+def fasta_seq_lengths_ext(fasta_file: str, min_seq_length=0) -> dict:
     """
     Function for calculating the lengths of all sequences in a FASTA file.
+
     :param fasta_file: Path to a FASTA file to be parsed
     :param min_seq_length: The minimum length for a reference sequence to be included
     :return: A dictionary of sequence lengths indexed by their respective sequence names
@@ -95,9 +96,7 @@ def write_summary_table(references: dict, output_table: str, samsum_exp: str, un
     for seq_name in sorted(references, key=lambda x: references[x].tpm, reverse=True):  # type: str
         ref_seq = references[seq_name]  # type: ss_class.RefSequence
         prop_covered = ref_seq.proportion_covered()
-        data_fields = [prop_covered, ref_seq.depth, ref_seq.weight_total, ref_seq.fpkm,
-                        ref_seq.tpm
-                       ]
+        data_fields = [prop_covered, ref_seq.depth, ref_seq.weight_total, ref_seq.fpkm, ref_seq.tpm]
 
         buffer += sep.join([samsum_exp, ref_seq.name] +
                            [str(round(x, 3)) for x in data_fields]) + "\n"
