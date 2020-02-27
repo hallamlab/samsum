@@ -21,7 +21,7 @@ Use '-h' to get subcommand-specific help, e.g.
 
 def memory_limit():
     soft, hard = resource.getrlimit(resource.RLIMIT_AS)
-    resource.setrlimit(resource.RLIMIT_AS, (get_memory() * 1024 / 2, hard))
+    resource.setrlimit(resource.RLIMIT_AS, (get_memory() * 1024 / 10, hard))
 
 def get_memory():
     with open('/proc/meminfo', 'r') as mem:
@@ -54,7 +54,7 @@ def main():
 
 
 if __name__ == '__main__':
-    memory_limit() # Limitates maximun memory usage to 25% of RAM
+    memory_limit() # Limitates maximun memory usage to 10% of RAM
     try:
         main()
     except MemoryError:
