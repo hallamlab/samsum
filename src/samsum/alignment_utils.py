@@ -32,8 +32,7 @@ def load_alignments(mapped_dict: dict, min_aln: int) -> (list, int, int):
     """
     alignments = []
     num_unmapped = 0
-    mapped_sum = 0
-
+    mapped_total = 0
     logging.info("Instantiating alignment data... ")
 
     for read_name in mapped_dict:
@@ -50,10 +49,11 @@ def load_alignments(mapped_dict: dict, min_aln: int) -> (list, int, int):
                 num_unmapped += query_seq.weight
                 continue
             alignments.append(query_seq)
-            mapped_sum += query_seq.weight
+            mapped_total += query_seq.weight
+
     logging.info("done.\n")
 
-    return alignments, num_unmapped, mapped_sum
+    return alignments, num_unmapped, mapped_total
 
 
 def load_reference_coverage(references: dict, alignments: list) -> None:
@@ -82,7 +82,7 @@ def load_reference_coverage(references: dict, alignments: list) -> None:
     return
 
 
-def calculate_normalization_metrics(genome_dict: dict, sampled_reads: int) -> None:
+def calculate_normalization_metrics(genome_dict: dict) -> None:
     """
     Calculates the normalized abundance values for each header's RefSeq instance in genome_dict
         1. Reads per kilobase (RPK) is calculated using the reference sequence's length and number of reads (provided
@@ -93,17 +93,19 @@ def calculate_normalization_metrics(genome_dict: dict, sampled_reads: int) -> No
         2. Transcripts per million (TPM) is calculated similarly to FPKM but the order of operations is different.
 
     :param genome_dict: A dictionary of RefSeq instances indexed by headers (sequence names)
-    :param sampled_reads: The number of reads sequenced (not aligned). Required for normalizing by sequencing depth
     :return: None
     """
     rpk_sum = 0  # The total reads per kilobase (RPK) of all reference sequences
     for header in sorted(genome_dict.keys()):
         ref_seq = genome_dict[header]  # type: classy.RefSequence
+        ref_seq.calc_rpk(ref_seq.weight_total)
+        rpk_sum += ref_seq.rpk
+
+    for header in sorted(genome_dict.keys()):
+        ref_seq = genome_dict[header]  # type: classy.RefSequence
         if ref_seq.weight_total == 0:
             continue
-        ref_seq.calc_fpkm(sampled_reads)
-        ref_seq.rpk = sampled_reads/(ref_seq.length/1E3)
-        rpk_sum += ref_seq.rpk
+        ref_seq.calc_fpkm(ref_seq.weight_total)
 
     denominator = rpk_sum / 1E6
     for header in genome_dict.keys():

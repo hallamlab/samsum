@@ -95,7 +95,9 @@ def write_summary_table(references: dict, output_table: str, samsum_exp: str, un
     for seq_name in sorted(references, key=lambda x: references[x].tpm, reverse=True):  # type: str
         ref_seq = references[seq_name]  # type: ss_class.RefSequence
         prop_covered = ref_seq.proportion_covered()
-        data_fields = [prop_covered, ref_seq.depth, ref_seq.weight_total, ref_seq.fpkm, ref_seq.tpm]
+        data_fields = [prop_covered, ref_seq.depth, ref_seq.weight_total, ref_seq.fpkm,
+                        ref_seq.tpm
+                       ]
 
         buffer += sep.join([samsum_exp, ref_seq.name] +
                            [str(round(x, 3)) for x in data_fields]) + "\n"
