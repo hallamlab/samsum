@@ -98,10 +98,11 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
       * Return a list of interleaved `read_name`s and `reference_name, weight, left-most position, CIGAR`
     */
     char * aln_file;  // This could either be a SAM or BAM file
+    char * index;
     bool all_alignments;  // A flag indicating whether secondary and supplementary alignments should be used (True)
     int aln_percent;  // The minimum alignment length - this currently isn't used here
     int min_map_qual;  // The minimum mapping quality
-    if (!PyArg_ParseTuple(args, "sbii", &aln_file, &all_alignments, &aln_percent, &min_map_qual)) {
+    if (!PyArg_ParseTuple(args, "sbiis", &aln_file, &all_alignments, &aln_percent, &min_map_qual, &index)) {
         return NULL;
     }
 
@@ -147,13 +148,14 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
 
     // Reformat the MATCH objects into the strings required
     if ( verbose )
-        cout << "Formatting alignment strings... ";
-    vector<std::string> query_info = format_matches_for_service(mapped_reads);
+        cout << "Formatting alignment strings... " << std::flush;
+    vector<std::string> query_info = format_matches_for_service(mapped_reads, index);
     if ( verbose )
-        cout << "done." << endl;
+        cout << "done." << endl << std::flush;
+    mapped_reads.clear();
 
     if ( verbose )
-        cout << "Converting strings to Python objects... ";
+        cout << "Converting strings to Python objects... " << std::flush;
     long x = 0;
     vector<std::string>::iterator qi_it;
     std::string str;
@@ -163,7 +165,7 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
             x++;
     }
     if ( verbose )
-        cout << "done." << endl;
+        cout << "done." << endl << std::flush;
     if (x > 0) {
         sprintf(sam_file.buf, "WARNING: Failed to append %ld/%ld items into mapped reads list.", x, query_info.size());
         cerr << sam_file.buf << endl;

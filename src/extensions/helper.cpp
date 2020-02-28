@@ -2,7 +2,7 @@
 using namespace std;
 
 
-vector<std::string> format_matches_for_service(vector<MATCH> &all_reads) {
+vector<std::string> format_matches_for_service(vector<MATCH> &all_reads, char* &index) {
     /* Parameters:
       * all_reads: A vector populated by MATCH instances that contain information to be converted into strings
      * Functionality:
@@ -15,8 +15,14 @@ vector<std::string> format_matches_for_service(vector<MATCH> &all_reads) {
     for ( vector<MATCH>::iterator it = all_reads.begin(); it != all_reads.end(); it++)  {
         if ( it->parity > 1 )
             cout << it->query << " " <<  it->start << " " << it->cigar.c_str() << " " << it->parity << " " << it->w << endl;
-        query_info.push_back(it->query);
-        sprintf(buf, "%s\t%d\t%s\t%d\t%f", it->subject.c_str(), it->start, it->cigar.c_str(), it->parity, it->w);
+        if ( strcmp(index, "q") == 0 ) {
+            query_info.push_back(it->query);
+            sprintf(buf, "%s\t%d\t%s\t%d\t%f", it->subject.c_str(), it->start, it->cigar.c_str(), it->parity, it->w);
+        }
+        if ( strcmp(index, "r") == 0 ) {
+            query_info.push_back(it->subject);
+            sprintf(buf, "%s\t%d\t%s\t%d\t%f", it->query.c_str(), it->start, it->cigar.c_str(), it->parity, it->w);
+        }
         query_info.push_back(buf);
     }
 
