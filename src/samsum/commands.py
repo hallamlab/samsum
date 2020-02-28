@@ -71,9 +71,6 @@ def ref_sequence_abundances(aln_file: str, seq_file: str, map_qual=0, p_cov=50, 
     ss_aln_utils.load_reference_coverage(refseq_dict=references, mapped_dict=mapped_dict, min_aln=min_aln)
     mapped_dict.clear()
 
-    # Calculate the proportion sequence coverage for each reference sequence
-    ss_aln_utils.calculate_coverage(references)
-
     # Filter out alignments that with either short alignments or are from low-coverage reference sequences
     ss_aln_utils.proportion_filter(references, p_cov)
 
@@ -113,9 +110,6 @@ def stats(sys_args):
                                                                            min_aln=args.min_aln)
     mapped_dict.clear()
     stats_ss.num_frags = num_unmapped + mapped_weight_sum
-
-    # Calculate the proportion sequence coverage for each reference sequence
-    ss_aln_utils.calculate_coverage(references)
 
     # Filter out alignments that with either short alignments or are from low-coverage reference sequences
     num_unmapped += ss_aln_utils.proportion_filter(references, args.p_cov)

@@ -76,23 +76,24 @@ def load_reference_coverage(refseq_dict: dict, mapped_dict: dict, min_aln: int) 
     num_unmapped = 0.0
     mapped_total = 0.0
 
-    for read_name in mapped_dict:
-        for aln_dat in mapped_dict[read_name]:
-            query_seq = classy.AlignmentDat(read_name, aln_dat.split("\t"))
-
-            if query_seq.ref == "UNMAPPED":
-                num_unmapped += query_seq.weight
+    for refseq_name, alignment_data in mapped_dict.items():
+        try:
+            ref_seq = refseq_dict[refseq_name]  # type: classy.RefSequence
+        except KeyError:
+            if refseq_name != "UNMAPPED":
+                logging.error("Reference sequence from SAM file not found in FASTA: %s\n" % refseq_name)
+                sys.exit(3)
+            else:
+                unmapped_dat = classy.AlignmentDat(refseq_name, alignment_data.pop().split("\t"))
+                num_unmapped += unmapped_dat.weight
                 continue
+
+        while alignment_data:  # type: list
+            query_seq = classy.AlignmentDat(refseq_name, alignment_data.pop().split("\t"))
 
             if 100 * (query_seq.end - query_seq.start) / query_seq.read_length < min_aln:
                 num_unmapped += query_seq.weight
                 continue
-
-            try:
-                ref_seq = refseq_dict[query_seq.ref]  # type: classy.RefSequence
-            except KeyError:
-                logging.error("Reference sequence from SAM file not found in FASTA: %s\n" % query_seq.ref)
-                sys.exit(3)
 
             if query_seq.start < ref_seq.leftmost:
                 ref_seq.leftmost = query_seq.start
@@ -103,6 +104,9 @@ def load_reference_coverage(refseq_dict: dict, mapped_dict: dict, min_aln: int) 
             ref_seq.reads_mapped += 1
             ref_seq.weight_total += query_seq.weight
             mapped_total += query_seq.weight
+        ref_seq.calc_coverage()
+        ref_seq.covered = ref_seq.proportion_covered()
+        ref_seq.alignments.clear()
 
     logging.info("done.\n")
     return num_unmapped, mapped_total
@@ -141,15 +145,6 @@ def calculate_normalization_metrics(genome_dict: dict) -> None:
     return
 
 
-def calculate_coverage(genome_dict: dict) -> None:
-    for seq_name in genome_dict:  # type: str
-        ref_seq = genome_dict[seq_name]  # type: classy.RefSequence
-        if ref_seq.reads_mapped == 0:
-            continue
-        ref_seq.calc_coverage()
-    return
-
-
 def proportion_filter(references: dict, p_aln: int) -> float:
     """
     Removes all read alignments from a RefSequence with too little coverage, controlled by p_aln.
@@ -163,7 +158,7 @@ def proportion_filter(references: dict, p_aln: int) -> float:
     logging.info("Filtering out reference sequences with coverage below " + str(p_aln) + "%... ")
     for seq_name in sorted(references):
         ref_seq = references[seq_name]  # type: classy.RefSequence
-        if 100*ref_seq.proportion_covered() < p_aln:
+        if 100*ref_seq.covered < p_aln:
             discarded_weight += ref_seq.weight_total
             ref_seq.clear_alignments()
     logging.info("done.\n")

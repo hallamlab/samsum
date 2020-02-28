@@ -13,6 +13,7 @@ class RefSequence:
         self.rightmost = 0
         self.reads_mapped = 0
         self.depth = 0.0
+        self.covered = 0.0
         self.weight_total = 0.0
         self.rpk = 0.0
         self.fpkm = 0.0
@@ -203,10 +204,10 @@ class AlignmentDat(Tile):
     """
     A class that stores alignment information
     """
-    def __init__(self, query_name: str, alignment_fields: list) -> None:
+    def __init__(self, refseq_name: str, alignment_fields: list) -> None:
         super().__init__()
-        self.query = query_name
-        self.ref = ""
+        self.ref = refseq_name
+        self.query = ""
         self.cigar = ""
         self.read_length = 0
         self.percent_id = 0.0
@@ -242,7 +243,7 @@ class AlignmentDat(Tile):
         :return: None
         """
         fields = aln_fields
-        self.ref = fields[0]
+        self.query = fields[0]
         self.start = int(fields[1])
         self.cigar = fields[2]
         aln_len = self.decode_cigar()

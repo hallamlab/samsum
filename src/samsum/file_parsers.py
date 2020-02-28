@@ -23,18 +23,21 @@ def sam_parser_ext(sam_file: str, multireads=False, aln_percent=0, min_mq=0) -> 
         sys.exit(3)
 
     reads_mapped = dict()
-    mapping_list = _sam_module.get_mapped_reads(sam_file, multireads, aln_percent, min_mq)
+    mapping_list = iter(_sam_module.get_mapped_reads(sam_file, multireads, aln_percent, min_mq, 'r'))
     if not mapping_list:
         logging.error("No alignments were read from SAM file '%s'\n" % sam_file)
         sys.exit(5)
 
-    tmp_it = iter(mapping_list)
-    for query, aln_dat in zip(tmp_it, tmp_it):
+    logging.info("Zipping query names and alignment data... ")
+    for ref, aln_dat in zip(mapping_list, mapping_list):
         try:
-            reads_mapped[query].append(aln_dat)
+            reads_mapped[ref].append(aln_dat)
         except KeyError:
-            reads_mapped[query] = [aln_dat]
+            reads_mapped[ref] = [aln_dat]
+    logging.info("done.\n")
+
     logging.debug("%d of unique read names returned by _sam_module.\n" % len(reads_mapped))
+
     return reads_mapped
 
 
@@ -95,8 +98,7 @@ def write_summary_table(references: dict, output_table: str, samsum_exp: str, un
 
     for seq_name in sorted(references, key=lambda x: references[x].tpm, reverse=True):  # type: str
         ref_seq = references[seq_name]  # type: ss_class.RefSequence
-        prop_covered = ref_seq.proportion_covered()
-        data_fields = [prop_covered, ref_seq.depth, ref_seq.weight_total, ref_seq.fpkm, ref_seq.tpm]
+        data_fields = [ref_seq.covered, ref_seq.depth, ref_seq.weight_total, ref_seq.fpkm, ref_seq.tpm]
 
         buffer += sep.join([samsum_exp, ref_seq.name] +
                            [str(round(x, 3)) for x in data_fields]) + "\n"
