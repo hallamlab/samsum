@@ -1,6 +1,6 @@
 language: python
 os: linux
-dist: xenial
+dist: bionic
 
 branches:
   only:
@@ -10,10 +10,11 @@ before_script: pip install tox-travis
 
 python:
   - "3.5"
-  - "3.6"
-  - "pypy3"
+#  - "3.6"
+#  - "pypy3"
 
 install:
+  - python -mpip install -r requirements.txt
   - python -mpip install --progress-bar=off tox
   - virtualenv --version
   - easy_install --version
