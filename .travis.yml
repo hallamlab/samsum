@@ -6,6 +6,11 @@ branches:
   only:
     - master
 
+#cache:
+#  directories:
+#    - "$HOME/.cache/pip"
+#    - "target"
+
 before_script: pip install tox-travis
 
 python:
@@ -25,29 +30,36 @@ install:
 script:
   - tox -v
 
-jobs:
-  include:
-    - &wheel
-      stage: build wheel and send to github releases
-      python: 3.7
-      services:
-        - docker
-      env:
-        - CIBW_BUILD='cp37-*'
-        - CIBW_SKIP='*-manylinux_i686'
-        - CIBW_ENVIRONMENT_MACOS='MACOSX_DEPLOYMENT_TARGET=10.11'
-      before_script: skip
-      script:
-        - python -m pip install -U pip setuptools
-        - python -m pip install cibuildwheel==1.1.0
-        - python -m cibuildwheel --output-dir wheelhouse
-    - <<: *wheel
-      os: osx
-      osx_image: xcode10.1
-      language: shell
-
-stages:
-  - wheel
+#jobs:
+#  include:
+#    - &check
+#      stage: check
+#      python: 3.7
+#      env:
+#        - PYTHONDEVMODE=1
+#  include:
+#    - &wheel
+#      stage: build wheel and send to github releases
+#      python: 3.7
+#      services:
+#        - docker
+#      env:
+#        - CIBW_BUILD='cp37-*'
+#        - CIBW_SKIP='*-manylinux_i686'
+#        - CIBW_ENVIRONMENT_MACOS='MACOSX_DEPLOYMENT_TARGET=10.11'
+#      before_script: skip
+#      script:
+#        - python -m pip install -U pip setuptools
+#        - python -m pip install cibuildwheel==1.1.0
+#        - python -m cibuildwheel --output-dir wheelhouse
+#    - <<: *wheel
+#      os: osx
+#      osx_image: xcode10.1
+#      language: shell
+#
+#stages:
+#  - check
+#  - wheel
 
 notifications:
   email:
