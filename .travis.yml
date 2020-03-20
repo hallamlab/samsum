@@ -18,6 +18,7 @@ deploy:
   on:
     branch: master
   skip_existing: true
+  distributions: "sdist bdist_wheel"
   file_glob: true
   file: wheelhouse/samsum*.whl
   cleanup: false
