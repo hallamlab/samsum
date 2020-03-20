@@ -18,6 +18,7 @@ deploy:
   on:
     branch: master
   skip_existing: true
+  distributions: "sdist bdist_wheel"
   cleanup: false
 
 env:
@@ -67,5 +68,5 @@ after_success:
 - ls wheelhouse/
 - |
   if [[ $TRAVIS_TAG ]]; then
-    python3 -m twine upload
+    python3 -m twine upload --skip-existing wheelhouse/*.whl
   fi
