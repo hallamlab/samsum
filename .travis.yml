@@ -2,11 +2,6 @@ language: python
 os: linux
 dist: bionic
 
-python:
-  - '3.6'
-  - '3.7'
-#  - '3.8'
-
 branches:
   only:
   - master
@@ -27,7 +22,7 @@ deploy:
 
 env:
   global:
-  - CIBW_SKIP="cp27-*"
+  - CIBW_SKIP="cp27-* pp27-* *-manylinux_i686"
   - TWINE_USERNAME=__token__
   # Note: TWINE_PASSWORD is set to an API token in Travis settings
   - PIP="python3 -m pip"
@@ -72,5 +67,5 @@ after_success:
 - ls wheelhouse/
 - |
   if [[ $TRAVIS_TAG ]]; then
-    python3 -m twine upload --skip-existing wheelhouse/*.whl
+    python3 -m twine upload
   fi
