@@ -4,6 +4,8 @@ dist: bionic
 
 python:
   - '3.6'
+#  - '3.7'
+#  - '3.8'
 
 branches:
   only:
@@ -22,7 +24,6 @@ deploy:
     branch: master
   skip_existing: true
   cleanup: false
-  skip_cleanup: true
 
 env:
   global:
@@ -34,16 +35,26 @@ env:
   - TWINE_REPOSITORY_URL=https://test.pypi.org/legacy/
   - TRAVIS_TAG=${TRAVIS_TAG:-$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)}
 
+jobs:
+  include:
+  - services: docker
+  - os: osx
+    language: shell
+
 before_install:
-- sudo apt -y install gcc dpkg-dev curl zip git libz-dev default-jdk python3-distutils
-  python3-dev
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+      git -C "$(brew --repo)" remote set-url origin https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/brew.git;
+    fi
+  - if [ "$TRAVIS_OS_NAME" != "osx" ]; then
+      sudo apt -y install gcc dpkg-dev curl zip git libz-dev python3-distutils python3-dev
+    fi
 
 install:
 - "$PIP install -r requirements.txt"
 - "$PIP install -U setuptools"
 - "$PIP install cibuildwheel==1.1.0"
 - "$PIP install --upgrade pip"
-- "$PIP  install tox"
+- "$PIP install tox"
 - "$PIP --version"
 - "$PIP --version"
 
@@ -51,12 +62,6 @@ script:
 - tox -v
 - python3 -m cibuildwheel --output-dir wheelhouse
 - python3 setup.py sdist --dist-dir wheelhouse
-
-jobs:
-  include:
-  - services: docker
-  - os: osx
-    language: shell
 
 notifications:
   email:
