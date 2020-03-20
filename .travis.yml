@@ -4,7 +4,7 @@ dist: bionic
 
 python:
   - '3.6'
-#  - '3.7'
+  - '3.7'
 #  - '3.8'
 
 branches:
@@ -56,7 +56,6 @@ install:
   - "$PIP install --upgrade pip"
   - "$PIP install twine"
   - "$PIP install tox"
-  - "$PIP --version"
   - "$PIP --version"
 
 script:

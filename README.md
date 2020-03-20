@@ -3,6 +3,7 @@ A light-weight python package for summarizing sequence coverage from SAM and BAM
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/4928c9ac353b4bdb93e351c0715a9fa1)](https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=hallamlab/samsum&amp;utm_campaign=Badge_Grade)
 [![codecov](https://codecov.io/gh/hallamlab/samsum/branch/master/graph/badge.svg?token=q6UhWcnlS5)](https://codecov.io/gh/hallamlab/samsum)
+[![Build Status](https://travis-ci.com/hallamlab/samsum.svg?branch=master)](https://travis-ci.com/hallamlab/samsum)
 
 ## Installation
 
