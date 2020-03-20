@@ -46,7 +46,7 @@ before_install:
       git -C "$(brew --repo)" remote set-url origin https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/brew.git;
     fi
   - if [ "$TRAVIS_OS_NAME" != "osx" ]; then
-      sudo apt -y install gcc dpkg-dev curl zip git libz-dev python3-distutils python3-dev
+      sudo apt -y install gcc dpkg-dev curl zip git libz-dev python3-distutils python3-dev;
     fi
 
 install:
