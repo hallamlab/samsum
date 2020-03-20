@@ -50,13 +50,14 @@ before_install:
     fi
 
 install:
-- "$PIP install -r requirements.txt"
-- "$PIP install -U setuptools"
-- "$PIP install cibuildwheel==1.1.0"
-- "$PIP install --upgrade pip"
-- "$PIP install tox"
-- "$PIP --version"
-- "$PIP --version"
+  - "$PIP install -r requirements.txt"
+  - "$PIP install -U setuptools"
+  - "$PIP install cibuildwheel==1.1.0"
+  - "$PIP install --upgrade pip"
+  - "$PIP install twine"
+  - "$PIP install tox"
+  - "$PIP --version"
+  - "$PIP --version"
 
 script:
 - tox -v
@@ -72,6 +73,5 @@ after_success:
 - ls wheelhouse/
 - |
   if [[ $TRAVIS_TAG ]]; then
-    $PIP install twine
     python3 -m twine upload --skip-existing wheelhouse/*.whl
   fi
