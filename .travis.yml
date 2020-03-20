@@ -55,7 +55,4 @@ notifications:
 
 after_success:
 - ls wheelhouse/
-- |
-  if [[ $TRAVIS_TAG ]]; then
-    python3 -m twine upload --skip-existing wheelhouse/*.whl
-  fi
+- python3 -m twine upload --skip-existing wheelhouse/*.whl
