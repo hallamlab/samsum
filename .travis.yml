@@ -10,19 +10,6 @@ before_deploy:
 - git config --local user.name "cmorganl"
 - git config --local user.email "c.morganlang@gmail.com"
 
-deploy:
-  provider: pypi
-  username: __token__
-  password:
-    secure: ojR1vQ4O/dpt/YkgBbi8qpxqR0xP9a7daDjjs0QPXt0JVaRpF22OwTeHmzZFFRmR9HtlAT1caP9WFUjrCvns134vbSdNyoBiNLD3xAz54IICVEMzAv5NTBAZwj6YfwieQatjr2JUYPyB0lo6vynBQK4S9gErMvxpGfTcNKmcoJ/fPTm18jRZWypvaBfAE/wE3MVbBEPf9wTfiMfvYNFRIA3axWvttoKwMfQ+RmeZEDNZPD+dbHkVy48Y4hwcHooa8ILcZdg6u6kKqNf2+MdvYDZ+jsposlT85DNtO58OHJheVryiymgGwNEdrmFmVghxXtiu/3xNYWYrhGf1sQ48c+JdgLKFd/L3HSkAyGjupuP3nX0E953W2XYAqEosTuW3Res0xKgeIjsraDGOzUaZQaE4Lmy/vWc9X1Kx5R/R2VRs0N6qMbkdbqlsziswIEcojVkuk1cQ2QqbE9VTiC3bHeLFtMecn1JoxOSLCIHKhaWt4X9CasyOd6Bsr6PGQ+28w6VmuoNc97EDHOSjI6oNYVPC/wPFC1u+3JD755m6Nsr3UAbMfCXYBey6VNxu74YI9IDw3ct/YIHVVbCuCS2jnPCUouRTJhpc32vxS//4sNeJOoi2XII0vjdaNQBs2hiR7qCvfgM+08PaOd3o1flz3xEaxOc14QgZ5AQQ8+6yZ9k=
-  on:
-    branch: master
-  skip_existing: true
-  distributions: "sdist bdist_wheel"
-  file_glob: true
-  file: wheelhouse/samsum*.whl
-  cleanup: false
-
 env:
   global:
   - CIBW_SKIP="cp27-* pp27-* *-manylinux_i686"
