@@ -1,35 +1,43 @@
 language: python
 os: linux
 dist: bionic
-sudo: true
+
 python:
-- '3.6'
+  - '3.6'
+
 branches:
   only:
   - master
+
 before_deploy:
 - git config --local user.name "cmorganl"
 - git config --local user.email "c.morganlang@gmail.com"
+
 deploy:
   provider: pypi
-  user: __token__
+  username: __token__
   password:
-    secure: gSY9kHG8zC80SrrIV5+Aj/B56A7fx0s+Rsl9Oyzv+VrQEzjKkQfeLM0Tt+NI+ySaLMkmIIST7Qrz+OM5/dwJDDICJUrf2AKgz2BRxBacSCt+RqJEMgMRDYPA7hFKaZlO0xk5ce5WbrCoKqYuGntBkVvcyDozJurU7bhJNz2t2q9Xfx1FJph7POo+hY0+egFdZsLqFtaOglaG4Ynum65gjorKaTJQAJkLuUXTg/gT3QY8aKxfng0fNPj3K74J3vhOvukNQ05hHR62tdSHO5n7EnWDgiqjHJ1wQUszOTlzS8rIq9iczfx2JhcOjYSthUPqKqQYPTXfGR56hZxhjaEmWrM1QKzecci3edoJOtqfuaHPTv2qEcdV57gGAdEuhdNR3Na1OQLkcZODbbdw6a2/RjUUKkIIZoa7WwfrymKlc7RzmUmBsfmbSo0ktTkq5kR4mirWuaDKwRsscb3RW1hemI5sypYnOLJ6CGgwLKxFquwAeD4rlolQ7YSgW6ZeH0KhvvCy6whX1bdepA4j1HN9vHlD/Mvq9sPemrWX1Ya6I9LZKp3maFf8VKQNEodsDc2tkLO9HXhXNw8gkvhQUNc26gHl7tgyualtqIQmWb0b3p/GPVwCO29EhbzWYfCWoe/pQxAybZIzchqX0EQ7rPgEaOG/JWSz98e4uccD/lVZFKU=
+    secure: ojR1vQ4O/dpt/YkgBbi8qpxqR0xP9a7daDjjs0QPXt0JVaRpF22OwTeHmzZFFRmR9HtlAT1caP9WFUjrCvns134vbSdNyoBiNLD3xAz54IICVEMzAv5NTBAZwj6YfwieQatjr2JUYPyB0lo6vynBQK4S9gErMvxpGfTcNKmcoJ/fPTm18jRZWypvaBfAE/wE3MVbBEPf9wTfiMfvYNFRIA3axWvttoKwMfQ+RmeZEDNZPD+dbHkVy48Y4hwcHooa8ILcZdg6u6kKqNf2+MdvYDZ+jsposlT85DNtO58OHJheVryiymgGwNEdrmFmVghxXtiu/3xNYWYrhGf1sQ48c+JdgLKFd/L3HSkAyGjupuP3nX0E953W2XYAqEosTuW3Res0xKgeIjsraDGOzUaZQaE4Lmy/vWc9X1Kx5R/R2VRs0N6qMbkdbqlsziswIEcojVkuk1cQ2QqbE9VTiC3bHeLFtMecn1JoxOSLCIHKhaWt4X9CasyOd6Bsr6PGQ+28w6VmuoNc97EDHOSjI6oNYVPC/wPFC1u+3JD755m6Nsr3UAbMfCXYBey6VNxu74YI9IDw3ct/YIHVVbCuCS2jnPCUouRTJhpc32vxS//4sNeJOoi2XII0vjdaNQBs2hiR7qCvfgM+08PaOd3o1flz3xEaxOc14QgZ5AQQ8+6yZ9k=
   on:
     branch: master
   skip_existing: true
+  cleanup: false
   skip_cleanup: true
+
 env:
   global:
   - CIBW_SKIP="cp27-*"
   - TWINE_USERNAME=__token__
+  # Note: TWINE_PASSWORD is set to an API token in Travis settings
   - PIP="python3 -m pip"
   - TWINE_REPOSITORY=pypi
   - TWINE_REPOSITORY_URL=https://test.pypi.org/legacy/
   - TRAVIS_TAG=${TRAVIS_TAG:-$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)}
+
 before_install:
 - sudo apt -y install gcc dpkg-dev curl zip git libz-dev default-jdk python3-distutils
   python3-dev
+
 install:
 - "$PIP install -r requirements.txt"
 - "$PIP install -U setuptools"
@@ -38,19 +46,23 @@ install:
 - "$PIP  install tox"
 - "$PIP --version"
 - "$PIP --version"
+
 script:
 - tox -v
 - python3 -m cibuildwheel --output-dir wheelhouse
 - python3 setup.py sdist --dist-dir wheelhouse
+
 jobs:
   include:
   - services: docker
   - os: osx
     language: shell
+
 notifications:
   email:
     on_success: never
     on_failure: always
+
 after_success:
 - ls wheelhouse/
 - |
