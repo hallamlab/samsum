@@ -17,7 +17,7 @@ env:
   # Note: TWINE_PASSWORD is set to an API token in Travis settings
   - PIP="python3 -m pip"
   - TWINE_REPOSITORY=pypi
-  - TWINE_REPOSITORY_URL=https://test.pypi.org/legacy/
+  - TWINE_REPOSITORY_URL=https://upload.pypi.org/legacy/
   - TRAVIS_TAG=${TRAVIS_TAG:-$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)}
 
 jobs:
@@ -41,6 +41,7 @@ install:
   - "$PIP install --upgrade pip"
   - "$PIP install twine"
   - "$PIP install tox"
+  - "$PIP install codecov"
   - "$PIP --version"
 
 script:
@@ -54,5 +55,6 @@ notifications:
     on_failure: always
 
 after_success:
+- codecov
 - ls wheelhouse/
 - python3 -m twine upload --skip-existing wheelhouse/*.whl
