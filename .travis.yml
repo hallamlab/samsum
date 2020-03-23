@@ -1,6 +1,10 @@
 language: python
 os: linux
 dist: bionic
+python:
+  - "3.6"
+  - "3.7"
+  - "3.8"
 
 branches:
   only:
@@ -57,8 +61,5 @@ notifications:
     on_failure: always
 
 after_success:
-- if [ "$TRAVIS_OS_NAME" != "osx" ]; then
-    curl -s https://codecov.io/bash | bash;
-  fi
 - ls wheelhouse/
 - python3 -m twine upload --skip-existing wheelhouse/*.whl
