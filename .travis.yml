@@ -46,7 +46,7 @@ install:
 
 script:
   - if [ "$TRAVIS_OS_NAME" != "osx" ]; then
-      tox -vv;
+      tox -v;
     fi
   - python3 -m cibuildwheel --output-dir wheelhouse
   - python3 setup.py sdist --dist-dir wheelhouse
