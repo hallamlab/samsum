@@ -7,15 +7,20 @@ A light-weight python package for summarizing sequence coverage from SAM and BAM
 
 ## Installation
 
-Currently, it is not uploaded to the Python Package Index (PyPI) 
-and needs to be built be being directed to the setup.py file like so:
+Samsum is currently supported on Linux systems and is tested specifically on Ubuntu operating systems
+ (bionic and trusty distributions).
+It is a python package on the Python Package index (PyPI) and can be installed using pip:
+
+```pip install samsum```
+
+You can also install samsum from source by cloning the directory from its GitHub page or downloading a GitHub release.
+
 ```bash
+git clone https://github.com/hallamlab/samsum.git
+cd samsum
 python3 setup.py sdist
 pip install dist/samsum*tar.gz
 ```
-
-Once the package is available on PyPI it will be installed with the command
-`pip install samsum`.
 
 ## Usage
 
