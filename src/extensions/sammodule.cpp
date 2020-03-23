@@ -112,11 +112,15 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
     bool verbose = true;
     vector<MATCH> mapped_reads;
     float unmapped_weight_sum;
+    cout << "Reserving space for mapped reads ";
     mapped_reads.reserve(80000000);
+    cout << "done." << endl;
     map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> > reads_dict;
     map<std::string, float > multireads;
 
+    cout << "Instantiating SAM file";
     SamFileParser sam_file(aln_file, "sam");
+    cout << "done." << endl;
     int status = sam_file.consume_sam(mapped_reads, reads_dict, unmapped_weight_sum, all_alignments, verbose);
     if ( status > 0 )
         return mapping_info_py;
@@ -167,7 +171,7 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
     if ( verbose )
         cout << "done." << endl << std::flush;
     if (x > 0) {
-        sprintf(sam_file.buf, "WARNING: Failed to append %ld/%lu items into mapped reads list.", x, query_info.size());
+        sprintf(sam_file.buf, "WARNING: Failed to append %ld/%zu items into mapped reads list.", x, query_info.size());
         cerr << sam_file.buf << endl;
     }
 
