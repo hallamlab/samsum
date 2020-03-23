@@ -110,15 +110,17 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
     std::cout << "Parsing alignment file " << aln_file << std::endl;
 
     bool verbose = true;
+    std::cout << "Instantiating MATCH vector object... ";
     vector<MATCH> mapped_reads;
+    std::cout << "done." << std::endl << std::flush;
     float unmapped_weight_sum;
-    cout << "Reserving space for mapped reads ";
+    cout << "Reserving space for mapped reads... ";
     mapped_reads.reserve(80000000);
     cout << "done." << endl;
     map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> > reads_dict;
     map<std::string, float > multireads;
 
-    cout << "Instantiating SAM file";
+    cout << "Instantiating SAM file... ";
     SamFileParser sam_file(aln_file, "sam");
     cout << "done." << endl;
     int status = sam_file.consume_sam(mapped_reads, reads_dict, unmapped_weight_sum, all_alignments, verbose);
