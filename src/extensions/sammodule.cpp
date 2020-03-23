@@ -159,7 +159,7 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
     long x = 0;
     vector<std::string>::iterator qi_it;
     std::string str;
-    for (qi_it = query_info.begin(); qi_it != query_info.end(); qi_it++ ) {
+    for (qi_it = query_info.begin(); qi_it != query_info.end(); ++qi_it ) {
         str = *qi_it;
         if (PyList_Append(mapping_info_py, Py_BuildValue("s", str.c_str())) == -1)
             x++;
@@ -167,7 +167,7 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
     if ( verbose )
         cout << "done." << endl << std::flush;
     if (x > 0) {
-        sprintf(sam_file.buf, "WARNING: Failed to append %ld/%ld items into mapped reads list.", x, query_info.size());
+        sprintf(sam_file.buf, "WARNING: Failed to append %ld/%lu items into mapped reads list.", x, query_info.size());
         cerr << sam_file.buf << endl;
     }
 
@@ -175,6 +175,13 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
 }
 
 static PyObject *get_alignment_strings(PyObject *self, PyObject *args) {
+    /* Parameters:
+      * args: A list of arguments received from the Python call that includes the SAM/BAM file, the minimum alignment
+        length, and the minimum mapping quality for filtering.
+     * Functionality:
+      * IN PROGRESS: This will be developed if a need is identified.
+      * Returns the alignment strings directly from the SAM/BAM file with minimal filtering of poor alignments.
+    */
     char * aln_file;  // This could either be a SAM or BAM file
     int min_length;  // The minimum alignment length
     int min_map_qual;  // The minimum mapping quality
@@ -182,7 +189,7 @@ static PyObject *get_alignment_strings(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    PyObject *mapping_info_py;
+    PyObject *mapping_info_py = PyList_New(0);
     std::cout << "Parsing alignment file " << aln_file << std::endl;
     return mapping_info_py;
 }

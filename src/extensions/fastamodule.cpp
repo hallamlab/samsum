@@ -91,7 +91,7 @@ static PyObject *get_lengths(PyObject *self, PyObject *args) {
     fasta.get_sequence_lengths();
 
     map<string, unsigned long>::iterator it_contig_lens;
-    for(it_contig_lens = fasta.seq_lengths.begin(); it_contig_lens != fasta.seq_lengths.end(); it_contig_lens++ ) {
+    for(it_contig_lens = fasta.seq_lengths.begin(); it_contig_lens != fasta.seq_lengths.end(); ++it_contig_lens ) {
         PyList_Append(seq_lens, Py_BuildValue("s", it_contig_lens->first.c_str()));
         PyList_Append(seq_lens, Py_BuildValue("i", it_contig_lens->second));
     }

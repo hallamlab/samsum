@@ -12,7 +12,7 @@ vector<std::string> format_matches_for_service(vector<MATCH> &all_reads, char* &
     vector<std::string> query_info;
     char buf[1000];
 
-    for ( vector<MATCH>::iterator it = all_reads.begin(); it != all_reads.end(); it++)  {
+    for ( vector<MATCH>::iterator it = all_reads.begin(); it != all_reads.end(); ++it)  {
         if ( it->parity > 1 )
             cout << it->query << " " <<  it->start << " " << it->cigar.c_str() << " " << it->parity << " " << it->w << endl;
         if ( strcmp(index, "q") == 0 ) {
@@ -41,7 +41,7 @@ void remove_low_quality_matches(vector<MATCH> &mapped_reads, unsigned int min_ma
     */
     vector<MATCH> filtered_matches;
     filtered_matches.reserve(mapped_reads.size());
-    for ( vector<MATCH>::iterator it = mapped_reads.begin(); it != mapped_reads.end(); it++)  {
+    for ( vector<MATCH>::iterator it = mapped_reads.begin(); it != mapped_reads.end(); ++it)  {
         if (it->mq < min_map_qual)
             unmapped_weight_sum += it->w;
         else

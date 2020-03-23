@@ -274,7 +274,7 @@ long identify_multireads(map<std::string, struct QUADRUPLE<bool, bool, unsigned 
 
     for ( map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> >::iterator it = reads_dict.begin();
           it != reads_dict.end();
-          it++) {
+          ++it) {
         if( !(it->second.first && it->second.second) )
             num_singletons++;
         if( it->second.third > 1) {
@@ -318,7 +318,7 @@ void assign_read_weights(vector<MATCH> &all_reads,
       the sum of forward and reverse (if applicable) equals one.
     */
     int n = 0;
-    for ( vector<MATCH>::iterator it = all_reads.begin(); it != all_reads.end(); it++)  {
+    for ( vector<MATCH>::iterator it = all_reads.begin(); it != all_reads.end(); ++it)  {
         it->w = calculate_weight(it->parity, reads_dict[it->query]);
         n++;
     }

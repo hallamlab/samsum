@@ -25,8 +25,8 @@ while also keeping track of the reads that remain unmapped.
 This all occurs within the C++ Python extension.
 It will then read the reference FASTA file to gather the lengths of each reference sequence.
 Combining the read counts and sequence lengths, it will then calculate:
-- fragments per kilobase per million (FPKM)
-- transcripts per milllion (TPM)
+  - fragments per kilobase per million (FPKM)
+  - transcripts per milllion (TPM)
 
 ### Command-line options
 By default, reads with multiple identical alignments (i.e. mapping quality is 0) are not included in these calculations.
@@ -58,12 +58,12 @@ ref_seq_abunds = commands.ref_sequence_abundances(aln_file=sam, seq_file=fasta, 
 The `ref_seq_abunds` object is a dictionary of `RefSequence` instances indexed by their header/sequence names.
 `RefSequence` objects have several variables that are of interest:
 
--  `self.name` is the name of the (reference) sequence or header
--  `self.length` is the length (in base-pairs) of the sequence
--  `self.reads_mapped` is the number of reads that were mapped
--  `self.weight_total` is the number of fragments (float) that were mapped to the sequence
--  `self.fpkm` is Fragments Per Kilobase per Million mapped reads
--  `self.tpm` is Transcripts Per Million mapped reads
+ -  `self.name` is the name of the (reference) sequence or header
+ -  `self.length` is the length (in base-pairs) of the sequence
+ -  `self.reads_mapped` is the number of reads that were mapped
+ -  `self.weight_total` is the number of fragments (float) that were mapped to the sequence
+ -  `self.fpkm` is Fragments Per Kilobase per Million mapped reads
+ -  `self.tpm` is Transcripts Per Million mapped reads
 
 ## Outputs
 
