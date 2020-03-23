@@ -9,6 +9,7 @@ def test_ref_sequence_length():
     """
     from samsum import file_parsers as ss_fp
     from samsum import alignment_utils as ss_aln_utils
+    from samsum import classy
     test_seq = utils.get_test_data("samsum_test_2.fasta")
     test_aln = utils.get_test_data("samsum_test_2.sam")
     ref_seq_lengths = ss_fp.fasta_seq_lengths_ext(fasta_file=test_seq)
@@ -18,7 +19,7 @@ def test_ref_sequence_length():
     mapped_dict = ss_fp.sam_parser_ext(test_aln, True)
     # Convert the alignment strings returned by the sam_parser_ext into ss_class.AlignmentDat instances
     alignments, num_unmapped, mapped_weight_sum = ss_aln_utils.load_alignments(mapped_dict, 10)
-    for aln_dat in alignments:  # type: samsum.classy.AlignmentDat
+    for aln_dat in alignments:  # type: classy.AlignmentDat
         assert aln_dat.end < ref_seq_lengths[aln_dat.ref]
     return
 

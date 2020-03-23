@@ -19,7 +19,13 @@ Use '-h' to get subcommand-specific help, e.g.
 """
 
 
-def main():
+def main() -> None:
+    """
+    Main control function of samsum.
+    Based on the subcommand received from the command-line it will call the corresponding function in samsum.commands.
+
+    :return: None
+    """
     commands = {"stats": stats,
                 "info": info}
     parser = argparse.ArgumentParser(description='Summarize read recruitments to reference sequences')
@@ -38,6 +44,7 @@ def main():
     cmd = commands.get(args.command)
     cmd(sys.argv[2:])
     logging.info("samsum has finished successfully.\n")
+    return
 
 
 if __name__ == '__main__':

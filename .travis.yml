@@ -42,15 +42,14 @@ install:
   - "$PIP --version"
   - "$PIP install codecov"
   - "$PIP install twine"
-#  - "$PIP install tox"
-
-before_script:
   - "$PIP install tox-travis"
 
 script:
-- tox -v
-- python3 -m cibuildwheel --output-dir wheelhouse
-- python3 setup.py sdist --dist-dir wheelhouse
+  - if [ "$TRAVIS_OS_NAME" != "osx" ]; then
+      tox -vv;
+    fi
+  - python3 -m cibuildwheel --output-dir wheelhouse
+  - python3 setup.py sdist --dist-dir wheelhouse
 
 notifications:
   email:
