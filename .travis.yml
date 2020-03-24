@@ -63,4 +63,3 @@ notifications:
 after_success:
 - ls wheelhouse/
 - python3 -m twine upload --skip-existing wheelhouse/*.whl
-- codecov -e TOXENV -t $CODECOV_TOKEN --file .tox/coverage
