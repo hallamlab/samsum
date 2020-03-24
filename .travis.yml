@@ -50,9 +50,11 @@ install:
   - "$PIP install tox-travis"
 
 script:
+  # tox -a: List the environments available, nothing else
+  # tox -v: Run the selected environments. This is controlled by tox-travis on Travis CI, and the [travis] env in tox.ini
   - if [ "$TRAVIS_OS_NAME" != "osx" ]; then
-      tox -a;  # List the environments available, nothing else
-      tox -v;  # Run the selected environments. This is controlled by tox-travis on Travis CI, and the [travis] env in tox.ini
+      tox -a;
+      tox -v;
     fi
   - python3 -m cibuildwheel --output-dir wheelhouse
   - python3 setup.py sdist --dist-dir wheelhouse
