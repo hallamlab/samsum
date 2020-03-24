@@ -1,0 +1,8 @@
+[run]
+branch = True
+source = codecov
+
+omit =
+    tests/*
+    setup.py
+    build/*
