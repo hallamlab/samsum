@@ -2,9 +2,9 @@ language: python
 os: linux
 dist: bionic
 python:
+  - "3.5"
   - "3.6"
   - "3.7"
-  - "3.8"
 
 branches:
   only:
@@ -63,4 +63,3 @@ notifications:
 after_success:
 - ls wheelhouse/
 - python3 -m twine upload --skip-existing wheelhouse/*.whl
-- codecov --token $CODECOV_TOKEN
