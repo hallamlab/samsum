@@ -18,7 +18,7 @@ def load_references(refseq_lengths: dict) -> dict:
             logging.error("Duplicate reference sequence names encountered: %s\n" % seq_name)
             sys.exit(3)
         ref_seq = classy.RefSequence(seq_name, refseq_lengths[seq_name])
-        references[seq_name] = ref_seq
+        references[seq_name.split(' ')[0]] = ref_seq
     logging.debug("done.\n")
     return references
 

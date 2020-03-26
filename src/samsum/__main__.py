@@ -19,7 +19,7 @@ Use '-h' to get subcommand-specific help, e.g.
 """
 
 
-def main() -> None:
+def main() -> int:
     """
     Main control function of samsum.
     Based on the subcommand received from the command-line it will call the corresponding function in samsum.commands.
@@ -34,18 +34,18 @@ def main() -> None:
 
     if not args.command:
         sys.stderr.write(usage)
-        sys.exit(1)
+        return 1
 
     if args.command not in commands:
         logging.error('Unrecognized command')
         sys.stderr.write(usage)
-        sys.exit(1)
+        return 1
 
     cmd = commands.get(args.command)
     cmd(sys.argv[2:])
     logging.info("samsum has finished successfully.\n")
-    return
+    return 0
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

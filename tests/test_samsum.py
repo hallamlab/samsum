@@ -38,3 +38,13 @@ def test_output_table(ref_sequence_abundances):
     for line in data_lines:
         assert len(line.split(',')) == len(curr_table_header)
     return
+
+
+def test_info():
+    from samsum import __main__
+    import sys
+    sys.argv = ["samsum", "info"]
+    assert __main__.main() == 0
+    sys.argv = ["samsum"]
+    assert __main__.main() == 1
+    return

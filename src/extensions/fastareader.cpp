@@ -25,7 +25,6 @@ void FastaReader::get_sequence_lengths() {
     while( std::getline( input, line ).good() ){
         if( line.empty() || line[0] == '>' ){ // Identifier marker
             if( !name.empty() ){ // Print out what we read from the last entry
-                name = extract_sequence_name(name);
                 this->seq_lengths[name] = content.size() ;
                 name.clear();
                 content.clear();
@@ -43,7 +42,6 @@ void FastaReader::get_sequence_lengths() {
         }
     }
     if( !name.empty() ){ // Print out what we read from the last entry
-        name = extract_sequence_name(name);
 //        std::cout << name << " : " << content.size() << std::endl;
         this->seq_lengths[name] = content.size() ;
     }
