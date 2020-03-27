@@ -42,9 +42,6 @@ def test_output_table(ref_sequence_abundances):
 
 def test_info():
     from samsum import __main__
-    import sys
-    sys.argv = ["samsum", "info"]
-    assert __main__.main() == 0
-    sys.argv = ["samsum"]
-    assert __main__.main() == 1
+    assert __main__.main(["samsum", "info"]) == 0
+    assert __main__.main(["samsum"]) == 1
     return
