@@ -176,7 +176,13 @@ class SAMSumBase:
         return info_string + "\n"
 
     def furnish_with_arguments(self, args) -> None:
-        self.executables["bwa"] = ss_utils.which("bwa")
+        dependencies = ["bwa"]
+        for dep in dependencies:
+            exe_path = ss_utils.which(dep)
+            if exe_path:
+                self.executables[dep] = exe_path
+            else:
+                logging.warning("Unable to find executable for " + dep + " in environment.\n")
         return
 
 

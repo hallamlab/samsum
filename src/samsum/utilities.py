@@ -66,6 +66,7 @@ def launch_write_command(cmd_list, just_do_it=False, collect_all=True):
 def executable_dependency_versions(exe_dict):
     """
     Function for retrieving the version numbers for each executable in exe_dict
+
     :param exe_dict: A dictionary mapping names of software to the path to their executable
     :return: A formatted string with the executable name and its respective version found
     """
