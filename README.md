@@ -5,13 +5,23 @@ A light-weight python package for summarizing sequence coverage from SAM and BAM
 [![codecov](https://codecov.io/gh/hallamlab/samsum/branch/master/graph/badge.svg?token=q6UhWcnlS5)](https://codecov.io/gh/hallamlab/samsum)
 [![Build Status](https://travis-ci.com/hallamlab/samsum.svg?branch=master)](https://travis-ci.com/hallamlab/samsum)
 
+[![Anaconda-Server Badge](https://anaconda.org/bioconda/samsum/badges/installer/conda.svg)](https://conda.anaconda.org/bioconda)
+[![Anaconda-Server Badge](https://anaconda.org/bioconda/samsum/badges/platforms.svg)](https://anaconda.org/bioconda/samsum)
+[![Anaconda-Server Badge](https://anaconda.org/bioconda/samsum/badges/version.svg)](https://anaconda.org/bioconda/samsum)
+
 ## Installation
 
-Samsum is currently supported on Linux systems and is tested specifically on Ubuntu operating systems
+Samsum is currently supported on Mac and Linux systems and has been tested primarily on Ubuntu operating systems
  (bionic and trusty distributions).
-It is a python package on the Python Package index (PyPI) and can be installed using pip:
+It is a python package on the Python Package Index (PyPI) and can be installed using `pip`:
 
 ```pip install samsum```
+
+Samsum can also be installed using `conda` with the command:
+
+```bash
+conda install -c bioconda samsum
+```
 
 You can also install samsum from source by cloning the directory from its GitHub page or downloading a GitHub release.
 
