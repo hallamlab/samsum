@@ -43,3 +43,5 @@ dist
 *.egg-info
 .tox
 .coverage
+build/
+tests/__pycache__/

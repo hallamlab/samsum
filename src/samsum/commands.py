@@ -1,9 +1,10 @@
 __author__ = 'Connor Morgan-Lang'
 
-
+import os
 import logging
-import samsum
 import numpy
+
+import samsum
 import samsum.args as ss_args
 import samsum.classy as ss_class
 import samsum.logger as ss_log
@@ -26,7 +27,7 @@ def info(sys_args):
     ss_log.prep_logging()
     info_ss = ss_class.SAMSumBase("info")
 
-    logging.info("samsum version " + samsum.version + ".\n")
+    logging.info("samsum version " + samsum.__version__ + ".\n")
 
     # Write the version of all python deps
     py_deps = {"numpy": numpy.__version__}
@@ -90,8 +91,8 @@ def stats(sys_args):
     parser = ss_args.SAMSumArgumentParser(description="Calculate read coverage stats over reference sequences.")
     parser.add_stats_args()
     args = parser.parse_args(sys_args)
-    # TODO: Create the log file based on the output table's path
-    ss_log.prep_logging("samsum_log.txt", args.verbose)
+
+    ss_log.prep_logging(os.path.dirname(args.output_table) + os.sep + "samsum_log.txt", args.verbose)
     stats_ss = ss_class.SAMSumBase("stats")
     stats_ss.aln_file = args.am_file
     stats_ss.seq_file = args.fasta_file

@@ -37,7 +37,7 @@ sam_module = Extension("samsum._sam_module",
 SETUP_METADATA = \
     {
         "name": "samsum",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "description": "A light-weight python package for summarizing sequence coverage from SAM and BAM files",
         "long_description": LONG_DESCRIPTION,
         "long_description_content_type": "text/markdown",
