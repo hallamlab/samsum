@@ -2,7 +2,7 @@
 {% set version = "0.1.1" %}
 
 package:
-  name: "{{ name|lower }}"
+  name: "{{ name }}"
   version: "{{ version }}"
 
 source:
@@ -11,21 +11,21 @@ source:
 
 build:
   number: 0
+  skip: True  # [py2k]
   entry_points:
     - samsum = samsum.__main__:main
   script: "{{ PYTHON }} -m pip install . --no-deps --ignore-installed -vv "
 
 requirements:
+  build:
+    - {{ compiler('cxx') }}
   host:
     - numpy
     - pip
     - pytest
     - python
   run:
-    - numpy
-    - pytest
-    - python
-  test:
+    - {{ pin_compatible('numpy') }}
     - pytest
     - python
 
@@ -33,7 +33,8 @@ test:
   imports:
     - samsum
   commands:
-    - samsum --help
+    - {{ name }} --help
+    - {{ name }} info
 
 about:
   home: https://github.com/hallamlab/samsum
@@ -41,8 +42,6 @@ about:
   license_family: GPL3
   license_file: LICENSE
   summary: A light-weight python package for summarizing sequence coverage from SAM and BAM files
-  doc_url: 
-  dev_url: 
 
 extra:
   recipe-maintainers:
