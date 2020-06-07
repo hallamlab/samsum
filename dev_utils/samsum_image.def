@@ -1,0 +1,15 @@
+BootStrap: library
+From: ubuntu:18.04
+
+
+%post
+
+	#install dependencies
+	apt -y update
+    	apt -y install gcc dpkg-dev curl zip git libz-dev default-jdk time \
+    	python3 python3-distutils python3-dev
+    	ln -s /usr/bin/python3 /usr/bin/python
+    	curl https://bootstrap.pypa.io/get-pip.py | python
+    	python -V
+	mkdir Samsum/; cd Samsum/
+	pip install samsum
