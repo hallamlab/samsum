@@ -86,14 +86,14 @@ static PyObject *get_lengths(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    PyObject *seq_lens = PyList_New(0);
+    PyObject *seq_lens = PyDict_New(); 
     FastaReader fasta(fasta_file);
     fasta.get_sequence_lengths();
 
     map<string, unsigned long>::iterator it_contig_lens;
     for(it_contig_lens = fasta.seq_lengths.begin(); it_contig_lens != fasta.seq_lengths.end(); ++it_contig_lens ) {
-        PyList_Append(seq_lens, Py_BuildValue("s", it_contig_lens->first.c_str()));
-        PyList_Append(seq_lens, Py_BuildValue("i", it_contig_lens->second));
+        PyDict_SetItem(seq_lens, Py_BuildValue("s",it_contig_lens->first.c_str()),Py_BuildValue("i",it_contig_lens->second));
+        fasta.seq_lengths.erase(it_contig_lens);
     }
 
     return seq_lens;

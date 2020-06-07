@@ -54,17 +54,19 @@ def fasta_seq_lengths_ext(fasta_file: str, min_seq_length=0) -> dict:
         sys.exit(3)
 
     logging.debug("Using FASTA module to retrieve sequence lengths from FASTA... ")
-    ext_seq_lengths = _fasta_module.get_lengths(fasta_file, min_seq_length)
-    if not ext_seq_lengths:
+    seq_lengths_map = _fasta_module.get_lengths(fasta_file, min_seq_length)
+    if not seq_lengths_map:
         logging.error("No sequences were parsed from the FASTA file '%s'\n" % fasta_file)
         sys.exit(5)
     logging.debug("done.\n")
 
-    logging.debug("Converting list of sequence lengths into dictionary... ")
-    tmp_it = iter(ext_seq_lengths)
-    seq_lengths_map = dict(zip(tmp_it, tmp_it))
-    logging.debug("done.\n")
+    # logging.debug("Converting list of sequence lengths into dictionary... ")
+    # tmp_it = iter(ext_seq_lengths)
+    # seq_lengths_map = dict(zip(tmp_it, tmp_it))
+    
+    # logging.debug("done.\n")
 
+    #logging.info(str(len(seq_lengths_map)) + " sequences were read from " + fasta_file + "\n")
     logging.info(str(len(seq_lengths_map)) + " sequences were read from " + fasta_file + "\n")
 
     return seq_lengths_map
