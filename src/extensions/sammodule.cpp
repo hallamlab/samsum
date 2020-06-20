@@ -3,7 +3,8 @@
 #include <cstdlib>
 #include <iostream>
 #include "sambamparser.h"
-#include "helper.h"
+#include <string.h>
+//#include "helper.h"
 
 using namespace std;
 
@@ -86,6 +87,12 @@ PyMODINIT_FUNC PyInit__sam_module(void) {
         INITERROR;
     }
 
+    if(PyType_Ready(&MatchType) < 0)
+        return NULL;
+    
+    Py_INCREF((PyObject *) &MatchType);
+    PyModule_AddObject(m, "MATCH", (PyObject *) &MatchType);
+
     return m;
 }
 
@@ -110,10 +117,10 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
     std::cout << "Parsing alignment file " << aln_file << std::endl;
 
     bool verbose = true;
-    vector<MATCH> mapped_reads;
+    vector<MATCH *> mapped_reads;
     float unmapped_weight_sum;
     cout << "Reserving space for mapped reads... " << std::flush;
-    mapped_reads.reserve(8000000);
+    mapped_reads.reserve(8000000); // still required if 
     cout << "done." << endl;
     map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> > reads_dict;
     map<std::string, float > multireads;
@@ -137,11 +144,14 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
     sam_file.num_distinct_reads_mapped = sam_file.num_mapped - num_secondary_hits;
 
     // Add a match object that stores the number of unmapped reads
-    MATCH unmapped;
-    unmapped.w = unmapped_weight_sum;
-    unmapped.query = "NA";
-    unmapped.subject = "UNMAPPED";
-    unmapped.parity = 0;
+    string s1 = "NA";
+    string s2 = "UNMAPPED";
+    
+    MATCH *unmapped = Match_cnew();
+    unmapped->w = unmapped_weight_sum;
+    unmapped->query = s1.c_str();//"NA";
+    unmapped->subject = s2.c_str();//"UNMAPPED";
+    unmapped->parity = 0;
     mapped_reads.push_back(unmapped);
 
     // Print the various SAM alignment stats
@@ -151,28 +161,45 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
     // Reformat the MATCH objects into the strings required
     if ( verbose )
         cout << "Formatting alignment strings... " << std::flush;
-    vector<std::string> query_info = format_matches_for_service(mapped_reads, index);
+    //vector<std::string> query_info = format_matches_for_service(mapped_reads, index);
+    format_matches_for_service(mapped_reads, index);
     if ( verbose )
         cout << "done." << endl << std::flush;
-    mapped_reads.clear();
+    //mapped_reads.clear();
 
     if ( verbose )
-        cout << "Converting strings to Python objects... " << std::flush;
+        cout << "Converting strings to Python objects... " <<  endl <<std::flush;
     long x = 0;
-    vector<std::string>::iterator qi_it;
-    std::string str;
-    for (qi_it = query_info.begin(); qi_it != query_info.end(); ++qi_it ) {
-        str = *qi_it;
-        if (PyList_Append(mapping_info_py, Py_BuildValue("s", str.c_str())) == -1)
+    //vector<std::string>::iterator qi_it;
+    //std::string str;
+    vector<MATCH *>::iterator qi_it;
+    MATCH *mt;
+    
+
+    //test stuff////////////////////////////////
+    // MATCH * m_test = Match_cnew();
+    // m_test->subject = "cool";
+    // cout << "test print "<< m_test->subject << endl << flush;
+    // cout << "observing match[0] ::" << mapped_reads[0]->subject << flush;
+    // return Py_BuildValue("i", (mapped_reads[0]->subject).length());
+    //return Py_BuildValue("s", (mapped_reads[0]->subject).c_str());
+
+    // return Py_BuildValue("i", strlen(mapped_reads[0]->subject));
+     
+
+    for (qi_it = mapped_reads.begin(); qi_it != mapped_reads.end(); ++qi_it ) {
+        //str = *qi_it;
+        mt = (*qi_it);
+        
+        if (PyList_Append(mapping_info_py, Py_BuildValue("O", (PyObject *)mt)) == -1)
             x++;
     }
     if ( verbose )
         cout << "done." << endl << std::flush;
     if (x > 0) {
-        sprintf(sam_file.buf, "WARNING: Failed to append %ld/%zu items into mapped reads list.", x, query_info.size());
+        sprintf(sam_file.buf, "WARNING: Failed to append %ld/%zu items into mapped reads list.", x, mapped_reads.size());
         cerr << sam_file.buf << endl;
     }
-
     return mapping_info_py;
 }
 

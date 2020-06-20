@@ -73,7 +73,7 @@ SamFileParser::~SamFileParser() {
    this->input.close();
 }
 
-bool SamFileParser::getMateInfo(unsigned int bitflag, MATCH &match)  {
+bool SamFileParser::getMateInfo(unsigned int bitflag, MATCH *match)  {
     /* Parameters:
       * bitflag: The second column in a SAM file with bitwise encodings of mapping information
       * match: A MATCH instance
@@ -87,7 +87,7 @@ bool SamFileParser::getMateInfo(unsigned int bitflag, MATCH &match)  {
     bool orphan = 0;
     bool non_primary = 0;  // This is True if neither of the non-primary or supplementary alignment bits are set
     a = a >> 2;  // Skip the "read mapped" and "mapped in proper pair" bits
-    match.mapped = !(a&1);  // mapped == 1 if the read was mapped b/c the third (0x4) bit isn't set
+    match->mapped = !(a&1);  // mapped == 1 if the read was mapped b/c the third (0x4) bit isn't set
     orphan = a&1;  // orphan == 0 if the read was unmapped
 
     a = a >> 1;  // Move to the next, "mate unmapped" bit
@@ -95,13 +95,13 @@ bool SamFileParser::getMateInfo(unsigned int bitflag, MATCH &match)  {
 
     a = a >> 3;  // Move to the sixth (0x64) "first in pair" bit
     if ( a&1 )  {
-        match.parity = false;
+        match->parity = false;
         a = a >> 1;
     }
     else {
         a = a >> 1;  // Move to the seventh (0x128) "second in pair" bit
         if ( a&1 )
-            match.parity  = true;
+            match->parity  = true;
         else
             return false;
     }
@@ -109,13 +109,13 @@ bool SamFileParser::getMateInfo(unsigned int bitflag, MATCH &match)  {
     a = a >> 1;  // Move to the eighth, "not primary alignment" position
     non_primary = a&1;  // Should be 0 if it is the primary alignment
     a = a >> 3;  // Move to the eleventh (0x2048) "supplementary alignment" bit position
-    match.multi = non_primary^(a&1);  // Is a multiread if it is either a non-primary XOR secondary alignment
-    match.chimeric = a&1;  // This hints at a possible chimera, but it would have to be validated downstream
-    match.singleton = orphan;
+    match->multi = non_primary^(a&1);  // Is a multiread if it is either a non-primary XOR secondary alignment
+    match->chimeric = a&1;  // This hints at a possible chimera, but it would have to be validated downstream
+    match->singleton = orphan;
     return true;
 }
 
-bool SamFileParser::nextline(MATCH &match) {
+bool SamFileParser::nextline(MATCH *match) {
     /* Parameters:
       * match: Reference to a MATCH instance that is to be populated with alignment information
      * Functionality:
@@ -141,24 +141,26 @@ bool SamFileParser::nextline(MATCH &match) {
      }
 
      if ( _success )  {
-         match.query =  fields[0];
-         match.subject = fields[2];
-         match.start = atoi(fields[3]);
-         match.mq = atoi(fields[4]);
-         match.cigar = fields[5];
-         match.paired = getMateInfo(static_cast<unsigned int>(atoi(fields[1])), match);
+         match->query =  fields[0];
+         match->subject = fields[2];
+         match->start = atoi(fields[3]);
+         match->mq = atoi(fields[4]);
+         match->cigar = fields[5];
+         match->paired = getMateInfo(static_cast<unsigned int>(atoi(fields[1])), match);
+
+        
          // TODO: test to ensure the end position is calculated correctly. It currently isn't.
-         if ( match.parity ) // Read is second in pair and will be aligned right-to-left
-            match.end =  match.start - std::string(fields[9]).size();
+         if ( match->parity ) // Read is second in pair and will be aligned right-to-left
+            match->end =  match->start - std::string(fields[9]).size();
          else
-            match.end =  match.start + std::string(fields[9]).size();
+            match->end =  match->start + std::string(fields[9]).size();
 
          return true;
      }
     return false;
 }
 
-int SamFileParser::consume_sam(vector<MATCH> &all_reads,
+int SamFileParser::consume_sam(vector<MATCH *> &all_reads,
                                 map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> > &reads_dict,
                                 float &unmapped_weight_sum,
                                 bool multireads,
@@ -175,7 +177,9 @@ int SamFileParser::consume_sam(vector<MATCH> &all_reads,
       * The number of mapped, unmapped, forward, and reverse reads are counted.
       * These are counts are non-unique so double counts could arise from reads with multiple alignments
     */
-    MATCH match;
+   
+
+    //MATCH *match = Match_cnew();
 
      if(!this->input.good()) {
          std::cerr << "ERROR: Unable to open '"<< filename <<"' for reading." << std::endl;
@@ -188,6 +192,7 @@ int SamFileParser::consume_sam(vector<MATCH> &all_reads,
     int i;
     struct QUADRUPLE <bool, bool, unsigned int, unsigned int> p;
     for ( i =0; ; i++ ) {
+        MATCH *match = Match_cnew();
         if (show_status && i % 10000 == 0)
             std::cout << "\n\033[F\033[J" << i;
 
@@ -195,44 +200,44 @@ int SamFileParser::consume_sam(vector<MATCH> &all_reads,
             break;
         this->num_alignments++;
 
-        if (match.mapped)
+        if (match->mapped)
             this->num_mapped++;
         else
             this->num_unmapped++;
 
-        if (!match.paired)
+        if (!match->paired)
             this->num_unpaired++;
         else {
-            if (match.parity)
+            if (match->parity)
                 this->num_rev++;
             else this->num_fwd++;
         }
 
-        if (reads_dict.find(match.query) == reads_dict.end()) {
+        if (reads_dict.find(match->query) == reads_dict.end()) {
             p.first = false;
             p.second = false;
             p.third = 0;
             p.fourth = 0;
-            reads_dict[match.query] = p;
+            reads_dict[match->query] = p;
         }
 
-        if (match.multi && !multireads)  // Drop secondary and supplementary alignments
+        if (match->multi && !multireads)  // Drop secondary and supplementary alignments
             continue;
 
-        if (!match.parity) {
-            reads_dict[match.query].first = true;  // This is a forward read
-            if (match.mapped)
-                reads_dict[match.query].third++;
+        if (!match->parity) {
+            reads_dict[match->query].first = true;  // This is a forward read
+            if (match->mapped)
+                reads_dict[match->query].third++;
         }
         else {
-            reads_dict[match.query].second = true;  // This is a reverse read
-            if (match.mapped)
-                reads_dict[match.query].fourth++;
+            reads_dict[match->query].second = true;  // This is a reverse read
+            if (match->mapped)
+                reads_dict[match->query].fourth++;
         }
 
         // if it is not mapped then ignore it
-        if (!match.mapped) {
-            if (match.paired)
+        if (!match->mapped) {
+            if (match->paired)
                 unmapped_weight_sum += 0.5;
             else
                 unmapped_weight_sum++;
@@ -244,7 +249,7 @@ int SamFileParser::consume_sam(vector<MATCH> &all_reads,
             all_reads.push_back(match);
         }
         catch (...) {
-            cout << "Failing " << match.query << "   " << all_reads.size() << endl;
+            cout << "Failing " << match->query << "   " << all_reads.size() << endl;
             return 1;
         }
     }
@@ -306,7 +311,7 @@ float calculate_weight(int parity, struct QUADRUPLE<bool, bool, unsigned int, un
 }
 
 
-void assign_read_weights(vector<MATCH> &all_reads,
+void assign_read_weights(vector<MATCH* > &all_reads,
                          map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> > &reads_dict) {
     /* Parameters:
       * all_reads: A complete list of MATCH instances, one for each mapped read
@@ -318,8 +323,8 @@ void assign_read_weights(vector<MATCH> &all_reads,
       the sum of forward and reverse (if applicable) equals one.
     */
     int n = 0;
-    for ( vector<MATCH>::iterator it = all_reads.begin(); it != all_reads.end(); ++it)  {
-        it->w = calculate_weight(it->parity, reads_dict[it->query]);
+    for ( vector<MATCH *>::iterator it = all_reads.begin(); it != all_reads.end(); ++it)  {
+        (*it)->w = calculate_weight((*it)->parity, reads_dict[(*it)->query]);
         n++;
     }
 
