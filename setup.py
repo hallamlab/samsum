@@ -28,7 +28,7 @@ fasta_module = Extension("samsum._fasta_module",
 sam_module = Extension("samsum._sam_module",
                        sources=["src/extensions/sammodule.cpp",
                                 "src/extensions/helper.cpp", "src/extensions/sambamparser.cpp",
-                                "src/extensions/utilities.cpp"],
+                                "src/extensions/utilities.cpp", "src/extensions/types.cpp"],
                        depends=["helper.h", "sambamparser.h", "types.h", "utilities.h"],
                        include_dirs=["src/include/"],
                        language="c++")
