@@ -84,12 +84,12 @@ def load_reference_coverage(refseq_dict: dict, mapped_dict: dict, min_aln: int) 
                 logging.error("Reference sequence from SAM file not found in FASTA: %s\n" % refseq_name)
                 sys.exit(3)
             else:
-                unmapped_dat = classy.AlignmentDat(refseq_name, alignment_data.pop().split("\t"))
+                unmapped_dat = alignment_data.pop()#classy.AlignmentDat(refseq_name, alignment_data.pop().split("\t"))
                 num_unmapped += unmapped_dat.weight
                 continue
 
         while alignment_data:  # type: list
-            query_seq = classy.AlignmentDat(refseq_name, alignment_data.pop().split("\t"))
+            query_seq = alignment_data.pop()#classy.AlignmentDat(refseq_name, alignment_data.pop().split("\t"))
 
             if 100 * (query_seq.end - query_seq.start) / query_seq.read_length < min_aln:
                 num_unmapped += query_seq.weight
