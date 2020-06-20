@@ -161,34 +161,19 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
     // Reformat the MATCH objects into the strings required
     if ( verbose )
         cout << "Formatting alignment strings... " << std::flush;
-    //vector<std::string> query_info = format_matches_for_service(mapped_reads, index);
-    format_matches_for_service(mapped_reads, index);
+    format_matches_for_service(mapped_reads, index); //initialize MATCH.ref
     if ( verbose )
         cout << "done." << endl << std::flush;
-    //mapped_reads.clear();
 
     if ( verbose )
         cout << "Converting strings to Python objects... " <<  endl <<std::flush;
     long x = 0;
-    //vector<std::string>::iterator qi_it;
-    //std::string str;
     vector<MATCH *>::iterator qi_it;
     MATCH *mt;
     
-
-    //test stuff////////////////////////////////
-    // MATCH * m_test = Match_cnew();
-    // m_test->subject = "cool";
-    // cout << "test print "<< m_test->subject << endl << flush;
-    // cout << "observing match[0] ::" << mapped_reads[0]->subject << flush;
-    // return Py_BuildValue("i", (mapped_reads[0]->subject).length());
-    //return Py_BuildValue("s", (mapped_reads[0]->subject).c_str());
-
-    // return Py_BuildValue("i", strlen(mapped_reads[0]->subject));
      
 
     for (qi_it = mapped_reads.begin(); qi_it != mapped_reads.end(); ++qi_it ) {
-        //str = *qi_it;
         mt = (*qi_it);
         
         if (PyList_Append(mapping_info_py, Py_BuildValue("O", (PyObject *)mt)) == -1)

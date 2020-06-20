@@ -69,11 +69,7 @@ def sam_parser_ext(sam_file: str, multireads=False, aln_percent=0, min_mq=0) -> 
 
     for key, group in mapping_list_grouped:
         reads_mapped[key] = list(group)
-    # for ref, aln_dat in zip(mapping_list, mapping_list):
-    #     try:
-    #         reads_mapped[ref].append(aln_dat)
-    #     except KeyError:
-    #         reads_mapped[ref] = [aln_dat]
+        
     logging.info("done.\n")
 
     logging.debug("%d of unique read names returned by _sam_module.\n" % len(reads_mapped))
