@@ -39,9 +39,9 @@ static int Match_init(MATCH *self, PyObject *args, PyObject *kwds){
        return -1;
     
     */
-    static char *kwlist[] = {"start", "end" , "weight", "ref", "query", "cigar","subject" ,"read_length" , "percent_id", NULL};
+    static char *kwlist[] = {"start", "end" , "weight", "query", "cigar","subject" ,"read_length" , "percent_id", NULL};
     
-    if(! PyArg_ParseTupleAndKeywords(args, kwds, "iifssssff",kwlist, &self->start, &self->end,&self->w,&self->ref,&self->query,&self->cigar,&self->subject,&self->read_length,&self->percent_id))
+    if(! PyArg_ParseTupleAndKeywords(args, kwds, "iifssssff",kwlist, &self->start, &self->end,&self->w,&self->query,&self->cigar,&self->subject,&self->read_length,&self->percent_id))
         return -1;
     return 0;
        
@@ -57,7 +57,7 @@ static PyMemberDef Match_members[] = {
     {"start", T_UINT, offsetof(MATCH, start),0, "Match attribute"},//T_UINT, T_INT
     {"end", T_UINT , offsetof(MATCH, end), 0,"Match attribute"},
     {"weight", T_FLOAT, offsetof(MATCH, w), 0,"Match attribute"},
-    {"ref", T_STRING, offsetof(MATCH, ref), 0,"Match attribute"},
+    // {"ref", T_STRING, offsetof(MATCH, ref), 0,"Match attribute"},
     {"query", T_STRING , offsetof(MATCH, query), 0,"Match attribute"}, //string type are read_only after passing to python
     {"cigar", T_STRING , offsetof(MATCH, cigar), 0,"Match attribute"},
     {"subject", T_STRING , offsetof(MATCH, subject), 0,"Match attribute"},
@@ -115,3 +115,46 @@ PyTypeObject MatchType = {
     0,                         /* tp_alloc */
     Match_new,                 /* tp_new */
 };
+
+unsigned int decode_cigar(MATCH* self){
+    string cigar = self->cigar;
+
+    unsigned int read_len = 0;
+    unsigned int aln_len = 0 ;
+
+
+    string consume_ref =  "MDN=X";
+	string consume_query = "MIS=X";
+	
+	string buffer = "";
+	string::iterator it;
+	
+	for(it = cigar.begin(); it < cigar.end(); it++){
+		char c = *it;
+		if(isdigit(c)){
+			buffer = buffer + c;
+		} else {
+			if(consume_ref.find(c) != string::npos){
+				aln_len += atoi(buffer.c_str());
+			}
+            if (consume_query.find(c) != string::npos){
+				read_len += atoi(buffer.c_str());
+			}
+			buffer = "";
+        }
+    }
+
+    self->read_length = read_len;
+    
+    return aln_len;
+
+
+}
+
+void update_end_and_read_length(MATCH * self){
+    if (self->subject == "UNMAPPED")
+        return ;
+    
+    unsigned int aln_len = decode_cigar(self);
+    self->end = self->start + aln_len;
+}

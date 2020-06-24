@@ -1,4 +1,5 @@
 #include "helper.h"
+#include "types.h"
 using namespace std;
 
 
@@ -10,26 +11,11 @@ void format_matches_for_service(vector<MATCH *> &all_reads, char* &index) {
       * Iterates through all MATCH instances in all_reads and generates two strings for each: the name of the query
       and the relevant fields that are to be returned into Python.
     */
-    // vector<std::string> query_info;
-    // char buf[1000];
+
 
     for ( vector<MATCH *>::iterator it = all_reads.begin(); it != all_reads.end(); ++it)  {
-        if ( (*it)->parity > 1 )
-            cout << (*it)->query << " " <<  (*it)->start << " " << (*it)->cigar << " " << (*it)->parity << " " << (*it)->w << endl;
-        if ( strcmp(index, "q") == 0 ) {
-            (*it)->ref = (*it)->query;
-            //query_info.push_back((*it)->query);
-            //sprintf(buf, "%s\t%d\t%s\t%d\t%f", (*it)->subject.c_str(), (*it)->start, (*it)->cigar.c_str(), (*it)->parity, (*it)->w);
-        }
-        if ( strcmp(index, "r") == 0 ) {
-            (*it)->ref = (*it)->subject;
-            //query_info.push_back((*it)->subject);
-            //sprintf(buf, "%s\t%d\t%s\t%d\t%f", (*it)->query.c_str(), (*it)->start, (*it)->cigar.c_str(), (*it)->parity, (*it)->w);
-        }
-        //query_info.push_back(buf);
+        update_end_and_read_length(*it);
     }
-
-    //return query_info;
 }
 
 

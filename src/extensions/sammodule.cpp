@@ -144,13 +144,11 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
     sam_file.num_distinct_reads_mapped = sam_file.num_mapped - num_secondary_hits;
 
     // Add a match object that stores the number of unmapped reads
-    string s1 = "NA";
-    string s2 = "UNMAPPED";
     
     MATCH *unmapped = Match_cnew();
     unmapped->w = unmapped_weight_sum;
-    unmapped->query = s1.c_str();//"NA";
-    unmapped->subject = s2.c_str();//"UNMAPPED";
+    unmapped->query = "NA";
+    unmapped->subject = "UNMAPPED";
     unmapped->parity = 0;
     mapped_reads.push_back(unmapped);
 
@@ -161,7 +159,7 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
     // Reformat the MATCH objects into the strings required
     if ( verbose )
         cout << "Formatting alignment strings... " << std::flush;
-    format_matches_for_service(mapped_reads, index); //initialize MATCH.ref
+    format_matches_for_service(mapped_reads, index); //update match end and read_length
     if ( verbose )
         cout << "done." << endl << std::flush;
 

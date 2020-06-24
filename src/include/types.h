@@ -4,6 +4,8 @@
 #include <map>
 #include <vector>
 #include <iostream>
+#include <ctype.h>
+#include <stdlib.h>
 #include "structmember.h"
 using namespace std;
 
@@ -23,7 +25,7 @@ typedef struct {
     // const char* subject; 
     // const char* cigar;
     // const char* ref;
-    string query, subject, cigar, ref;
+    string query, subject, cigar;
     /*unsigned int start, end, mq; */
     unsigned int start, end, mq, read_length;
     bool paired;
@@ -41,6 +43,8 @@ extern PyTypeObject MatchType;
 
 PyObject *Match_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 MATCH *Match_cnew(PyTypeObject *type = &MatchType);
+void update_end_and_read_length(MATCH * self);
+
 template< typename A, typename B, typename C, typename D>
 struct QUADRUPLE {
      A first;

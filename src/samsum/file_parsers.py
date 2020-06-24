@@ -12,7 +12,7 @@ __author__ = 'Connor Morgan-Lang'
 # suggesting this be runned in the format_matches_for_service function
 def decode_cigar(match):
 
-    if match.ref == "UNMAPPED":
+    if match.subject == "UNMAPPED":
         return 0
     match.read_length = 0
     aln_len = 0
@@ -56,12 +56,12 @@ def sam_parser_ext(sam_file: str, multireads=False, aln_percent=0, min_mq=0) -> 
 
     reads_mapped = dict()
     mapping_list = iter(_sam_module.get_mapped_reads(sam_file, multireads, aln_percent, min_mq, 'r'))
-    mapping_list = map(lambda x: update_end(x), mapping_list)
+    # mapping_list = map(lambda x: update_end(x), mapping_list)
     if not mapping_list:
         logging.error("No alignments were read from SAM file '%s'\n" % sam_file)
         sys.exit(5)
     
-    key_fn = lambda x : x.ref
+    key_fn = lambda x : x.subject
     
     mapping_list_grouped = itertools.groupby(sorted(mapping_list, key = key_fn), key_fn)
 
