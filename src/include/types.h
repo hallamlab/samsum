@@ -21,10 +21,6 @@ typedef struct {
       * singleton is 1 if the mate was not successfully aligned
      */
     PyObject_HEAD
-    // const char* query;
-    // const char* subject; 
-    // const char* cigar;
-    // const char* ref;
     string query, subject, cigar;
     /*unsigned int start, end, mq; */
     unsigned int start, end, mq, read_length;
@@ -41,7 +37,7 @@ typedef struct {
 
 extern PyTypeObject MatchType;
 
-PyObject *Match_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
+
 MATCH *Match_cnew(PyTypeObject *type = &MatchType);
 void update_end_and_read_length(MATCH * self);
 
