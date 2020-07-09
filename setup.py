@@ -20,12 +20,12 @@ CLASSIFIERS = [
     "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 
-fasta_module = Extension("samsum._fasta_module",
+fasta_module = Extension("_fasta_module",
                          sources=["src/extensions/fastamodule.cpp", "src/extensions/fastareader.cpp", "src/extensions/utilities.cpp"],
                          depends=["fastareader.h", "utilities.h", "types.h"],
                          include_dirs=["src/include/"],
                          language="c++")
-sam_module = Extension("samsum._sam_module",
+sam_module = Extension("_sam_module",
                        sources=["src/extensions/sammodule.cpp",
                                 "src/extensions/helper.cpp", "src/extensions/sambamparser.cpp",
                                 "src/extensions/utilities.cpp", "src/extensions/types.cpp"],
@@ -37,7 +37,7 @@ sam_module = Extension("samsum._sam_module",
 SETUP_METADATA = \
     {
         "name": "samsum",
-        "version": "0.1.2",
+        "version": "0.1.3",
         "description": "A light-weight python package for summarizing sequence coverage from SAM and BAM files",
         "long_description": LONG_DESCRIPTION,
         "long_description_content_type": "text/markdown",

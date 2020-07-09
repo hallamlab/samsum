@@ -1,43 +1,12 @@
-
 import os
 import sys
 import logging
 import itertools
-from samsum import _fasta_module, _sam_module
+import _fasta_module
+import _sam_module
 from samsum import classy as ss_class
 
 __author__ = 'Connor Morgan-Lang'
-
-# update_end and decode_cigar needs to be moved to c++ MATCH struct in the future; 
-# suggesting this be runned in the format_matches_for_service function
-def decode_cigar(match):
-
-    if match.subject == "UNMAPPED":
-        return 0
-    match.read_length = 0
-    aln_len = 0
-    i = 0
-    buffer = ""
-    consume_ref = {"M", "D", "N", "=", "X"}  # type: set
-    consume_query = {"M", "I", "S", "=", "X"}  # type: set
-    while i < len(match.cigar):
-        if match.cigar[i].isdigit():
-            buffer += match.cigar[i]
-        elif buffer:
-            if match.cigar[i] in consume_ref:
-                aln_len += int(buffer)
-            if match.cigar[i] in consume_query:
-                match.read_length += int(buffer)
-            buffer = ""
-        else:
-            buffer = ""
-        i += 1
-    return aln_len
-
-def update_end(match):
-    aln_len = decode_cigar(match)
-    match.end = match.start + aln_len - 1  # Need to subtract since SAM alignments are 1-based
-    return match
 
 
 def sam_parser_ext(sam_file: str, multireads=False, aln_percent=0, min_mq=0) -> dict:
@@ -56,20 +25,19 @@ def sam_parser_ext(sam_file: str, multireads=False, aln_percent=0, min_mq=0) -> 
 
     reads_mapped = dict()
     mapping_list = iter(_sam_module.get_mapped_reads(sam_file, multireads, aln_percent, min_mq, 'r'))
-    # mapping_list = map(lambda x: update_end(x), mapping_list)
     if not mapping_list:
         logging.error("No alignments were read from SAM file '%s'\n" % sam_file)
         sys.exit(5)
-    
-    key_fn = lambda x : x.subject
-    
-    mapping_list_grouped = itertools.groupby(sorted(mapping_list, key = key_fn), key_fn)
+
+    key_fn = lambda x: x.subject
+
+    mapping_list_grouped = itertools.groupby(sorted(mapping_list, key=key_fn), key_fn)
 
     logging.info("Zipping query names and alignment data... ")
 
     for key, group in mapping_list_grouped:
         reads_mapped[key] = list(group)
-        
+
     logging.info("done.\n")
 
     logging.debug("%d of unique read names returned by _sam_module.\n" % len(reads_mapped))

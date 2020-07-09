@@ -220,7 +220,15 @@ class AlignmentDat(Tile):
         self.load_sam(alignment_fields)
         return
 
-    def decode_cigar(self):
+    def decode_cigar(self) -> int:
+        """
+        Calculates and modifies the AlignmentDat read_length attribute from the cigar string attribute.
+        The cigar string is parsed from the SAM file and represents the different states (e.g. insertion, deletion)
+        and the length of these states across the aligned length.
+        Also calculated in the alignment length itself and this length is returned as an integer.
+
+        :return: An integer representing the alignment length
+        """
         self.read_length = 0
         aln_len = 0
         i = 0

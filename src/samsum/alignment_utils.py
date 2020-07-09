@@ -41,18 +41,17 @@ def load_alignments(mapped_dict: dict, min_aln: int) -> (list, float, float):
     logging.info("Instantiating alignment data... ")
 
     for read_name in mapped_dict:
-        for aln_dat in mapped_dict[read_name]:
-            query_seq = classy.AlignmentDat(read_name, aln_dat.split("\t"))
-            if query_seq.ref == "UNMAPPED":
-                num_unmapped += query_seq.weight
+        for aln_dat in mapped_dict[read_name]:  # type: _sam_module.Match
+            if aln_dat.subject == "UNMAPPED":
+                num_unmapped += aln_dat.weight
                 continue
             # Skip over alignments that don't meet or exceed the minimum percentage of the read length
             # TODO: Migrate this to the C++ side
-            if 100*(query_seq.end-query_seq.start)/query_seq.read_length < min_aln:
-                num_unmapped += query_seq.weight
+            if 100*(aln_dat.end-aln_dat.start)/aln_dat.read_length < min_aln:
+                num_unmapped += aln_dat.weight
                 continue
-            alignments.append(query_seq)
-            mapped_total += query_seq.weight
+            alignments.append(aln_dat)
+            mapped_total += aln_dat.weight
 
     logging.info("done.\n")
 
@@ -84,12 +83,12 @@ def load_reference_coverage(refseq_dict: dict, mapped_dict: dict, min_aln: int) 
                 logging.error("Reference sequence from SAM file not found in FASTA: %s\n" % refseq_name)
                 sys.exit(3)
             else:
-                unmapped_dat = alignment_data.pop()#classy.AlignmentDat(refseq_name, alignment_data.pop().split("\t"))
+                unmapped_dat = alignment_data.pop()
                 num_unmapped += unmapped_dat.weight
                 continue
 
         while alignment_data:  # type: list
-            query_seq = alignment_data.pop()#classy.AlignmentDat(refseq_name, alignment_data.pop().split("\t"))
+            query_seq = alignment_data.pop()
 
             if 100 * (query_seq.end - query_seq.start) / query_seq.read_length < min_aln:
                 num_unmapped += query_seq.weight

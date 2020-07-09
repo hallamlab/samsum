@@ -24,9 +24,10 @@ def ref_sequence_abundances():
 
 def test_output_table(ref_sequence_abundances):
     from samsum import file_parsers as ss_fp
+    output_table = "./tests/samsum_table.csv"
     curr_table_header = ["QueryName", "RefSequence", "ProportionCovered", "Coverage", "Fragments", "FPKM", "TPM"]
-    ss_fp.write_summary_table(ref_sequence_abundances, "./samsum_table.csv", "pytest", 0)
-    with open("samsum_table.csv") as table_handler:
+    ss_fp.write_summary_table(ref_sequence_abundances, output_table, "pytest", 0)
+    with open(output_table) as table_handler:
         header_fields = table_handler.readline().strip().split(',')
         data_lines = []
         line = table_handler.readline()
@@ -45,3 +46,8 @@ def test_info():
     assert __main__.main(["samsum", "info"]) == 0
     assert __main__.main(["samsum"]) == 1
     return
+
+
+if __name__ == "__main__":
+    test_overlapping_intervals()
+    test_info()
