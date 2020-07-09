@@ -246,7 +246,10 @@ int SamFileParser::consume_sam(vector<MATCH *> &all_reads,
 
         // store it to process later by looking up the dictionary
         try {
-            all_reads.push_back(match);
+            if (match->mapped)
+                all_reads.push_back(match);
+            else 
+                delete match;
         }
         catch (...) {
             cout << "Failing " << match->query << "   " << all_reads.size() << endl;

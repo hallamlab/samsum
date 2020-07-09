@@ -17,7 +17,7 @@ PyObject *Match_new(PyTypeObject *type, PyObject *args, PyObject *kwds){
         self->percent_id = 0.0;
         self->paired = true;
         self->parity= true;
-        self->mapped= true;
+        self->mapped= false;
         self->orphan= true;
         self->multi= true;
         self->chimeric= true;
