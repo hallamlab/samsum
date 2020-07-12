@@ -28,8 +28,10 @@ void remove_low_quality_matches(vector<MATCH *> &mapped_reads, unsigned int min_
     vector<MATCH *> filtered_matches;
     filtered_matches.reserve(mapped_reads.size());
     for ( vector<MATCH *>::iterator it = mapped_reads.begin(); it != mapped_reads.end(); ++it)  {
-        if ((*it)->mq < min_map_qual)
+        if ((*it)->mq < min_map_qual) {
             unmapped_weight_sum += (*it)->w;
+            Py_DECREF((PyObject*)*it);
+        }
         else
             filtered_matches.push_back((*it));
     }

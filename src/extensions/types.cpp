@@ -29,7 +29,7 @@ PyObject *Match_new(PyTypeObject *type, PyObject *args, PyObject *kwds){
     
 }
 
-//useless function; initializer for Python; don't think this object will be instatiated in Python
+//useless function; initializer for Python; don't think this object will be instantiated in Python
 //add this if needed
 static int Match_init(MATCH *self, PyObject *args, PyObject *kwds){
     /*
@@ -50,8 +50,6 @@ static int Match_init(MATCH *self, PyObject *args, PyObject *kwds){
 static void Match_dealloc(MATCH *self){
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
-
-//static PyGetSetDef Car_getseters[]
 
 static PyMemberDef Match_members[] = {
     {"start", T_UINT, offsetof(MATCH, start),0, "Match attribute"},//T_UINT, T_INT
