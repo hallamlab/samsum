@@ -3,15 +3,12 @@
 using namespace std;
 
 
-// vector<std::string> format_matches_for_service(vector<MATCH *> &all_reads, char* &index) {
-void format_matches_for_service(vector<MATCH *> &all_reads, char* &index) {
+void add_alignment_positions(vector<MATCH *> &all_reads, char* &index) {
     /* Parameters:
       * all_reads: A vector populated by MATCH instances that contain information to be converted into strings
      * Functionality:
-      * Iterates through all MATCH instances in all_reads and generates two strings for each: the name of the query
-      and the relevant fields that are to be returned into Python.
+      * Iterates through MATCH instances in all_reads and calculates the alignment length from the start/stop positions
     */
-
 
     for ( vector<MATCH *>::iterator it = all_reads.begin(); it != all_reads.end(); ++it)  {
         update_end_and_read_length(*it);

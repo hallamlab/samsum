@@ -58,8 +58,10 @@ def ref_sequence_abundances(aln_file: str, seq_file: str, map_qual=0, p_cov=50, 
     :param seq_file: Path to the reference FASTA file used to generate the SAM/BAM file
     :param map_qual: The minimum mapping quality threshold for an alignment to pass
     :param min_aln: The minimum percentage of a read's length that must be aligned to be included
-    :param multireads: Flag indicating whether reads that mapped ambiguously to multiple positions (multireads) should be used in the counts
-    :param p_cov: The minimum percentage a reference sequence must be covered for its coverage stats to be included; they are set to zero otherwise
+    :param multireads: Flag indicating whether reads that mapped ambiguously to multiple positions (multireads)
+    should be used in the counts
+    :param p_cov: The minimum percentage a reference sequence must be covered for its coverage stats to be included;
+    they are set to zero otherwise
     :return: Dictionary of RefSequence instances indexed by their sequence names/headers
     """
     refseq_lengths = ss_fp.fasta_seq_lengths_ext(seq_file)

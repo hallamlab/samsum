@@ -156,29 +156,29 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
     if ( verbose )
         std::cout << sam_file.summarise();
 
-    // Reformat the MATCH objects into the strings required
     if ( verbose )
-        cout << "Formatting alignment strings... " << std::flush;
-    format_matches_for_service(mapped_reads, index); //update match end and read_length
+        cout << "Calculating alignment positions... " << std::flush;
+
+    add_alignment_positions(mapped_reads, index); //update match end and read_length
+
     if ( verbose )
         cout << "done." << endl << std::flush;
 
     if ( verbose )
-        cout << "Converting strings to Python objects... " <<  endl <<std::flush;
+        cout << "Building alignment list... " <<std::flush;
+
     long x = 0;
     vector<MATCH *>::iterator qi_it;
     MATCH *mt;
-    
-     
-
     for (qi_it = mapped_reads.begin(); qi_it != mapped_reads.end(); ++qi_it ) {
         mt = (*qi_it);
-        
         if (PyList_Append(mapping_info_py, Py_BuildValue("O", (PyObject *)mt)) == -1)
             x++;
     }
+
     if ( verbose )
         cout << "done." << endl << std::flush;
+
     if (x > 0) {
         sprintf(sam_file.buf, "WARNING: Failed to append %ld/%zu items into mapped reads list.", x, mapped_reads.size());
         cerr << sam_file.buf << endl;

@@ -241,7 +241,6 @@ int SamFileParser::consume_sam(vector<MATCH *> &all_reads,
                 unmapped_weight_sum += 0.5;
             else
                 unmapped_weight_sum++;
-            // Py_TYPE(match)->tp_free((PyObject*)match);
             Py_DECREF((PyObject*)match);
             continue;
         }

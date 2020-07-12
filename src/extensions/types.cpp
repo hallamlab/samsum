@@ -154,7 +154,7 @@ unsigned int decode_cigar(MATCH* self){
 void update_end_and_read_length(MATCH * self){
     if (self->subject == "UNMAPPED")
         return ;
-    
+
     unsigned int aln_len = decode_cigar(self);
     self->end = self->start + aln_len;
 }
