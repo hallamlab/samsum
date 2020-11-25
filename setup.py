@@ -17,14 +17,11 @@ CLASSIFIERS = [
     "Programming Language :: C++",
     "Programming Language :: Python :: 3.5",
     "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 
-fasta_module = Extension("_fasta_module",
-                         sources=["src/extensions/fastamodule.cpp", "src/extensions/fastareader.cpp", "src/extensions/utilities.cpp"],
-                         depends=["fastareader.h", "utilities.h", "types.h"],
-                         include_dirs=["src/include/"],
-                         language="c++")
 sam_module = Extension("_sam_module",
                        sources=["src/extensions/sammodule.cpp",
                                 "src/extensions/helper.cpp", "src/extensions/sambamparser.cpp",
@@ -41,7 +38,7 @@ SETUP_METADATA = \
         "description": "A light-weight python package for summarizing sequence coverage from SAM and BAM files",
         "long_description": LONG_DESCRIPTION,
         "long_description_content_type": "text/markdown",
-        "author": "Connor Morgan-Lang, Ryan McLaughlin",
+        "author": "Connor Morgan-Lang, Matthew Tang, Ryan J. McLaughlin",
         "author_email": "c.morganlang@gmail.com",
         "url": "https://github.com/hallamlab/samsum",
         "license": "GPL-3.0",
@@ -52,8 +49,8 @@ SETUP_METADATA = \
         "py_modules": [splitext(basename(path))[0] for path in glob('src/*.py')],
         "entry_points": {'console_scripts': ['samsum = samsum.__main__:main']},
         "classifiers": CLASSIFIERS,
-        "ext_modules": [fasta_module, sam_module],
-        "install_requires": ["numpy", "pytest"]
+        "ext_modules": [sam_module],
+        "install_requires": ["numpy", "pytest", "pyfastx"]
     }
 
 setup(**SETUP_METADATA)

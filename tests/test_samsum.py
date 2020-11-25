@@ -1,53 +1,55 @@
+#!/usr/bin/env python
+
+import os
+import unittest
 import pytest
 
-
-def test_overlapping_intervals():
-    from samsum import alignment_utils
-    coords_one = (0, 100)
-    coords_two = (50, 101)
-    coords_three = (101, 200)
-    assert alignment_utils.overlapping_intervals(coords_one, coords_two) is True
-    assert alignment_utils.overlapping_intervals(coords_two, coords_three) is True
-    assert alignment_utils.overlapping_intervals(coords_one, coords_three) is False
+from samsum import testing_utils
 
 
-@pytest.fixture()
-def ref_sequence_abundances():
-    from samsum import commands
-    from samsum import testing_utils as utils
-    test_sam = utils.get_test_data("samsum_test_2.sam")
-    test_aln = utils.get_test_data("samsum_test_2.fasta")
-    ref_seq_abunds = commands.ref_sequence_abundances(aln_file=test_sam, seq_file=test_aln,
-                                                      min_aln=10, p_cov=0, map_qual=0)
-    return ref_seq_abunds
+class SamsumTester(unittest.TestCase):
+    def setUp(self) -> None:
+        self.test_fasta = testing_utils.get_test_data("samsum_test_2.fasta")
+        self.test_sam = testing_utils.get_test_data("samsum_test_2.sam")
+        self.output_tbl = os.path.join(testing_utils.get_project_root(), "tests/test-data/tmp_table.tsv")
+        return
 
+    def tearDown(self) -> None:
+        if os.path.isfile(self.output_tbl):
+            os.remove(self.output_tbl)
+        return
 
-def test_output_table(ref_sequence_abundances):
-    from samsum import file_parsers as ss_fp
-    output_table = "./tests/samsum_table.csv"
-    curr_table_header = ["QueryName", "RefSequence", "ProportionCovered", "Coverage", "Fragments", "FPKM", "TPM"]
-    ss_fp.write_summary_table(ref_sequence_abundances, output_table, "pytest", 0)
-    with open(output_table) as table_handler:
-        header_fields = table_handler.readline().strip().split(',')
-        data_lines = []
-        line = table_handler.readline()
-        while line:
-            data_lines.append(line.strip())
-            line = table_handler.readline()
+    def test_main(self):
+        """ Test whether samsum info runs at all and exits with the write return code """
+        from samsum import __main__
+        retcode = __main__.main(["samsum"])
+        self.assertEqual(1, retcode)
+        return
 
-    assert header_fields == curr_table_header
-    for line in data_lines:
-        assert len(line.split(',')) == len(curr_table_header)
-    return
+    def test_samsum_info(self):
+        from samsum import commands
+        retcode = commands.info(["-v"])
+        self.assertEqual(0, retcode)
+        return
 
+    def test_samsums_stats(self):
+        """ Integrative test for samsum stats """
+        from samsum import commands
+        # Ensure it quits properly with help call
+        with pytest.raises(SystemExit):
+            commands.stats(["-h"])
 
-def test_info():
-    from samsum import __main__
-    assert __main__.main(["samsum", "info"]) == 0
-    assert __main__.main(["samsum"]) == 1
-    return
+        # Test with a normal dataset
+        retcode = commands.stats(["--ref_fasta", self.test_fasta,
+                                  "--alignments", self.test_sam,
+                                  "--output_table", self.output_tbl,
+                                  "--aln_percent", str(50),
+                                  "--seq_coverage", str(20),
+                                  "--map_quality", str(1),
+                                  "--sep", "\t"])
+        self.assertEqual(0, retcode)
+        return
 
 
 if __name__ == "__main__":
-    test_overlapping_intervals()
-    test_info()
+    unittest.main()

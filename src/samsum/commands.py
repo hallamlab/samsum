@@ -45,7 +45,7 @@ def info(sys_args):
         pass
         # logging.info(summary_str)
 
-    return
+    return 0
 
 
 def ref_sequence_abundances(aln_file: str, seq_file: str, map_qual=0, p_cov=50, min_aln=10, multireads=False) -> dict:
@@ -64,7 +64,7 @@ def ref_sequence_abundances(aln_file: str, seq_file: str, map_qual=0, p_cov=50, 
     they are set to zero otherwise
     :return: Dictionary of RefSequence instances indexed by their sequence names/headers
     """
-    refseq_lengths = ss_fp.fasta_seq_lengths_ext(seq_file)
+    refseq_lengths = ss_fp.fasta_seq_lengths(seq_file)
     references = ss_aln_utils.load_references(refseq_lengths)
     refseq_lengths.clear()
 
@@ -100,7 +100,7 @@ def stats(sys_args):
     stats_ss.seq_file = args.fasta_file
 
     # Parse the FASTA file, calculating the length of each reference sequence and return this as a dictionary
-    refseq_lengths = ss_fp.fasta_seq_lengths_ext(stats_ss.seq_file)
+    refseq_lengths = ss_fp.fasta_seq_lengths(stats_ss.seq_file)
     references = ss_aln_utils.load_references(refseq_lengths)
     refseq_lengths.clear()
 
@@ -128,4 +128,4 @@ def stats(sys_args):
     #     ref_seq = references[seq_name]  # type: ss_class.RefSequence
     #     if ref_seq.reads_mapped != 0:
     #         print(ref_seq.get_info())
-    return
+    return 0

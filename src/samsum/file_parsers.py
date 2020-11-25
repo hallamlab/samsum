@@ -2,7 +2,9 @@ import os
 import sys
 import logging
 import itertools
-import _fasta_module
+
+from pyfastx import Fasta
+
 import _sam_module
 from samsum import classy as ss_class
 
@@ -45,7 +47,7 @@ def sam_parser_ext(sam_file: str, multireads=False, aln_percent=0, min_mq=0) -> 
     return reads_mapped
 
 
-def fasta_seq_lengths_ext(fasta_file: str, min_seq_length=0) -> dict:
+def fasta_seq_lengths(fasta_file: str, min_seq_length=0) -> dict:
     """
     Function for calculating the lengths of all sequences in a FASTA file.
 
@@ -57,8 +59,18 @@ def fasta_seq_lengths_ext(fasta_file: str, min_seq_length=0) -> dict:
         logging.error("FASTA file '%s' doesn't exist.\n" % fasta_file)
         sys.exit(3)
 
-    logging.debug("Using FASTA module to retrieve sequence lengths from FASTA... ")
-    seq_lengths_map = _fasta_module.get_lengths(fasta_file, min_seq_length)
+    seq_lengths_map = {}
+    logging.debug("Using Pyfastx to retrieve sequence lengths from FASTA... ")
+    try:
+        py_fa = Fasta(fasta_file, build_index=False, full_name=True)
+    except RuntimeError as error:
+        logging.debug(str(error)+"\n")
+        return seq_lengths_map
+
+    for name, seq in py_fa:  # type: (str, str)
+        if len(seq) > min_seq_length:
+            seq_lengths_map[name] = len(seq)
+
     if not seq_lengths_map:
         logging.error("No sequences were parsed from the FASTA file '%s'\n" % fasta_file)
         sys.exit(5)
