@@ -13,7 +13,7 @@ using namespace std;
 class MatchOutputParser {
     protected:
         // The following variables are general file parsing stats
-        unsigned long num_alignments;
+        unsigned long num_lines;
         unsigned long num_fwd;
         unsigned long num_rev;
         unsigned long num_unpaired;
@@ -30,7 +30,6 @@ class MatchOutputParser {
         std::string format;
         std::ifstream input;
         char buf[1000];
-        vector<char *> tempv;
         vector<char *> fields;
         /* Class Functions */
         MatchOutputParser(const std::string &filename, const std::string &format);
@@ -48,11 +47,10 @@ class SamFileParser: virtual public MatchOutputParser {
         std::string unmapped_pattern;
         /* Class Functions */
         SamFileParser(const std::string &filename, const std::string &format);
-        int consume_sam(vector<MATCH *> &all_reads,
-                        map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> > &reads_dict,
-                        float &unmapped_weight_sum,
-                        bool multireads,
-                        bool verbose);
+        int parse_header(map<std::string, int> &ref_dict);
+        int consume_sam(vector<MATCH *> &all_reads, bool multireads, bool verbose);
+        int alignment_multiplicity_audit(vector<MATCH *> &all_reads,
+                                         map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> > &reads_dict);
         virtual bool nextline(MATCH *match);
         bool getMateInfo(unsigned int i, MATCH *match);
         ~SamFileParser();

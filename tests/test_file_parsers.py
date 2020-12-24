@@ -46,7 +46,7 @@ class MyTestCase(unittest.TestCase):
 
         # Parse the alignments and return the strings of reads mapped to each reference sequence
         mapped_dict = ss_fp.sam_parser_ext(self.test_sam, True)
-        unmapped_aln = mapped_dict.pop("UNMAPPED").pop()  # type: _sam_module.Match
+        unmapped_aln = mapped_dict.pop("UNMAPPED").pop()
         self.assertEqual(4890.5, unmapped_aln.weight)
 
         # Convert the alignment strings returned by the sam_parser_ext into ss_class.AlignmentDat instances

@@ -39,3 +39,23 @@ void remove_low_quality_matches(vector<MATCH *> &mapped_reads, unsigned int min_
     mapped_reads = filtered_matches;
     filtered_matches.clear();
 }
+
+bool check_reads_paired(vector<MATCH *> &mapped_reads) {
+    /* Parameters:
+      * mapped_reads: A vector of MATCH instances that is to be filtered
+     * Functionality:
+      * Looks at the MATCH->paired attribute of each read and determines whether the query sequences are from a
+        paired-end or single-end sequencing library. true is returned if all reads are paired, false otherwise.
+    */
+    int sum = 0;
+    for ( vector<MATCH *>::iterator it = mapped_reads.begin(); it != mapped_reads.end(); ++it)  {
+        if (!(*it)->paired)
+            sum++;
+    }
+    if (sum == 0) return true;
+    if (sum == mapped_reads.size()) return false;
+    else {
+        std::cerr << "ERROR: Mixture of single- and paired-end reads detected in alignments." << std::endl;
+        std::exit(5);
+    }
+}

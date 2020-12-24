@@ -19,17 +19,17 @@ std::string MatchOutputParser::summarise() {
     char buf[1000];
     std::string summary_str;
     summary_str.assign("Summary for " + this->filename + ":\n");
-    sprintf(buf, "\tNumber of lines:                %ld\n", this->num_alignments);
+    sprintf(buf, "\tNumber of alignment lines:      %ld\n", this->num_lines);
     summary_str.append(buf);
-    sprintf(buf, "\tNumber of read alignments:      %ld\n", this->num_mapped);
+    sprintf(buf, "\tNumber of aligned reads:        %ld\n", this->num_mapped);
     summary_str.append(buf);
     sprintf(buf, "\tNumber of unmapped reads:       %ld\n", this->num_unmapped);
     summary_str.append(buf);
-    sprintf(buf, "\tUnique queries:                 %ld\n", this->unique_queries);
+    sprintf(buf, "\tUnique queries aligned          %ld\n", this->unique_queries);
     summary_str.append(buf);
-    sprintf(buf, "\tForward read lines:             %ld\n", this->num_fwd);
+    sprintf(buf, "\tForward reads aligned:          %ld\n", this->num_fwd);
     summary_str.append(buf);
-    sprintf(buf, "\tReverse read lines:             %ld\n", this->num_rev);
+    sprintf(buf, "\tReverse reads aligned:          %ld\n", this->num_rev);
     summary_str.append(buf);
     sprintf(buf, "\tUnpaired read alignments:       %ld\n", this->num_unpaired);
     summary_str.append(buf);
@@ -53,7 +53,7 @@ SamFileParser::SamFileParser(const std::string &filename, const std::string &for
     */
      this->filename = filename;
      this->input.open(filename.c_str(), std::ifstream::in);
-     this->num_alignments = 0;
+     this->num_lines = 0;
      this->unique_queries = 0;
      this->num_mapped = 0;
      this->num_unmapped = 0;
@@ -64,8 +64,8 @@ SamFileParser::SamFileParser(const std::string &filename, const std::string &for
      this->secondary_alns = 0;
      this->num_singletons = 0;
      this->num_distinct_reads_mapped = 0;
-     this->header_pattern.assign('@', 1);
-     this->unmapped_pattern.assign('*', 1);
+     this->header_pattern.assign("@", 1);
+     this->unmapped_pattern.assign("*", 1);
      return;
 }
 
@@ -122,88 +122,86 @@ bool SamFileParser::nextline(MATCH *match) {
       * Function for adding values of a short-read alignment in a SAM file to a match instance.
       * Specifically, the `paired`, `query`, `subject`, `start`, and `end` values are populated.
       * If the line of the SamFileParser matches the header_pattern, lines are skipped until they no longer match
-      and the line has >= 9 tab-separated fields.
+      and the line has >= 9 tab-separated columns.
     */
-     string line;
+     if (this->fields.size() < 9) return false;
 
-     bool _success = false;
-     while (std::getline(this->input, line).good()) {
-         if (matchString(line, this->header_pattern, true) )
-             continue;
+     match->query =  this->fields[0];
+     match->subject = this->fields[2];
+     match->start = atoi(this->fields[3]);
+     match->mq = atoi(this->fields[4]);
+     match->cigar = this->fields[5];
+     match->paired = getMateInfo(static_cast<unsigned int>(atoi(this->fields[1])), match);
 
-         fields.clear();
-         split(line, fields, this->buf, '\t');
+     // TODO: test to ensure the end position is calculated correctly. It currently isn't.
+     if ( match->parity ) // Read is second in pair and will be aligned right-to-left
+        match->end =  match->start - std::string(this->fields[9]).size();
+     else
+        match->end =  match->start + std::string(this->fields[9]).size();
 
-         if (fields.size() < 9) continue;
-
-         _success = true;
-         break;
-     }
-
-     if ( _success )  {
-         match->query =  fields[0];
-         match->subject = fields[2];
-         match->start = atoi(fields[3]);
-         match->mq = atoi(fields[4]);
-         match->cigar = fields[5];
-         match->paired = getMateInfo(static_cast<unsigned int>(atoi(fields[1])), match);
-
-        
-         // TODO: test to ensure the end position is calculated correctly. It currently isn't.
-         if ( match->parity ) // Read is second in pair and will be aligned right-to-left
-            match->end =  match->start - std::string(fields[9]).size();
-         else
-            match->end =  match->start + std::string(fields[9]).size();
-
-         return true;
-     }
-    return false;
+     return true;
 }
 
-int SamFileParser::consume_sam(vector<MATCH *> &all_reads,
-                                map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> > &reads_dict,
-                                float &unmapped_weight_sum,
-                                bool multireads,
-                                bool show_status) {
+int SamFileParser::parse_header(map<std::string, int> &ref_dict) {
+    string line;
+    while (std::getline(this->input, line).good()) {
+        if (match_string(line, this->header_pattern, true) ) {
+            this->fields.clear();
+            split(line, this->fields, this->buf, '\t');
+            if (strcmp(this->fields[0], "@SQ") == 0) {
+                ref_dict[lstrip(this->fields[1], ':')] = atoi(lstrip(this->fields[2], ':'));
+            }
+            else
+                continue;
+        }
+        else
+            return 0;
+    }
+    return 1;
+}
+
+int SamFileParser::consume_sam(vector<MATCH *> &all_alignments, bool multireads, bool show_status) {
     /* Parameters:
-      * all_reads: Pointer to a vector of MATCH objects that has yet to be populated
-      * reads_dict: Pointer to a map indexed by read-names with QUADRUPLE values that store all reads in the SAM file
-      * unmapped_weight_sum: Reference to a float tracking the number of unmapped fragments
+      * all_alignments: Pointer to a vector of MATCH objects that has yet to be populated
       * multireads: Boolean flag indicating whether reads that have multiple ambiguous mapping positions are used
       * show_stats: Boolean indicating whether the number of reads parsed should be printed to screen
      * Functionality:
       * Basic function for parsing a SAM file.
-      * All mapped reads are saved as a MATCH instance and these objects are stored in all_reads.
+      * All mapped reads are saved as a MATCH instance and these objects are stored in all_alignments.
       * The number of mapped, unmapped, forward, and reverse reads are counted.
       * These are counts are non-unique so double counts could arise from reads with multiple alignments
     */
-   
-
-    //MATCH *match = Match_cnew();
+    string line;
+    map<std::string, int> ref_dict;
 
      if(!this->input.good()) {
          std::cerr << "ERROR: Unable to open '"<< filename <<"' for reading." << std::endl;
          return 1;
      }
 
+    if (this->parse_header(ref_dict)) {
+        std::cerr << "WARNING: No alignment lines found in SAM file." << this->filename << std::endl;
+        return 1;
+    }
+
     if ( show_status )
         std::cout << "Number of SAM alignment lines processed: " << std::endl;
 
-    int i;
-    struct QUADRUPLE <bool, bool, unsigned int, unsigned int> p;
-    for ( i =0; ; i++ ) {
-        MATCH *match = Match_cnew();
-        if (show_status && i % 10000 == 0)
-            std::cout << "\n\033[F\033[J" << i;
+    while (std::getline(this->input, line).good()) {
+        cout << line << endl;
+        if (show_status && this->num_lines % 10000 == 0)
+            std::cout << "\n\033[F\033[J" << this->num_lines;
+        split(line, this->fields, this->buf, '\t');
+        this->num_lines++;
+        if ( match_string(string(this->fields[2]), this->unmapped_pattern, true) ) {
+            this->num_unmapped++;
+            continue;
+        }
 
+        MATCH *match = Match_cnew();
         if (!this->nextline(match))
             break;
-        this->num_alignments++;
-
-        if (match->mapped)
-            this->num_mapped++;
-        else
-            this->num_unmapped++;
+        this->num_mapped++;
 
         if (!match->paired)
             this->num_unpaired++;
@@ -213,51 +211,61 @@ int SamFileParser::consume_sam(vector<MATCH *> &all_reads,
             else this->num_fwd++;
         }
 
-        if (reads_dict.find(match->query) == reads_dict.end()) {
-            p.first = false;
-            p.second = false;
-            p.third = 0;
-            p.fourth = 0;
-            reads_dict[match->query] = p;
-        }
-
         if (match->multi && !multireads)  // Drop secondary and supplementary alignments
             continue;
 
-        if (!match->parity) {
-            reads_dict[match->query].first = true;  // This is a forward read
-            if (match->mapped)
-                reads_dict[match->query].third++;
-        }
-        else {
-            reads_dict[match->query].second = true;  // This is a reverse read
-            if (match->mapped)
-                reads_dict[match->query].fourth++;
-        }
-
         // if it is not mapped then ignore it
         if (!match->mapped) {
-            if (match->paired)
-                unmapped_weight_sum += 0.5;
-            else
-                unmapped_weight_sum++;
             Py_DECREF((PyObject*)match);
             continue;
         }
 
         // store it to process later by looking up the dictionary
         try {
-            all_reads.push_back(match);
+            all_alignments.push_back(match);
         }
         catch (...) {
-            cout << "Failing " << match->query << "   " << all_reads.size() << endl;
+            cout << "ERROR: Failing " << match->query << "   " << all_alignments.size() << endl;
             return 1;
         }
     }
 
     if ( show_status )
-        std::cout << "\n\033[F\033[J" << i << std::endl;
+        std::cout << "\n\033[F\033[J" << this->num_lines << std::endl;
 
+    return 0;
+}
+
+
+int SamFileParser::alignment_multiplicity_audit(vector<MATCH *> &all_alignments,
+                                                map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> > &reads_dict) {
+    /* Parameters:
+      * all_alignments: Pointer to a vector of MATCH objects that has yet to be populated
+      * reads_dict: Pointer to a map indexed by read-names with QUADRUPLE values that store all reads in the SAM file
+     * Functionality:
+      * 
+    */
+    struct QUADRUPLE <bool, bool, unsigned int, unsigned int> p;
+    for ( vector<MATCH *>::iterator it = all_alignments.begin(); it != all_alignments.end(); ++it)  {
+        if (reads_dict.find((*it)->query) == reads_dict.end()) {
+            p.first = false;
+            p.second = false;
+            p.third = 0;
+            p.fourth = 0;
+            reads_dict[(*it)->query] = p;
+        }
+
+        if (!(*it)->parity) {
+            reads_dict[(*it)->query].first = true;  // This is a forward read
+            if ((*it)->mapped)
+                reads_dict[(*it)->query].third++;
+        }
+        else {
+            reads_dict[(*it)->query].second = true;  // This is a reverse read
+            if ((*it)->mapped)
+                reads_dict[(*it)->query].fourth++;
+        }                       
+    }
     return 0;
 }
 

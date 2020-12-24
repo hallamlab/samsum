@@ -22,13 +22,13 @@ CLASSIFIERS = [
     "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 
-sam_module = Extension("_sam_module",
-                       sources=["src/extensions/sammodule.cpp",
-                                "src/extensions/helper.cpp", "src/extensions/sambamparser.cpp",
-                                "src/extensions/utilities.cpp", "src/extensions/types.cpp"],
-                       depends=["helper.h", "sambamparser.h", "types.h", "utilities.h"],
-                       include_dirs=["src/include/"],
-                       language="c++")
+extension = Extension("_sam_module",
+                      sources=["src/extensions/sammodule.cpp",
+                               "src/extensions/helper.cpp", "src/extensions/sambamparser.cpp",
+                               "src/extensions/utilities.cpp", "src/extensions/types.cpp"],
+                      depends=["helper.h", "sambamparser.h", "types.h", "utilities.h"],
+                      include_dirs=["src/include/"],
+                      language="c++")
 
 
 SETUP_METADATA = \
@@ -49,7 +49,7 @@ SETUP_METADATA = \
         "py_modules": [splitext(basename(path))[0] for path in glob('src/*.py')],
         "entry_points": {'console_scripts': ['samsum = samsum.__main__:main']},
         "classifiers": CLASSIFIERS,
-        "ext_modules": [sam_module],
+        "ext_modules": [extension],
         "install_requires": ["numpy", "pytest", "pyfastx"]
     }
 

@@ -39,6 +39,7 @@ extern PyTypeObject MatchType;
 
 
 MATCH *Match_cnew(PyTypeObject *type = &MatchType);
+
 void update_end_and_read_length(MATCH * self);
 
 template< typename A, typename B, typename C, typename D>

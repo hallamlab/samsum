@@ -35,7 +35,7 @@ def sam_parser_ext(sam_file: str, multireads=False, aln_percent=0, min_mq=0) -> 
 
     mapping_list_grouped = itertools.groupby(sorted(mapping_list, key=key_fn), key_fn)
 
-    logging.info("Zipping query names and alignment data... ")
+    logging.info("Grouping alignment data by reference sequence... ")
 
     for key, group in mapping_list_grouped:
         reads_mapped[key] = list(group)
