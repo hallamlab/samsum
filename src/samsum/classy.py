@@ -132,7 +132,7 @@ class RefSequence:
         """
         if self.weight_total == 0:
             return
-        self.tpm = self.fpkm/denominator
+        self.tpm = 1E6*(self.fpkm/denominator)
         return
 
     def clear_alignments(self) -> None:

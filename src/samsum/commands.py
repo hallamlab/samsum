@@ -71,8 +71,8 @@ def ref_sequence_abundances(aln_file: str, seq_file: str, map_qual=0, p_cov=50, 
     # Parse the alignments and return the strings of reads mapped to each reference sequence
     mapped_dict = ss_fp.sam_parser_ext(aln_file, multireads, map_qual)
 
-    num_unmapped, mapped_total = ss_aln_utils.load_reference_coverage(refseq_dict=references, mapped_dict=mapped_dict,
-                                                                      min_aln=min_aln)
+    num_unmapped, _ = ss_aln_utils.load_reference_coverage(refseq_dict=references, mapped_dict=mapped_dict,
+                                                           min_aln=min_aln)
     mapped_dict.clear()
 
     # Filter out alignments that with either short alignments or are from low-coverage reference sequences
@@ -125,8 +125,4 @@ def stats(sys_args):
     ss_fp.write_summary_table(references, args.output_table,
                               ss_utils.file_prefix(stats_ss.aln_file), num_unmapped, args.sep)
 
-    # for seq_name in sorted(references):
-    #     ref_seq = references[seq_name]  # type: ss_class.RefSequence
-    #     if ref_seq.reads_mapped != 0:
-    #         print(ref_seq.get_info())
     return 0

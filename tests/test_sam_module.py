@@ -75,7 +75,7 @@ class SamModuleTester(unittest.TestCase):
             total_mapped += refseq.reads_mapped
         self.assertEqual(220.0, total_mapped)
 
-        self.assertEqual(1, sum(refseq.tpm for refseq in ref_seq_abunds.values()))
+        self.assertEqual(1E6, int(sum(refseq.tpm for refseq in ref_seq_abunds.values())))
         return
 
     def test_proportion_covered(self):
