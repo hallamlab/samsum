@@ -13,3 +13,7 @@ def get_test_data(filename):
     if not filepath or not os.path.isfile(filepath):
         filepath = os.path.join(os.path.dirname(__file__), 'tests/test-data', filename)
     return filepath
+
+
+def get_project_root():
+    return resource_filename(Requirement.parse("samsum"), "")

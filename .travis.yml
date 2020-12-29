@@ -1,6 +1,6 @@
-language: python
 os: linux
 dist: bionic
+language: python
 python:
   - "3.5"
   - "3.6"
@@ -10,6 +10,9 @@ python:
 branches:
   only:
   - master
+
+on:
+  tags: true
 
 before_deploy:
 - git config --local user.name "cmorganl"

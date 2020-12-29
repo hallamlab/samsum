@@ -3,7 +3,8 @@
 #include <cstdlib>
 #include <iostream>
 #include "sambamparser.h"
-#include "helper.h"
+#include <string.h>
+//#include "helper.h"
 
 using namespace std;
 
@@ -86,6 +87,12 @@ PyMODINIT_FUNC PyInit__sam_module(void) {
         INITERROR;
     }
 
+    if(PyType_Ready(&MatchType) < 0)
+        return NULL;
+    
+    Py_INCREF((PyObject *) &MatchType);
+    PyModule_AddObject(m, "MATCH", (PyObject *) &MatchType);
+
     return m;
 }
 
@@ -110,18 +117,25 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
     std::cout << "Parsing alignment file " << aln_file << std::endl;
 
     bool verbose = true;
-    vector<MATCH> mapped_reads;
+    vector<MATCH *> mapped_reads;
     float unmapped_weight_sum;
     cout << "Reserving space for mapped reads... " << std::flush;
-    mapped_reads.reserve(8000000);
+    mapped_reads.reserve(8000000); // still required if 
     cout << "done." << endl;
     map<std::string, struct QUADRUPLE<bool, bool, unsigned int, unsigned int> > reads_dict;
     map<std::string, float > multireads;
 
     SamFileParser sam_file(aln_file, "sam");
-    int status = sam_file.consume_sam(mapped_reads, reads_dict, unmapped_weight_sum, all_alignments, verbose);
+    int status = sam_file.consume_sam(mapped_reads, all_alignments, verbose);
     if ( status > 0 )
         return mapping_info_py;
+
+    if (check_reads_paired(mapped_reads))
+        unmapped_weight_sum = (sam_file.num_unmapped*0.5);
+    else
+        unmapped_weight_sum = sam_file.num_unmapped;
+
+    sam_file.alignment_multiplicity_audit(mapped_reads, reads_dict);
 
     // Identify multireads with and count the number of secondary adn supplementary alignments
     long num_secondary_hits = identify_multireads(reads_dict, multireads,
@@ -137,42 +151,44 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
     sam_file.num_distinct_reads_mapped = sam_file.num_mapped - num_secondary_hits;
 
     // Add a match object that stores the number of unmapped reads
-    MATCH unmapped;
-    unmapped.w = unmapped_weight_sum;
-    unmapped.query = "NA";
-    unmapped.subject = "UNMAPPED";
-    unmapped.parity = 0;
+    
+    MATCH *unmapped = Match_cnew();
+    unmapped->w = unmapped_weight_sum;
+    unmapped->query = "NA";
+    unmapped->subject = "UNMAPPED";
+    unmapped->parity = 0;
     mapped_reads.push_back(unmapped);
 
     // Print the various SAM alignment stats
     if ( verbose )
         std::cout << sam_file.summarise();
 
-    // Reformat the MATCH objects into the strings required
     if ( verbose )
-        cout << "Formatting alignment strings... " << std::flush;
-    vector<std::string> query_info = format_matches_for_service(mapped_reads, index);
-    if ( verbose )
-        cout << "done." << endl << std::flush;
-    mapped_reads.clear();
+        cout << "Calculating alignment positions... " << std::flush;
+
+    add_alignment_positions(mapped_reads, index); //update match end and read_length
 
     if ( verbose )
-        cout << "Converting strings to Python objects... " << std::flush;
+        cout << "done." << endl << std::flush;
+
+    if ( verbose )
+        cout << "Building alignment list... " <<std::flush;
+
     long x = 0;
-    vector<std::string>::iterator qi_it;
-    std::string str;
-    for (qi_it = query_info.begin(); qi_it != query_info.end(); ++qi_it ) {
-        str = *qi_it;
-        if (PyList_Append(mapping_info_py, Py_BuildValue("s", str.c_str())) == -1)
+    vector<MATCH *>::iterator qi_it;
+    for (qi_it = mapped_reads.begin(); qi_it != mapped_reads.end(); ++qi_it ) {
+        MATCH *mt = (*qi_it);
+        if (PyList_Append(mapping_info_py, Py_BuildValue("O", (PyObject *)mt)) == -1)
             x++;
     }
+
     if ( verbose )
         cout << "done." << endl << std::flush;
+
     if (x > 0) {
-        sprintf(sam_file.buf, "WARNING: Failed to append %ld/%zu items into mapped reads list.", x, query_info.size());
+        sprintf(sam_file.buf, "WARNING: Failed to append %ld/%zu items into mapped reads list.", x, mapped_reads.size());
         cerr << sam_file.buf << endl;
     }
-
     return mapping_info_py;
 }
 

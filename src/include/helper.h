@@ -10,8 +10,8 @@
 
 using namespace std;
 
-vector<std::string> format_matches_for_service(vector<MATCH> &all_reads, char* &index);
-
-void remove_low_quality_matches(vector<MATCH> &mapped_reads, unsigned int min_map_qual, float &unmapped_weight_sum);
+void add_alignment_positions(vector<MATCH *> &all_reads, char* &index);
+void remove_low_quality_matches(vector<MATCH *> &mapped_reads, unsigned int min_map_qual, float &unmapped_weight_sum);
+bool check_reads_paired(vector<MATCH *> &mapped_reads);
 
 #endif //_HELPER

@@ -15,7 +15,6 @@ class RefSequence:
         self.depth = 0.0
         self.covered = 0.0
         self.weight_total = 0.0
-        self.rpk = 0.0
         self.fpkm = 0.0
         self.tpm = 0.0
         self.alignments = []
@@ -28,7 +27,6 @@ class RefSequence:
                                     "Number of reads mapped = " + str(self.reads_mapped) +
                                     " (%f fragments)" % self.weight_total,
                                     "Covered from %d to %d" % (self.leftmost, self.rightmost),
-                                    "RPK = %f" % self.rpk,
                                     "FPKM = %f" % self.fpkm,
                                     "TPM  = %f" % self.tpm]) + "\n"
         return summary_str
@@ -39,7 +37,6 @@ class RefSequence:
         self.rightmost = min([self.rightmost, ref_seq.rightmost])
         self.weight_total += ref_seq.weight_total
         self.fpkm += ref_seq.fpkm
-        self.rpk += ref_seq.rpk
         self.tpm += ref_seq.tpm
         self.alignments += ref_seq.alignments
 
@@ -116,10 +113,6 @@ class RefSequence:
         self.depth = bases_mapped/self.length
         return
 
-    def calc_rpk(self, num_reads):
-        self.rpk = num_reads / (self.length / 1E3)
-        return
-
     def calc_fpkm(self, num_reads):
         mmr = float(num_reads/1E6)
         if self.weight_total == 0:
@@ -131,22 +124,21 @@ class RefSequence:
     def calc_tpm(self, denominator) -> None:
         """
         Divide the read counts by the length of each gene in kilobases.
-        Count up all the RPK values in a sample and divide this number by 1,000,000.
-        Divide the RPK values by the “per million” scaling factor.
+        Count up all the FPK values in a sample and divide this number by 1,000,000.
+        Divide the FPK values by the “per million” scaling factor.
 
         :param denominator: The per-million scaling factor
         :return: None
         """
         if self.weight_total == 0:
             return
-        self.tpm = self.rpk/denominator
+        self.tpm = 1E6*(self.fpkm/denominator)
         return
 
     def clear_alignments(self) -> None:
         self.reads_mapped = 0
         self.depth = 0.0
         self.weight_total = 0.0
-        self.rpk = 0.0
         self.fpkm = 0.0
         self.tpm = 0.0
         self.alignments.clear()
@@ -220,7 +212,15 @@ class AlignmentDat(Tile):
         self.load_sam(alignment_fields)
         return
 
-    def decode_cigar(self):
+    def decode_cigar(self) -> int:
+        """
+        Calculates and modifies the AlignmentDat read_length attribute from the cigar string attribute.
+        The cigar string is parsed from the SAM file and represents the different states (e.g. insertion, deletion)
+        and the length of these states across the aligned length.
+        Also calculated in the alignment length itself and this length is returned as an integer.
+
+        :return: An integer representing the alignment length
+        """
         self.read_length = 0
         aln_len = 0
         i = 0

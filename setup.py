@@ -1,8 +1,13 @@
-from glob import glob
-from os.path import basename
-from os.path import splitext
-from setuptools import Extension
-from setuptools import setup, find_packages
+import os
+import glob
+
+import setuptools
+
+package_root = os.path.abspath(os.path.dirname(__file__))
+
+with open(os.path.join(package_root, "src", "samsum", "_version.py")) as fp:
+    k, v = fp.read().strip().split(" = ")
+version = v.strip('"')
 
 with open("README.md", "r") as readme:
     LONG_DESCRIPTION = readme.read()
@@ -22,40 +27,35 @@ CLASSIFIERS = [
     "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 
-fasta_module = Extension("samsum._fasta_module",
-                         sources=["src/extensions/fastamodule.cpp", "src/extensions/fastareader.cpp", "src/extensions/utilities.cpp"],
-                         depends=["fastareader.h", "utilities.h", "types.h"],
-                         include_dirs=["src/include/"],
-                         language="c++")
-sam_module = Extension("samsum._sam_module",
-                       sources=["src/extensions/sammodule.cpp",
-                                "src/extensions/helper.cpp", "src/extensions/sambamparser.cpp",
-                                "src/extensions/utilities.cpp"],
-                       depends=["helper.h", "sambamparser.h", "types.h", "utilities.h"],
-                       include_dirs=["src/include/"],
-                       language="c++")
+extension = setuptools.Extension("_sam_module",
+                                 sources=["src/extensions/sammodule.cpp",
+                                          "src/extensions/helper.cpp", "src/extensions/sambamparser.cpp",
+                                          "src/extensions/utilities.cpp", "src/extensions/types.cpp"],
+                                 depends=["helper.h", "sambamparser.h", "types.h", "utilities.h"],
+                                 include_dirs=["src/include/"],
+                                 language="c++")
 
 
 SETUP_METADATA = \
     {
         "name": "samsum",
-        "version": "0.1.2",
+        "version": version,
         "description": "A light-weight python package for summarizing sequence coverage from SAM and BAM files",
         "long_description": LONG_DESCRIPTION,
         "long_description_content_type": "text/markdown",
-        "author": "Connor Morgan-Lang, Ryan McLaughlin",
+        "author": "Connor Morgan-Lang, Matthew Tang, Ryan J. McLaughlin",
         "author_email": "c.morganlang@gmail.com",
         "url": "https://github.com/hallamlab/samsum",
         "license": "GPL-3.0",
-        "packages": find_packages('src', exclude=["tests"]),
+        "packages": setuptools.find_packages('src', exclude=["tests"]),
         "include_package_data": True,
         "package_dir": {'samsum': 'src/samsum'},  # Necessary for proper importing
         "package_data": {'tests': ["tests/test-data/*.sam"]},
-        "py_modules": [splitext(basename(path))[0] for path in glob('src/*.py')],
+        "py_modules": [os.path.splitext(os.path.basename(path))[0] for path in glob.glob('src/*.py')],
         "entry_points": {'console_scripts': ['samsum = samsum.__main__:main']},
         "classifiers": CLASSIFIERS,
-        "ext_modules": [fasta_module, sam_module],
-        "install_requires": ["numpy", "pytest"]
+        "ext_modules": [extension],
+        "install_requires": ["numpy", "pytest", "pyfastx"]
     }
 
-setup(**SETUP_METADATA)
+setuptools.setup(**SETUP_METADATA)

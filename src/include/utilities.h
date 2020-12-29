@@ -12,11 +12,11 @@ using namespace std;
 
 void split(const std::string  &strn, std::vector<char *> &v, char *buf, char d='\t');
 
-bool matchString(const string &str, const string & stringtomatch, bool fromstart=false);
+bool match_string(const string &str, const string & stringtomatch, bool fromstart=false);
 
 void get_fasta_sequence_info(const std::string &fasta_file_name);
 
-std::string extract_sequence_name(const std::string &name);
+char* lstrip(char *str, char c);
 
 #endif //_UTILITIES
 
