@@ -1,16 +1,16 @@
-__author__ = 'Connor Morgan-Lang'
-
 import os
 import logging
 import numpy
 
-import samsum
-import samsum.args as ss_args
-import samsum.classy as ss_class
-import samsum.logger as ss_log
-import samsum.file_parsers as ss_fp
-import samsum.utilities as ss_utils
-import samsum.alignment_utils as ss_aln_utils
+from samsum import _version as ss_version
+from samsum import args as ss_args
+from samsum import classy as ss_class
+from samsum import logger as ss_log
+from samsum import file_parsers as ss_fp
+from samsum import utilities as ss_utils
+from samsum import alignment_utils as ss_aln_utils
+
+__author__ = 'Connor Morgan-Lang'
 
 
 def info(sys_args):
@@ -27,7 +27,7 @@ def info(sys_args):
     ss_log.prep_logging()
     info_ss = ss_class.SAMSumBase("info")
 
-    logging.info("samsum version " + samsum.__version__ + ".\n")
+    logging.info("samsum version " + ss_version.__version__ + ".\n")
 
     # Write the version of all python deps
     py_deps = {"numpy": numpy.__version__}
