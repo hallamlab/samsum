@@ -1,7 +1,10 @@
-#! /usr/bin/env python
+"""
+A light-weight python package for summarizing DNA sequence coverage from SAM files
+"""
 
-from samsum import _sam_module, _fasta_module
+import _sam_module
+from samsum import _version as samsum_version
 
 name = "samsum"
-__version__ = "0.1.2"
-__all__ = ["_sam_module", "_fasta_module"]
+__version__ = samsum_version
+__all__ = ["_sam_module"]

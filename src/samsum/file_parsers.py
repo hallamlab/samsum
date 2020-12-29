@@ -1,8 +1,11 @@
-
 import os
 import sys
 import logging
-from samsum import _fasta_module, _sam_module
+import itertools
+
+from pyfastx import Fasta
+
+import _sam_module
 from samsum import classy as ss_class
 
 __author__ = 'Connor Morgan-Lang'
@@ -28,12 +31,15 @@ def sam_parser_ext(sam_file: str, multireads=False, aln_percent=0, min_mq=0) -> 
         logging.error("No alignments were read from SAM file '%s'\n" % sam_file)
         sys.exit(5)
 
-    logging.info("Zipping query names and alignment data... ")
-    for ref, aln_dat in zip(mapping_list, mapping_list):
-        try:
-            reads_mapped[ref].append(aln_dat)
-        except KeyError:
-            reads_mapped[ref] = [aln_dat]
+    key_fn = lambda x: x.subject
+
+    mapping_list_grouped = itertools.groupby(sorted(mapping_list, key=key_fn), key_fn)
+
+    logging.info("Grouping alignment data by reference sequence... ")
+
+    for key, group in mapping_list_grouped:
+        reads_mapped[key] = list(group)
+
     logging.info("done.\n")
 
     logging.debug("%d of unique read names returned by _sam_module.\n" % len(reads_mapped))
@@ -41,7 +47,7 @@ def sam_parser_ext(sam_file: str, multireads=False, aln_percent=0, min_mq=0) -> 
     return reads_mapped
 
 
-def fasta_seq_lengths_ext(fasta_file: str, min_seq_length=0) -> dict:
+def fasta_seq_lengths(fasta_file: str, min_seq_length=0) -> dict:
     """
     Function for calculating the lengths of all sequences in a FASTA file.
 
@@ -53,16 +59,21 @@ def fasta_seq_lengths_ext(fasta_file: str, min_seq_length=0) -> dict:
         logging.error("FASTA file '%s' doesn't exist.\n" % fasta_file)
         sys.exit(3)
 
-    logging.debug("Using FASTA module to retrieve sequence lengths from FASTA... ")
-    ext_seq_lengths = _fasta_module.get_lengths(fasta_file, min_seq_length)
-    if not ext_seq_lengths:
+    seq_lengths_map = {}
+    logging.debug("Using Pyfastx to retrieve sequence lengths from FASTA... ")
+    try:
+        py_fa = Fasta(fasta_file, build_index=False, full_name=True)
+    except RuntimeError as error:
+        logging.debug(str(error)+"\n")
+        return seq_lengths_map
+
+    for name, seq in py_fa:  # type: (str, str)
+        if len(seq) > min_seq_length:
+            seq_lengths_map[name] = len(seq)
+
+    if not seq_lengths_map:
         logging.error("No sequences were parsed from the FASTA file '%s'\n" % fasta_file)
         sys.exit(5)
-    logging.debug("done.\n")
-
-    logging.debug("Converting list of sequence lengths into dictionary... ")
-    tmp_it = iter(ext_seq_lengths)
-    seq_lengths_map = dict(zip(tmp_it, tmp_it))
     logging.debug("done.\n")
 
     logging.info(str(len(seq_lengths_map)) + " sequences were read from " + fasta_file + "\n")
