@@ -16,6 +16,11 @@ class MyTestCase(unittest.TestCase):
                                                                    min_aln=10, p_cov=0, map_qual=0)
         return
 
+    def tearDown(self) -> None:
+        if os.path.isfile(self.output_table):
+            os.remove(self.output_table)
+        return
+
     def test_write_summary_table(self):
         """ Ensure the header and number of columns in the output table is correct """
         from samsum import file_parsers as ss_fp

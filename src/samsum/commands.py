@@ -71,14 +71,15 @@ def ref_sequence_abundances(aln_file: str, seq_file: str, map_qual=0, p_cov=50, 
     # Parse the alignments and return the strings of reads mapped to each reference sequence
     mapped_dict = ss_fp.sam_parser_ext(aln_file, multireads, map_qual)
 
-    ss_aln_utils.load_reference_coverage(refseq_dict=references, mapped_dict=mapped_dict, min_aln=min_aln)
+    num_unmapped, mapped_total = ss_aln_utils.load_reference_coverage(refseq_dict=references, mapped_dict=mapped_dict,
+                                                                      min_aln=min_aln)
     mapped_dict.clear()
 
     # Filter out alignments that with either short alignments or are from low-coverage reference sequences
-    ss_aln_utils.proportion_filter(references, p_cov)
+    num_unmapped += ss_aln_utils.proportion_filter(references, p_cov)
 
     # Calculate the RPKM, FPKM and TPM for each reference sequence with reads mapped to it
-    ss_aln_utils.calculate_normalization_metrics(references)
+    ss_aln_utils.calculate_normalization_metrics(references, num_unmapped)
 
     return references
 
@@ -118,7 +119,7 @@ def stats(sys_args):
     num_unmapped += ss_aln_utils.proportion_filter(references, args.p_cov)
 
     # Calculate the RPKM, FPKM and TPM for each reference sequence with reads mapped to it
-    ss_aln_utils.calculate_normalization_metrics(references)
+    ss_aln_utils.calculate_normalization_metrics(references, num_unmapped)
 
     # Write the summary table with each of the above metrics as well as variance for each
     ss_fp.write_summary_table(references, args.output_table,

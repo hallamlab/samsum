@@ -62,8 +62,8 @@ class SamModuleTester(unittest.TestCase):
         from samsum import commands
         from samsum.classy import RefSequence
         test_sam = utils.get_test_data("samsum_test_2.sam")
-        test_aln = utils.get_test_data("samsum_test_2.fasta")
-        ref_seq_abunds = commands.ref_sequence_abundances(aln_file=test_sam, seq_file=test_aln,
+        test_asm = utils.get_test_data("samsum_test_2.fasta")
+        ref_seq_abunds = commands.ref_sequence_abundances(aln_file=test_sam, seq_file=test_asm,
                                                           min_aln=10, p_cov=0, map_qual=0, multireads=True)
         e10 = ref_seq_abunds['AB-755_P22_E10_NODE_6_length_36342_cov_2156.57_ID_21']  # type: RefSequence
         self.assertEqual(e10.reads_mapped, 10)
@@ -74,6 +74,8 @@ class SamModuleTester(unittest.TestCase):
         for refseq in ref_seq_abunds.values():  # type: RefSequence
             total_mapped += refseq.reads_mapped
         self.assertEqual(220.0, total_mapped)
+
+        self.assertEqual(1, sum(refseq.tpm for refseq in ref_seq_abunds.values()))
         return
 
     def test_proportion_covered(self):

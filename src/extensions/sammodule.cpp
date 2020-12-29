@@ -176,9 +176,8 @@ static PyObject *get_mapped_reads(PyObject *self, PyObject *args) {
 
     long x = 0;
     vector<MATCH *>::iterator qi_it;
-    MATCH *mt;
     for (qi_it = mapped_reads.begin(); qi_it != mapped_reads.end(); ++qi_it ) {
-        mt = (*qi_it);
+        MATCH *mt = (*qi_it);
         if (PyList_Append(mapping_info_py, Py_BuildValue("O", (PyObject *)mt)) == -1)
             x++;
     }

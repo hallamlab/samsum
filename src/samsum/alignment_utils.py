@@ -23,41 +23,6 @@ def load_references(refseq_lengths: dict) -> dict:
     return references
 
 
-def load_alignments(mapped_dict: dict, min_aln: int) -> (list, float, float):
-    """
-    Converts the alignment strings for each query sequence into AlignmentDat instances. Sums the weights for unmapped
-    (including those that fell below the minimum aligned percentage) and mapped reads.
-
-    :param mapped_dict: A dictionary containing read names as keys and lists of SAM alignment rows as values. The format
-     of these alignment rows is controlled by _sam_module.get_mapped_reads and must be accepted by AlignmentDat.load_sam
-    :param min_aln: The minimum proportion of a read that must be aligned to a reference sequence to be included.
-     If its aligned percentage falls below this threshold that query's alignment is not appended to the *alignments*
-     list and its weight attribute is added to num_unmapped
-    :return: A list of AlignmentDat instances, total alignment weights for unmapped reads and mapped reads
-    """
-    alignments = []
-    num_unmapped = 0.0
-    mapped_total = 0.0
-    logging.info("Instantiating alignment data... ")
-
-    for read_name in mapped_dict:
-        for aln_dat in mapped_dict[read_name]:  # type: _sam_module.Match
-            if aln_dat.subject == "UNMAPPED":
-                num_unmapped += aln_dat.weight
-                continue
-            # Skip over alignments that don't meet or exceed the minimum percentage of the read length
-            # TODO: Migrate this to the C++ side
-            if 100*(aln_dat.end-aln_dat.start)/aln_dat.read_length < min_aln:
-                num_unmapped += aln_dat.weight
-                continue
-            alignments.append(aln_dat)
-            mapped_total += aln_dat.weight
-
-    logging.info("done.\n")
-
-    return alignments, num_unmapped, mapped_total
-
-
 def load_reference_coverage(refseq_dict: dict, mapped_dict: dict, min_aln: int) -> (float, float):
     """
     Converts the alignment strings for each query sequence into AlignmentDat instances. Sums the weights for unmapped
@@ -111,7 +76,7 @@ def load_reference_coverage(refseq_dict: dict, mapped_dict: dict, min_aln: int) 
     return num_unmapped, mapped_total
 
 
-def calculate_normalization_metrics(genome_dict: dict) -> None:
+def calculate_normalization_metrics(genome_dict: dict, unmapped_weight: float) -> None:
     """
     Calculates the normalized abundance values for each header's RefSeq instance in genome_dict
         1. Reads per kilobase (RPK) is calculated using the reference sequence's length and number of reads (provided
@@ -122,24 +87,24 @@ def calculate_normalization_metrics(genome_dict: dict) -> None:
         2. Transcripts per million (TPM) is calculated similarly to FPKM but the order of operations is different.
 
     :param genome_dict: A dictionary of RefSeq instances indexed by headers (sequence names)
+    :param unmapped_weight: This represents the million-mappable reads for unaligned sequences. The 'weight' refers to
+     this value being library-type agnostic; number of fragments (not reads!) for either a SE or PE library.
     :return: None
     """
-    rpk_sum = 0  # The total reads per kilobase (RPK) of all reference sequences
-    for header in sorted(genome_dict.keys()):
-        ref_seq = genome_dict[header]  # type: classy.RefSequence
-        ref_seq.calc_rpk(ref_seq.weight_total)
-        rpk_sum += ref_seq.rpk
+    fpkm_sum = 0  # The total fragments per kilobase (FPK) of all reference sequences
+    mill_frag_denom = unmapped_weight
+    for header, ref_seq in sorted(genome_dict.items()):  # type: (str, classy.RefSequence)
+        mill_frag_denom += ref_seq.weight_total
 
-    for header in sorted(genome_dict.keys()):
-        ref_seq = genome_dict[header]  # type: classy.RefSequence
+    for header, ref_seq in sorted(genome_dict.items()):  # type: (str, classy.RefSequence)
         if ref_seq.weight_total == 0:
             continue
-        ref_seq.calc_fpkm(ref_seq.weight_total)
+        ref_seq.calc_fpkm(mill_frag_denom)
+        fpkm_sum += ref_seq.fpkm
 
-    denominator = rpk_sum / 1E6
     for header in genome_dict.keys():
         ref_seq = genome_dict[header]  # type: classy.RefSequence
-        ref_seq.calc_tpm(denominator)
+        ref_seq.calc_tpm(fpkm_sum)
 
     return
 

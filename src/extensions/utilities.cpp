@@ -47,6 +47,6 @@ bool match_string(const string &str, const string & string_to_match, bool from_s
     unsigned long pos = str.find(string_to_match);
     if ( from_start && pos == 0 ) return true;
 
-    return !from_start && pos >= 0;
+    return !from_start && pos != string_to_match.npos;
 
 }

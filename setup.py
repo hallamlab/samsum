@@ -5,10 +5,9 @@ import setuptools
 
 package_root = os.path.abspath(os.path.dirname(__file__))
 
-version = {}
 with open(os.path.join(package_root, "src", "samsum", "_version.py")) as fp:
-    exec(fp.read(), version)
-version = version["__version__"]
+    k, v = fp.read().strip().split(" = ")
+version = v.strip('"')
 
 with open("README.md", "r") as readme:
     LONG_DESCRIPTION = readme.read()
