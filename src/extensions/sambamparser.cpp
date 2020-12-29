@@ -143,7 +143,15 @@ bool SamFileParser::nextline(MATCH *match) {
 }
 
 int SamFileParser::parse_header(map<std::string, int> &ref_dict) {
+    /* Parameters:
+      * ref_dict: Pointer to a map of strings (to be reference names) as values and integers as keys
+     * Functionality:
+      * Iterates over the lines in a SAM file (SamFileParser.input attribute) while the lines match the
+       SamFileParser.header_pattern attribute ('@').
+      * Returns the line number that the header ends at.
+    */
     string line;
+    int line_no = 0;
     while (std::getline(this->input, line).good()) {
         if (match_string(line, this->header_pattern, true) ) {
             this->fields.clear();
@@ -154,10 +162,13 @@ int SamFileParser::parse_header(map<std::string, int> &ref_dict) {
             else
                 continue;
         }
-        else
-            return 0;
+        else {
+            this->input.seekg(this->input.tellg()-(line.size()+1));
+            return line_no;
+        }
+        line_no++;
     }
-    return 1;
+    return line_no;
 }
 
 int SamFileParser::consume_sam(vector<MATCH *> &all_alignments, bool multireads, bool show_status) {
@@ -179,20 +190,16 @@ int SamFileParser::consume_sam(vector<MATCH *> &all_alignments, bool multireads,
          return 1;
      }
 
-    if (this->parse_header(ref_dict)) {
-        std::cerr << "WARNING: No alignment lines found in SAM file." << this->filename << std::endl;
-        return 1;
-    }
+    this->parse_header(ref_dict);
 
     if ( show_status )
         std::cout << "Number of SAM alignment lines processed: " << std::endl;
 
     while (std::getline(this->input, line).good()) {
-        cout << line << endl;
+        this->num_lines++;
         if (show_status && this->num_lines % 10000 == 0)
             std::cout << "\n\033[F\033[J" << this->num_lines;
         split(line, this->fields, this->buf, '\t');
-        this->num_lines++;
         if ( match_string(string(this->fields[2]), this->unmapped_pattern, true) ) {
             this->num_unmapped++;
             continue;
