@@ -45,7 +45,7 @@ before_install:
 install:
   - "$PIP install -r requirements.txt"
   - "$PIP install -U setuptools"
-  - "$PIP install cibuildwheel==1.1.0"
+  - "$PIP install -U cibuildwheel"
   - "$PIP install --upgrade pip"
   - "$PIP --version"
   - "$PIP install codecov"

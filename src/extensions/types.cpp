@@ -1,7 +1,7 @@
 #include "types.h"
 
 // useless function
-PyObject *Match_new(PyTypeObject *type, PyObject *args, PyObject *kwds){
+PyObject *Match_new(PyTypeObject *type, PyObject *args, PyObject *kwargs){
     
     MATCH *self;
     
@@ -30,10 +30,10 @@ PyObject *Match_new(PyTypeObject *type, PyObject *args, PyObject *kwds){
 }
 
 
-static int Match_init(MATCH *self, PyObject *args, PyObject *kwds){
-    static char *kwlist[] = {"start", "end" , "weight", "query", "cigar", "subject", "read_length", "percent_id", NULL};
+static int Match_init(MATCH *self, PyObject *args, PyObject *kwargs){
+    static char* kwlist[] = {"start", "end" , "weight", "query", "cigar", "subject", "read_length", "percent_id", NULL};
 
-    if(! PyArg_ParseTupleAndKeywords(args, kwds, "iifsssif", kwlist,
+    if(! PyArg_ParseTupleAndKeywords(args, kwargs, "iifsssif", kwlist,
            &self->start, &self->end, &self->w, &self->query, &self->cigar, &self->subject, &self->read_length, &self->percent_id))
         return -1;
     return 0;
@@ -58,9 +58,11 @@ static PyMemberDef Match_members[] = {
 
 PyObject *Match_repr(MATCH *self) {
 	if (self->mapped) {
-		return PyUnicode_FromFormat("<Match> %s (%d) mapped to %s", self->query, self->read_length, self->subject);
+		return PyUnicode_FromFormat("<Match> %s (%d) mapped to %s",
+		                            self->query.c_str(), self->read_length, self->subject.c_str());
 	} else {
-		return PyUnicode_FromFormat("<Match> %s (%d) was not aligned", self->query, self->read_length);
+		return PyUnicode_FromFormat("<Match> %s (%d) was not aligned",
+		                            self->query.c_str(), self->read_length);
 	}
 }
 
