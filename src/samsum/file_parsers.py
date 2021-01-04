@@ -31,9 +31,7 @@ def sam_parser_ext(sam_file: str, multireads=False, aln_percent=0, min_mq=0) -> 
         logging.error("No alignments were read from SAM file '%s'\n" % sam_file)
         sys.exit(5)
 
-    key_fn = lambda x: x.subject
-
-    mapping_list_grouped = itertools.groupby(sorted(mapping_list, key=key_fn), key_fn)
+    mapping_list_grouped = itertools.groupby(sorted(mapping_list, key=lambda x: x.subject), lambda x: x.subject)
 
     logging.info("Grouping alignment data by reference sequence... ")
 

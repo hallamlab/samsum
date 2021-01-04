@@ -91,4 +91,3 @@ def prep_logging(log_file_name=None, verbosity=False):
                             datefmt="%d/%m %H:%M:%S",
                             format="%(asctime)s %(levelname)s:\n%(message)s")
     return
-
