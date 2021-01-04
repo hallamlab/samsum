@@ -1,4 +1,4 @@
 numpy >=1.16.2
 pytest>=5.4.1
 setuptools>=50.0.0
-pyfastx>=0.7.0
+pyfastx>=0.8.2
