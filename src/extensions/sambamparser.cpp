@@ -163,7 +163,7 @@ int SamFileParser::parse_header(map<std::string, int> &ref_dict) {
                 continue;
         }
         else {
-            this->input.seekg(this->input.tellg()-(line.size()+1));
+            this->input.seekg(long(this->input.tellg())-(line.size()+1));
             return line_no;
         }
         line_no++;

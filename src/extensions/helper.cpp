@@ -47,7 +47,7 @@ bool check_reads_paired(vector<MATCH *> &mapped_reads) {
       * Looks at the MATCH->paired attribute of each read and determines whether the query sequences are from a
         paired-end or single-end sequencing library. true is returned if all reads are paired, false otherwise.
     */
-    int sum = 0;
+    unsigned long sum = 0;
     for ( vector<MATCH *>::iterator it = mapped_reads.begin(); it != mapped_reads.end(); ++it)  {
         if (!(*it)->paired)
             sum++;
