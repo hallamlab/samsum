@@ -43,6 +43,5 @@ jobs:
         run: |
           echo "py_ver=$( echo ${{ matrix.python-version }} | sed 's/\.//g')" >> $GITHUB_ENV
           echo $py_ver
-          echo ${{ py_ver }}
           cat $GITHUB_ENV
-          tox -e coverage-py${{ py_ver }}-ss
+          tox -e coverage-py${py_ver}-ss
