@@ -33,10 +33,6 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install flake8 pytest codecov tox
           if [ -f requirements.txt ]; then python -m pip install -r requirements.txt; fi
-          echo "action_state=yellow" >> $GITHUB_ENV
-          echo $action_state
-          $action_state
-          ${action_state}
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
@@ -45,6 +41,5 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Run tox
         run: |
-          echo "py_ver=$( echo ${{ matrix.python-version }} | sed 's/\.//g')" >> $GITHUB_ENV
-          cat $GITHUB_ENV
-          tox -e coverage-py${py_ver}-ss
+          echo "$( echo ${{ matrix.python-version }} | sed 's/\.//g')" >> $GITHUB_ENV
+          tox -e coverage-py$( cat $GITHUB_ENV )-ss
