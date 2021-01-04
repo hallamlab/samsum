@@ -41,5 +41,7 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Run tox
         run: |
-          echo "PYTHON_VERSION=$( echo ${{ matrix.python-version }} | sed 's/\.//g')" >> $GITHUB_ENV
-          tox -e coverage-py$( echo $PYTHON_VERSION )-ss
+          PYTHON_VERSION=$( echo ${{ matrix.python-version }} | sed 's/\.//g')
+          echo ${PYTHON_VERSION}
+          echo "$( echo ${{ matrix.python-version }} | sed 's/\.//g')" >> $GITHUB_ENV
+          tox -e coverage-py${PYTHON_VERSION}-ss
