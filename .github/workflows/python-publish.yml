@@ -107,7 +107,7 @@ jobs:
 #          pytest
 
   publish-to-pypi:
-    needs: [ build-sdist, build-linux-wheels, build-macos-wheels, test-build ]
+    needs: [ build-sdist, build-linux-wheels, build-macos-wheels ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v2
