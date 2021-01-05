@@ -194,8 +194,9 @@ int SamFileParser::consume_sam(vector<MATCH *> &all_alignments, bool multireads,
 
     if ( show_status )
         std::cout << "Number of SAM alignment lines processed: " << std::endl;
-
+    cout << endl;
     while (std::getline(this->input, line).good()) {
+        cout << line << endl;
         this->num_lines++;
         if (show_status && this->num_lines % 10000 == 0)
             std::cout << "\n\033[F\033[J" << this->num_lines;

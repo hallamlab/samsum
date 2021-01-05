@@ -45,7 +45,7 @@ static void Match_dealloc(MATCH *self){
 }
 
 static PyMemberDef Match_members[] = {
-    {"start", T_UINT, offsetof(MATCH, start),0, "Match attribute"},//T_UINT, T_INT
+    {"start", T_UINT, offsetof(MATCH, start),0, "Match attribute"}, //T_UINT, T_INT
     {"end", T_UINT , offsetof(MATCH, end), 0, "Match attribute"},
     {"weight", T_FLOAT, offsetof(MATCH, w), 0, "Match attribute"},
     {"query", T_STRING , offsetof(MATCH, query), 0, "Match attribute"}, //string type are read_only after passing to python
