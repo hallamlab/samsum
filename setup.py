@@ -32,7 +32,13 @@ extension = setuptools.Extension("_sam_module",
                                           "src/extensions/utilities.cpp", "src/extensions/types.cpp"],
                                  depends=["helper.h", "sambamparser.h", "types.h", "utilities.h"],
                                  include_dirs=["src/include/"],
-                                 language="c++")
+                                 language="c++",
+                                 extra_compile_args=[
+                                     "-Wno-unused-result",
+                                     "-Wno-cpp",
+                                     "-Wno-unused-function",
+                                 ]
+                                 )
 
 
 SETUP_METADATA = \

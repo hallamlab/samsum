@@ -4,14 +4,14 @@ import os
 import unittest
 import pytest
 
-from .testing_utils import get_test_data, get_project_root
+from .testing_utils import get_test_data
 
 
 class SamsumTester(unittest.TestCase):
     def setUp(self) -> None:
         self.test_fasta = get_test_data("samsum_test_2.fasta")
         self.test_sam = get_test_data("samsum_test_2.sam")
-        self.output_tbl = os.path.join(get_project_root(), "tests/test-data/tmp_table.tsv")
+        self.output_tbl = os.path.join("tests/tmp_table.tsv")
         return
 
     def tearDown(self) -> None:
