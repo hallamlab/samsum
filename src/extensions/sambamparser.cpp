@@ -126,13 +126,14 @@ bool SamFileParser::nextline(MATCH *match) {
     */
      if (this->fields.size() < 9) return false;
 
+     cout << "Setting attributes" << endl;
      match->query =  this->fields[0];
      match->subject = this->fields[2];
      match->start = atoi(this->fields[3]);
      match->mq = atoi(this->fields[4]);
      match->cigar = this->fields[5];
      match->paired = getMateInfo(static_cast<unsigned int>(atoi(this->fields[1])), match);
-
+     cout << "Testing parity" << endl;
      // TODO: test to ensure the end position is calculated correctly. It currently isn't.
      if ( match->parity ) // Read is second in pair and will be aligned right-to-left
         match->end =  match->start - std::string(this->fields[9]).size();
@@ -196,7 +197,6 @@ int SamFileParser::consume_sam(vector<MATCH *> &all_alignments, bool multireads,
         std::cout << "Number of SAM alignment lines processed: " << std::endl;
     cout << endl;
     while (std::getline(this->input, line).good()) {
-        cout << line << endl;
         this->num_lines++;
         if (show_status && this->num_lines % 10000 == 0)
             std::cout << "\n\033[F\033[J" << this->num_lines;
@@ -205,11 +205,13 @@ int SamFileParser::consume_sam(vector<MATCH *> &all_alignments, bool multireads,
             this->num_unmapped++;
             continue;
         }
-
+        cout << line << endl;
         MATCH *match = Match_cnew();
+        cout << "Instantiating new Match" << endl;
         if (!this->nextline(match))
             break;
         this->num_mapped++;
+        cout << "Done" << endl;
 
         if (!match->paired)
             this->num_unpaired++;
