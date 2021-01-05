@@ -3,8 +3,8 @@
 name: Upload Python Package
 
 on:
-  release:
-    types: [created]
+  push:
+    branches: [ master ]
 
 jobs:
   build:
@@ -25,12 +25,12 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Format python version
-      run: echo Building wheels for cp${py_vs}-cp${py_vs}m
+      run: |
+        echo Building wheels for cp${py_vs}-cp${py_vs}m
+        echo Manylinux wheels built for $manylinux_version
       env:
-        py_vs: echo ${{ matrix.python-version }} | sed 's/\.//g'
-        manylinux_version: "cp${py_vs}-cp${py_vs}m"
-    - name: State Python version
-      run: echo Manylinux wheels built for $manylinux_version
+        py_vs: $( echo ${{ matrix.python-version }} | sed 's/\.//g')
+        manylinux_version: cp${py_vs}-cp${py_vs}m
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -42,7 +42,7 @@ jobs:
       if: ${{ matrix.os != 'macos-latest' }}
       uses: RalfG/python-wheels-manylinux-build@v0.3.3
       with:
-        python-versions: "cp${PY_VERSION}-cp${PY_VERSION}m"
+        python-versions: cp${PY_VERSION}-cp${PY_VERSION}m
         build-requirements: 'cython numpy'
     - name: Build Python wheels
       if: ${{ matrix.os == 'macos-latest' }}
