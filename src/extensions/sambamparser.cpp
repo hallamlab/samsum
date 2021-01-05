@@ -127,14 +127,14 @@ bool SamFileParser::nextline(MATCH *match) {
      if (this->fields.size() < 9) return false;
 
      cout << "Setting query to " << this->fields[0] << endl;
-     match->query =  this->fields[0];
+     match->query = (std::string)this->fields[0];
      cout << "Setting subject to " << this->fields[2] << endl;
-     match->subject = this->fields[2];
+     match->subject = (std::string)this->fields[2];
      cout << "Setting start" << endl;
      match->start = atoi(this->fields[3]);
      cout << "Setting mq" << endl;
      match->mq = atoi(this->fields[4]);
-     match->cigar = this->fields[5];
+     match->cigar = (std::string)this->fields[5];
      cout << "Setting paired" << endl;
      match->paired = getMateInfo(static_cast<unsigned int>(atoi(this->fields[1])), match);
      cout << "Testing parity" << endl;
