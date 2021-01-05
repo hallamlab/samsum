@@ -1,9 +1,12 @@
 # samsum
 A light-weight python package for summarizing sequence coverage from SAM and BAM files
 
+![tests](https://github.com/hallamlab/samsum/workflows/tests/badge.svg)
+![build](https://github.com/hallamlab/samsum/workflows/build/badge.svg)
+[![PyPI version](https://badge.fury.io/py/samsum.svg)](https://badge.fury.io/py/samsum)
+
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/4928c9ac353b4bdb93e351c0715a9fa1)](https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=hallamlab/samsum&amp;utm_campaign=Badge_Grade)
 [![codecov](https://codecov.io/gh/hallamlab/samsum/branch/master/graph/badge.svg?token=q6UhWcnlS5)](https://codecov.io/gh/hallamlab/samsum)
-[![Build Status](https://travis-ci.com/hallamlab/samsum.svg?branch=master)](https://travis-ci.com/hallamlab/samsum)
 
 [![Anaconda-Server Badge](https://anaconda.org/bioconda/samsum/badges/installer/conda.svg)](https://conda.anaconda.org/bioconda)
 [![Anaconda-Server Badge](https://anaconda.org/bioconda/samsum/badges/platforms.svg)](https://anaconda.org/bioconda/samsum)

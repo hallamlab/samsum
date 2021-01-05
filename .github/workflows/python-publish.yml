@@ -4,11 +4,9 @@ name: build
 
 on:
   push:
-    branches: [ master ]
+    branches: [ dev ]
 #    tags:
 #    - 'v*'
-#  release:
-#    types: [ created ]
 
 jobs:
   build-sdist:
@@ -100,26 +98,30 @@ jobs:
           pip install dist/samsum-*-cp38-cp38-manylinux*_x86_64.whl
           pytest -v
 
-  publish-to-pypi:
-    needs: [ build-sdist, build-linux-wheels, build-macos-wheels, test-build ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v2
-        with:
-          name: dist
-          path: dist
-      - uses: pypa/gh-action-pypi-publish@master
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_API_TOKEN }}
-          skip_existing: true
+#  publish-to-pypi:
+#    needs: [ build-sdist, build-linux-wheels, build-macos-wheels, test-build ]
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/download-artifact@v2
+#        with:
+#          name: dist
+#          path: dist
+#      - uses: pypa/gh-action-pypi-publish@master
+#        with:
+#          user: __token__
+#          password: ${{ secrets.PYPI_API_TOKEN }}
+#          skip_existing: true
 
 #  create-release:
 #    needs: publish-to-pypi
 #    runs-on: ubuntu-latest
 #    steps:
+#     - uses: actions/download-artifact@v2
+#       with:
+#         name: dist
+#         path: dist
 #     - name: Create GitHub Release
-#       uses: docker://antonyurchenko/git-release:v3.4
+#       uses: docker://antonyurchenko/git-release:v3.4.3
 #       env:
 #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 #         DRAFT_RELEASE: "false"
@@ -128,4 +130,4 @@ jobs:
 #         ALLOW_TAG_PREFIX: "true"
 #       with:
 #         args: |
-#           deeplc_gui.zip
+#           dist/*
