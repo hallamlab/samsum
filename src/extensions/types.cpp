@@ -9,9 +9,9 @@ PyObject *Match_new(PyTypeObject *type, PyObject *args, PyObject *kwargs){
 
     if (!self) return NULL;
 
-    self->query = "";
-    self->subject = "";
-    self->cigar = "";
+    self->query[0] = '\0';
+    self->subject[0] = '\0';
+    self->cigar[0] = '\0';
     self->start = 0;
     self->end = 0;
     self->mq = 0;
@@ -41,6 +41,7 @@ static int Match_init(MATCH *self, PyObject *args, PyObject *kwargs){
 }
 
 static void Match_dealloc(MATCH *self){
+    free(self->cigar);
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
@@ -59,10 +60,10 @@ static PyMemberDef Match_members[] = {
 PyObject *Match_repr(MATCH *self) {
 	if (self->mapped) {
 		return PyUnicode_FromFormat("<Match> %s (%d) mapped to %s",
-		                            self->query.c_str(), self->read_length, self->subject.c_str());
+		                            self->query, self->read_length, self->subject);
 	} else {
 		return PyUnicode_FromFormat("<Match> %s (%d) was not aligned",
-		                            self->query.c_str(), self->read_length);
+		                            self->query, self->read_length);
 	}
 }
 
@@ -117,35 +118,34 @@ PyTypeObject MatchType = {
 };
 
 unsigned int decode_cigar(MATCH* self){
-    string cigar = self->cigar;
-
     unsigned int read_len = 0;
     unsigned int aln_len = 0 ;
-
 
     string consume_ref =  "MDN=X";
 	string consume_query = "MIS=X";
 	
 	string buffer = "";
-	string::iterator it;
-	
-	for(it = cigar.begin(); it < cigar.end(); it++){
-		char c = *it;
-		if(isdigit(c)){
-			buffer = buffer + c;
+
+    char * c;
+    for (c = self->cigar; *c != '\0'; c++ ){
+		if(isdigit(*c)){
+			buffer = buffer + *c;
 		} else {
-			if(consume_ref.find(c) != string::npos){
+			if(consume_ref.find(*c) != string::npos){
 				aln_len += atoi(buffer.c_str());
 			}
-            if (consume_query.find(c) != string::npos){
+            if (consume_query.find(*c) != string::npos){
 				read_len += atoi(buffer.c_str());
 			}
 			buffer = "";
         }
     }
 
+    if (read_len == 0)
+        PyErr_SetString(PyExc_ValueError, "alignment length calculated from CIGAR was zero.");
+
     self->read_length = read_len;
-    
+
     return aln_len;
 
 

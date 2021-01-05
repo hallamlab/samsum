@@ -124,28 +124,25 @@ bool SamFileParser::nextline(MATCH *match) {
       * If the line of the SamFileParser matches the header_pattern, lines are skipped until they no longer match
       and the line has >= 9 tab-separated columns.
     */
-     if (this->fields.size() < 9) return false;
+    if (this->fields.size() < 9) return false;
 
-     cout << "Setting query to " << this->fields[0] << endl;
-     match->query = (std::string)this->fields[0];
-     cout << "Setting subject to " << this->fields[2] << endl;
-     match->subject = this->fields[2];
-     cout << "Setting start" << endl;
-     match->start = atoi(this->fields[3]);
-     cout << "Setting mq" << endl;
-     match->mq = atoi(this->fields[4]);
-     cout << "Setting cigar to " << this->fields[5] << endl;
-     match->cigar = this->fields[5];
-     cout << "Setting paired" << endl;
-     match->paired = getMateInfo(static_cast<unsigned int>(atoi(this->fields[1])), match);
-     cout << "Testing parity" << endl;
-     // TODO: test to ensure the end position is calculated correctly. It currently isn't.
-     if ( match->parity ) // Read is second in pair and will be aligned right-to-left
-        match->end =  match->start - std::string(this->fields[9]).size();
-     else
-        match->end =  match->start + std::string(this->fields[9]).size();
+    match->query = (char *)malloc(strlen(this->fields[0]) + 1);
+    strcpy(match->query, this->fields[0]);
+    match->subject = (char *)malloc(strlen(this->fields[2]) + 1);
+    strcpy(match->subject, this->fields[2]);
+    match->start = atoi(this->fields[3]);
+    match->mq = atoi(this->fields[4]);
+    match->cigar = (char *)malloc(strlen(this->fields[5]) + 1);
+    strcpy(match->cigar, this->fields[5]);
+    match->paired = getMateInfo(static_cast<unsigned int>(atoi(this->fields[1])), match);
 
-     return true;
+    // TODO: test to ensure the end position is calculated correctly. It currently isn't.
+    if ( match->parity ) // Read is second in pair and will be aligned right-to-left
+    match->end =  match->start - std::string(this->fields[9]).size();
+    else
+    match->end =  match->start + std::string(this->fields[9]).size();
+
+    return true;
 }
 
 int SamFileParser::parse_header(map<std::string, int> &ref_dict) {
@@ -205,18 +202,18 @@ int SamFileParser::consume_sam(vector<MATCH *> &all_alignments, bool multireads,
         this->num_lines++;
         if (show_status && this->num_lines % 10000 == 0)
             std::cout << "\n\033[F\033[J" << this->num_lines;
+        this->fields.clear();
         split(line, this->fields, this->buf, '\t');
         if ( match_string(string(this->fields[2]), this->unmapped_pattern, true) ) {
             this->num_unmapped++;
             continue;
         }
-        cout << line << endl;
+
         MATCH *match = Match_cnew();
-        cout << "Instantiating new Match" << endl;
         if (!this->nextline(match))
             break;
+
         this->num_mapped++;
-        cout << "Done" << endl;
 
         if (!match->paired)
             this->num_unpaired++;
@@ -240,10 +237,11 @@ int SamFileParser::consume_sam(vector<MATCH *> &all_alignments, bool multireads,
             all_alignments.push_back(match);
         }
         catch (...) {
-            cout << "ERROR: Failing " << match->query << "   " << all_alignments.size() << endl;
+            PyErr_Format(PyExc_RuntimeError, "Failing at %s.", match->query);
             return 1;
         }
     }
+    this->fields.clear();
 
     if ( show_status )
         std::cout << "\n\033[F\033[J" << this->num_lines << std::endl;
@@ -353,6 +351,6 @@ void assign_read_weights(vector<MATCH* > &all_reads,
     }
 
     if (n == 0)
-        std::cerr << "ERROR: alignments were parsed incorrectly (none found)" << std::endl;
+        PyErr_SetString(PyExc_TypeError, "Alignments were parsed incorrectly (none found)");
     return;
 }

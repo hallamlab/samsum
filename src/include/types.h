@@ -21,7 +21,9 @@ typedef struct {
       * singleton is 1 if the mate was not successfully aligned
      */
     PyObject_HEAD
-    string query, subject, cigar;
+    char * query;
+    char *subject;
+    char *cigar;
     /*unsigned int start, end, mq; */
     unsigned int start, end, mq, read_length;
     bool paired;
