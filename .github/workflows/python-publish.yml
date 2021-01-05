@@ -97,7 +97,10 @@ jobs:
           if [ -f requirements.txt ]; then python -m pip install -r requirements.txt; fi
       - name: Test build
         run: |
+          PWD
+          ls *
           pip install dist/samsum-*-cp38-cp38-manylinux*_x86_64.whl
+          cd /home/runner/work/samsum/
           pytest
 
   publish-to-pypi:
