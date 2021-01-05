@@ -39,11 +39,13 @@ jobs:
       if: ${{ matrix.os == 'macos-latest' }}
       run: |
          python setup.py bdist_wheel
-    - name: Build and publish to PyPI
-      env:
-        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+    - name: Finalize dist dir for publishing
       run: |
         if [ -f dist/*linux_x86_64.whl ]; then rm dist/*linux_x86_64.whl; fi
         python setup.py sdist
-        python -m twine upload --skip-existing dist/*.whl dist/*tar.gz;
+    - name: Publish package to PyPI
+      uses: pypa/gh-action-pypi-publish@master
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_API_TOKEN }}
+        skip_existing: true
