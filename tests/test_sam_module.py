@@ -2,7 +2,7 @@ import unittest
 import os
 import glob
 
-from samsum import testing_utils as utils
+from .testing_utils import get_test_data
 
 
 class SamModuleTester(unittest.TestCase):
@@ -10,7 +10,7 @@ class SamModuleTester(unittest.TestCase):
         from samsum import classy
         self.unmapped_dat_example = classy.AlignmentDat("UNMAPPED", ['NA', '-530976544', '', '0', '415858.0'])
         self.alignment_dat_example = classy.AlignmentDat("refseq_name", ["read_1", "1", "5S45M", "0", "1.0"])
-        self.sam_list = sorted(glob.glob(os.path.join(utils.get_test_data("test-data"), "*.sam")))
+        self.sam_list = sorted(glob.glob(os.path.join(get_test_data("test-data"), "*.sam")))
         self.refseq = classy.RefSequence("NODE_1", 200)
         sam_dat = {"NODE_1": [["q1", "1", "5S45M", "0", "1.0"],
                               ["q2", "1", "45M", "0", "1.0"],
@@ -25,7 +25,7 @@ class SamModuleTester(unittest.TestCase):
 
     def test_get_mapped_reads(self):
         from samsum import _sam_module
-        test_sam = utils.get_test_data('pytest_1.sam')
+        test_sam = get_test_data('pytest_1.sam')
         self.assertIsInstance(test_sam, str)
         mapping_list = _sam_module.get_mapped_reads(test_sam, False, 10, 0, 'q')
         self.assertEqual(8, len(mapping_list))
@@ -61,8 +61,8 @@ class SamModuleTester(unittest.TestCase):
     def test_ref_sequence_abundances(self):
         from samsum import commands
         from samsum.classy import RefSequence
-        test_sam = utils.get_test_data("samsum_test_2.sam")
-        test_asm = utils.get_test_data("samsum_test_2.fasta")
+        test_sam = get_test_data("samsum_test_2.sam")
+        test_asm = get_test_data("samsum_test_2.fasta")
         ref_seq_abunds = commands.ref_sequence_abundances(aln_file=test_sam, seq_file=test_asm,
                                                           min_aln=10, p_cov=0, map_qual=0, multireads=True)
         e10 = ref_seq_abunds['AB-755_P22_E10_NODE_6_length_36342_cov_2156.57_ID_21']  # type: RefSequence

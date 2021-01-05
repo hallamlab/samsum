@@ -1,6 +1,6 @@
 # This workflows will upload a Python Package using Twine when a release is created
 
-name: Publish
+name: build
 
 on:
   push:
@@ -97,10 +97,8 @@ jobs:
           if [ -f requirements.txt ]; then python -m pip install -r requirements.txt; fi
       - name: Test build
         run: |
-          pwd
-          ls -R tests/
           pip install dist/samsum-*-cp38-cp38-manylinux*_x86_64.whl
-          pytest
+          pytest -v
 
   publish-to-pypi:
     needs: [ build-sdist, build-linux-wheels, build-macos-wheels, test-build ]

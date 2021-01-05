@@ -1,16 +1,16 @@
 import os
 import unittest
 
-from samsum import testing_utils as utils
+from .testing_utils import get_test_data, get_project_root
 
 
 class MyTestCase(unittest.TestCase):
     def setUp(self) -> None:
         from samsum import commands
-        self.test_fa = utils.get_test_data("fasta_test.fa")
-        self.test_sam = utils.get_test_data("samsum_test_2.sam")
-        self.test_ref_fa = utils.get_test_data("samsum_test_2.fasta")
-        self.output_table = os.path.join(utils.get_project_root(), "tests/samsum_table.csv")
+        self.test_fa = get_test_data("fasta_test.fa")
+        self.test_sam = get_test_data("samsum_test_2.sam")
+        self.test_ref_fa = get_test_data("samsum_test_2.fasta")
+        self.output_table = os.path.join(get_project_root(), "tests/samsum_table.csv")
 
         self.ref_seq_abundances = commands.ref_sequence_abundances(aln_file=self.test_sam, seq_file=self.test_ref_fa,
                                                                    min_aln=10, p_cov=0, map_qual=0)
