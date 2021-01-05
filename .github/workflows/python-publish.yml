@@ -4,7 +4,7 @@ name: build
 
 on:
   push:
-    branches: [ dev ]
+    branches: [ master, dev ]
 #    tags:
 #    - 'v*'
 
@@ -96,7 +96,7 @@ jobs:
       - name: Test build
         run: |
           pip install dist/samsum-*-cp38-cp38-manylinux*_x86_64.whl
-          pytest -v
+          pytest -v -s
 
 #  publish-to-pypi:
 #    needs: [ build-sdist, build-linux-wheels, build-macos-wheels, test-build ]
