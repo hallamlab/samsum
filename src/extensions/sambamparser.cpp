@@ -126,12 +126,16 @@ bool SamFileParser::nextline(MATCH *match) {
     */
      if (this->fields.size() < 9) return false;
 
-     cout << "Setting attributes" << endl;
+     cout << "Setting query" << endl;
      match->query =  this->fields[0];
+     cout << "Setting subject" << endl;
      match->subject = this->fields[2];
+     cout << "Setting start" << endl;
      match->start = atoi(this->fields[3]);
+     cout << "Setting mq" << endl;
      match->mq = atoi(this->fields[4]);
      match->cigar = this->fields[5];
+     cout << "Setting paired" << endl;
      match->paired = getMateInfo(static_cast<unsigned int>(atoi(this->fields[1])), match);
      cout << "Testing parity" << endl;
      // TODO: test to ensure the end position is calculated correctly. It currently isn't.
@@ -195,7 +199,7 @@ int SamFileParser::consume_sam(vector<MATCH *> &all_alignments, bool multireads,
 
     if ( show_status )
         std::cout << "Number of SAM alignment lines processed: " << std::endl;
-    cout << endl;
+
     while (std::getline(this->input, line).good()) {
         this->num_lines++;
         if (show_status && this->num_lines % 10000 == 0)
