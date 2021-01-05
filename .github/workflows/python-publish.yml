@@ -45,7 +45,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install setuptools numpy cython
     - name: Build manylinux wheels
-      uses: RalfG/python-wheels-manylinux-build@v0.3.1
+      uses: RalfG/python-wheels-manylinux-build@v0.3.3
       with:
         python-versions: 'cp36-cp36m cp37-cp37m cp38-cp38'
         build-requirements: 'setuptools numpy cython'
@@ -77,8 +77,31 @@ jobs:
           name: dist
           path: dist/samsum-*-macosx*.whl
 
+  test-build:
+    needs: build-linux-wheels
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: dist
+          path: dist
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest
+          if [ -f requirements.txt ]; then python -m pip install -r requirements.txt; fi
+      - name: Test build
+        run: |
+        pip install dist/samsum-*-cp38-cp38-manylinux*_x86_64.whl
+        pytest
+
   publish-to-pypi:
-    needs: [ build-sdist, build-linux-wheels, build-macos-wheels ]
+    needs: [ build-sdist, build-linux-wheels, build-macos-wheels, test-build ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v2
