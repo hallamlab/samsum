@@ -126,9 +126,9 @@ bool SamFileParser::nextline(MATCH *match) {
     */
      if (this->fields.size() < 9) return false;
 
-     cout << "Setting query" << endl;
+     cout << "Setting query to " << this->fields[0] << endl;
      match->query =  this->fields[0];
-     cout << "Setting subject" << endl;
+     cout << "Setting subject to " << this->fields[2] << endl;
      match->subject = this->fields[2];
      cout << "Setting start" << endl;
      match->start = atoi(this->fields[3]);
