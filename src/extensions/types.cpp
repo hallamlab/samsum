@@ -41,6 +41,8 @@ static int Match_init(MATCH *self, PyObject *args, PyObject *kwargs){
 }
 
 static void Match_dealloc(MATCH *self){
+    free(self->query);
+    free(self->subject);
     free(self->cigar);
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
