@@ -1,8 +1,5 @@
-__author__ = 'Connor Morgan-Lang'
-
-import logging
-from samsum import utilities as ss_utils
 from samsum import alignment_utils as ss_aln_utils
+from samsum import commands
 
 
 class RefSequence:
@@ -98,7 +95,7 @@ class RefSequence:
         total_tiled = 0
         for tile in self.tiles:
             total_tiled += (tile.end - tile.start)
-        return total_tiled/self.length
+        return total_tiled / self.length
 
     def calc_coverage(self) -> None:
         """
@@ -110,15 +107,15 @@ class RefSequence:
         bases_mapped = 0
         for aln_dat in self.alignments:  # type: AlignmentDat
             bases_mapped += (aln_dat.end - aln_dat.start)
-        self.depth = bases_mapped/self.length
+        self.depth = bases_mapped / self.length
         return
 
     def calc_fpkm(self, num_reads):
-        mmr = float(num_reads/1E6)
+        mmr = float(num_reads / 1E6)
         if self.weight_total == 0:
             self.fpkm = 0
         else:
-            self.fpkm = float((self.weight_total/self.length)/mmr)
+            self.fpkm = float((self.weight_total / self.length) / mmr)
         return
 
     def calc_tpm(self, denominator) -> None:
@@ -132,7 +129,7 @@ class RefSequence:
         """
         if self.weight_total == 0:
             return
-        self.tpm = 1E6*(self.fpkm/denominator)
+        self.tpm = 1E6 * (self.fpkm / denominator)
         return
 
     def clear_alignments(self) -> None:
@@ -149,33 +146,58 @@ class SAMSumBase:
     """
     A base class for all samsum sub-commands. It requires shared properties
     """
+
     def __init__(self, subcmd_name) -> None:
         self.subcmd = subcmd_name
         self.executables = {}
+        self.ref_lengths = {}
         self.aln_file = ""
         self.seq_file = ""
         self.output_sep = ','
+        self.log = None
+
+        # Alignment stats
         self.num_reads = 0
         self.num_frags = 0
+        self.unmapped = 0
+        self.mapped_weight = 0
+
+        # Parsing options
+        self.min_mapping_q = 0
+        self.min_aln_percent = 10
+        self.percent_coverage = 50
+        self.multireads = False
         return
 
-    def get_info(self) -> str:
+    def get_info(self) -> None:
         info_string = "Info for " + self.subcmd + ":\n\t"
         info_string += "\n\t".join(["Alignment file: '%s'" % self.aln_file,
                                     "Reference sequence file: '%s'" % self.seq_file])
         if self.num_reads:
             info_string += "\n\tNumber of reads: %d" % self.num_reads
-        return info_string + "\n"
+
+        self.log.debug(info_string + "\n")
+        return
 
     def furnish_with_arguments(self, args) -> None:
-        dependencies = ["bwa"]
-        for dep in dependencies:
-            exe_path = ss_utils.which(dep)
-            if exe_path:
-                self.executables[dep] = exe_path
-            else:
-                logging.warning("Unable to find executable for " + dep + " in environment.\n")
+        self.aln_file = args.am_file
+        self.seq_file = args.fasta_file
+        self.multireads = args.multireads
+        self.min_mapping_q = args.map_qual
+
         return
+
+    def calculate_abundances(self) -> dict:
+        references = commands.ref_sequence_abundances(aln_file=self.aln_file, seq_file=self.seq_file,
+                                                      map_qual=self.min_mapping_q, min_aln=self.min_aln_percent,
+                                                      multireads=self.multireads, p_cov=self.percent_coverage,
+                                                      logger=self.log,
+                                                      num_frags=self.num_frags,
+                                                      unmapped=self.unmapped, mapped=self.mapped_weight)
+
+        self.get_info()
+
+        return references
 
 
 class Tile:
@@ -202,6 +224,7 @@ class AlignmentDat(Tile):
     """
     A class that stores alignment information
     """
+
     def __init__(self, refseq_name: str, alignment_fields: list) -> None:
         super().__init__()
         self.ref = refseq_name
@@ -255,8 +278,8 @@ class AlignmentDat(Tile):
         aln_len = self.decode_cigar()
         self.end = self.start + aln_len - 1  # Need to subtract since SAM alignments are 1-based
         self.weight = float(fields[4])
-        if self.weight > 1:
-            logging.debug("Weight for '%s' is greater than 1 (%s).\n" % (self.query, str(self.weight)))
+        if self.weight > 1 and self.ref != "UNMAPPED":
+            raise AssertionError("Weight for '%s' is greater than 1 (%s).\n" % (self.query, str(self.weight)))
         return
 
     def get_info(self) -> str:

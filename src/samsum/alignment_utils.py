@@ -1,8 +1,8 @@
-__author__ = 'Connor Morgan-Lang'
-
-import logging
 import sys
+import logging
+
 from samsum import classy
+from samsum import fastx_utils
 
 
 def load_references(refseq_lengths: dict) -> dict:
@@ -11,32 +11,34 @@ def load_references(refseq_lengths: dict) -> dict:
     :param refseq_lengths:
     :return:
     """
-    logging.debug("Loading the reference sequences into objects... ")
     references = {}
     for seq_name in refseq_lengths:  # type: str
         if seq_name in references:
-            logging.error("Duplicate reference sequence names encountered: %s\n" % seq_name)
-            sys.exit(3)
+            raise AssertionError("Duplicate reference sequence names encountered: %s\n" % seq_name)
         ref_seq = classy.RefSequence(seq_name, refseq_lengths[seq_name])
         references[seq_name.split(' ')[0]] = ref_seq
-    logging.debug("done.\n")
     return references
 
 
-def load_reference_coverage(refseq_dict: dict, mapped_dict: dict, min_aln: int) -> (float, float):
+def mappy_align(query_seqs: str, ref_idx, ref_seqs: dict, sam_f: str) -> None:
+    for name, seq, qual in query_seqs:
+        print(name)
+    return
+
+
+def load_reference_coverage(refseq_dict: dict, mapped_dict: dict, min_aln: int, log) -> (float, float):
     """
     Converts the alignment strings for each query sequence into AlignmentDat instances. Sums the weights for unmapped
     (including those that fell below the minimum aligned percentage) and mapped reads.
 
     :param refseq_dict: A dictionary of RefSequence instances indexed by headers (sequence names)
-    :param mapped_dict: A dictionary containing read names as keys and lists of SAM alignment rows as values. The format
-     of these alignment rows is controlled by _sam_module.get_mapped_reads and must be accepted by AlignmentDat.load_sam
+    :param mapped_dict: A dictionary containing reference sequence names as keys and a list of Match instances as values
     :param min_aln: The minimum proportion of a read that must be aligned to a reference sequence to be included.
      If its aligned percentage falls below this threshold that query's alignment is not appended to the *alignments*
      list and its weight attribute is added to num_unmapped
+    :param log: A logging.Logger instance to write messages to.
     :return: Total alignment weights for unmapped reads and mapped reads
     """
-    logging.info("Associating read alignments with their respective reference sequences... ")
     num_unmapped = 0.0
     mapped_total = 0.0
 
@@ -45,7 +47,7 @@ def load_reference_coverage(refseq_dict: dict, mapped_dict: dict, min_aln: int) 
             ref_seq = refseq_dict[refseq_name]  # type: classy.RefSequence
         except KeyError:
             if refseq_name != "UNMAPPED":
-                logging.error("Reference sequence from SAM file not found in FASTA: %s\n" % refseq_name)
+                log.error("Reference sequence from SAM file not found in FASTA: %s\n" % refseq_name)
                 sys.exit(3)
             else:
                 unmapped_dat = alignment_data.pop()
@@ -72,7 +74,6 @@ def load_reference_coverage(refseq_dict: dict, mapped_dict: dict, min_aln: int) 
         ref_seq.covered = ref_seq.proportion_covered()
         ref_seq.alignments.clear()
 
-    logging.info("done.\n")
     return num_unmapped, mapped_total
 
 

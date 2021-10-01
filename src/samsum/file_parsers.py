@@ -4,11 +4,39 @@ import logging
 import itertools
 
 from pyfastx import Fasta
+import pysam
 
 import _sam_module
 from samsum import classy as ss_class
 
-__author__ = 'Connor Morgan-Lang'
+
+LOGGER = logging.getLogger("samsum")
+
+
+def open_pysam_alignment_file(aln_file: str, mode='r') -> pysam.AlignmentFile:
+    file, ext = os.path.splitext(aln_file)
+    if ext == '.bam':
+        return pysam.AlignmentFile(aln_file, mode + 'b')
+    elif ext == '.sam':
+        return pysam.AlignmentFile(aln_file, mode)
+    else:
+        LOGGER.error("Unrecognized file extension in file '{}'\n".format(aln_file))
+        sys.exit(11)
+
+
+def pysam_parser(aln_file: str, multireads=False, aln_percent=0, min_mq=0) -> dict:
+    sam_file = open_pysam_alignment_file(aln_file, 'r')
+    unaligned_ref = "UNMAPPED"
+    refseq_segments = {unaligned_ref: []}
+    for segment in sam_file.fetch(until_eof=True):  # type: pysam.AlignedSegment
+        if segment.reference_name:
+            try:
+                refseq_segments[segment.reference_name].append(segment)
+            except KeyError:
+                refseq_segments[segment.reference_name] = [segment]
+        else:
+            refseq_segments[unaligned_ref].append(segment)
+    return refseq_segments
 
 
 def sam_parser_ext(sam_file: str, multireads=False, aln_percent=0, min_mq=0) -> dict:
@@ -19,33 +47,33 @@ def sam_parser_ext(sam_file: str, multireads=False, aln_percent=0, min_mq=0) -> 
     :param multireads: Boolean flag indicating whether reads that have multiple ambiguous mapping positions are used
     :param aln_percent: The minimum percentage of a read's length that must be aligned to be included.
     :param min_mq: The minimum mapping quality for a read to be included in the analysis (as mapped)
-    :return: A dictionary mapping query sequence (read) names to a list of alignment data strings
+    :return: A dictionary containing reference sequence names as keys and a list of Match instances as values
     """
     if not os.path.isfile(sam_file):
-        logging.error("SAM file '%s' doesn't exist.\n" % sam_file)
+        LOGGER.error("SAM file '%s' doesn't exist.\n" % sam_file)
         sys.exit(3)
 
     reads_mapped = dict()
     mapping_list = iter(_sam_module.get_mapped_reads(sam_file, multireads, aln_percent, min_mq, 'r'))
     if not mapping_list:
-        logging.error("No alignments were read from SAM file '%s'\n" % sam_file)
+        LOGGER.error("No alignments were read from SAM file '%s'\n" % sam_file)
         sys.exit(5)
 
     mapping_list_grouped = itertools.groupby(sorted(mapping_list, key=lambda x: x.subject), lambda x: x.subject)
 
-    logging.info("Grouping alignment data by reference sequence... ")
+    LOGGER.info("Grouping alignment data by reference sequence... ")
 
     for key, group in mapping_list_grouped:
         reads_mapped[key] = list(group)
 
-    logging.info("done.\n")
+    LOGGER.info("done.\n")
 
-    logging.debug("%d of unique read names returned by _sam_module.\n" % len(reads_mapped))
+    LOGGER.debug("%d of unique read names returned by _sam_module.\n" % len(reads_mapped))
 
     return reads_mapped
 
 
-def fasta_seq_lengths(fasta_file: str, min_seq_length=0) -> dict:
+def fasta_seq_lengths(fasta_file: str, min_seq_length=0) -> (dict, str):
     """
     Function for calculating the lengths of all sequences in a FASTA file.
 
@@ -53,30 +81,17 @@ def fasta_seq_lengths(fasta_file: str, min_seq_length=0) -> dict:
     :param min_seq_length: The minimum length for a reference sequence to be included
     :return: A dictionary of sequence lengths indexed by their respective sequence names
     """
-    if not os.path.isfile(fasta_file):
-        logging.error("FASTA file '%s' doesn't exist.\n" % fasta_file)
-        sys.exit(3)
-
     seq_lengths_map = {}
-    logging.debug("Using Pyfastx to retrieve sequence lengths from FASTA... ")
     try:
         py_fa = Fasta(fasta_file, build_index=False, full_name=True)
     except RuntimeError as error:
-        logging.debug(str(error)+"\n")
-        return seq_lengths_map
+        return seq_lengths_map, str(error)
 
     for name, seq in py_fa:  # type: (str, str)
         if len(seq) > min_seq_length:
             seq_lengths_map[name] = len(seq)
 
-    if not seq_lengths_map:
-        logging.error("No sequences were parsed from the FASTA file '%s'\n" % fasta_file)
-        sys.exit(5)
-    logging.debug("done.\n")
-
-    logging.info(str(len(seq_lengths_map)) + " sequences were read from " + fasta_file + "\n")
-
-    return seq_lengths_map
+    return seq_lengths_map, ""
 
 
 def write_summary_table(references: dict, output_table: str, samsum_exp: str, unmapped_reads: float, sep=",") -> None:
@@ -99,11 +114,7 @@ def write_summary_table(references: dict, output_table: str, samsum_exp: str, un
     # Add the unmapped reads data
     buffer += sep.join([samsum_exp, "UNMAPPED", "NA", "NA", str(unmapped_reads), "NA", "NA"]) + "\n"
 
-    try:
-        ot_handler = open(output_table, 'w')
-    except IOError:
-        logging.error("Unable to open output table '%s' for writing.\n" % output_table)
-        sys.exit(3)
+    ot_handler = open(output_table, 'w')
 
     for seq_name in sorted(references, key=lambda x: references[x].tpm, reverse=True):  # type: str
         ref_seq = references[seq_name]  # type: ss_class.RefSequence

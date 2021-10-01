@@ -1,3 +1,15 @@
+## [0.2.0] - 2021-10
+
+### Added
+- [`mappy`](https://pypi.org/project/mappy/) (Python bindings for minimap2) is used for parsing SAM/BAM files.
+- 
+
+### Fixed
+- 
+
+### Changed
+- 
+
 ## [0.1.4] - 2021-01-05
 
 ### Added

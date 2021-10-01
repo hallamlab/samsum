@@ -7,7 +7,7 @@ import sys
 import argparse
 import logging
 
-from samsum.commands import (info, stats)
+from samsum.cli import (info, stats)
 
 usage = """
 samsum <command> [<args>]

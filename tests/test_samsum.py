@@ -27,26 +27,26 @@ class SamsumTester(unittest.TestCase):
         return
 
     def test_samsum_info(self):
-        from samsum import commands
-        retcode = commands.info(["-v"])
+        from samsum import cli
+        retcode = cli.info(["-v"])
         self.assertEqual(0, retcode)
         return
 
     def test_samsums_stats(self):
         """ Integrative test for samsum stats """
-        from samsum import commands
+        from samsum import cli
         # Ensure it quits properly with help call
         with pytest.raises(SystemExit):
-            commands.stats(["-h"])
+            cli.stats(["-h"])
 
         # Test with a normal dataset
-        retcode = commands.stats(["--ref_fasta", self.test_fasta,
-                                  "--alignments", self.test_sam,
-                                  "--output_table", self.output_tbl,
-                                  "--aln_percent", str(50),
-                                  "--seq_coverage", str(20),
-                                  "--map_quality", str(1),
-                                  "--sep", "\t"])
+        retcode = cli.stats(["--ref_fasta", self.test_fasta,
+                             "--alignments", self.test_sam,
+                             "--output_table", self.output_tbl,
+                             "--aln_percent", str(50),
+                             "--seq_coverage", str(20),
+                             "--map_quality", str(1),
+                             "--sep", "\t"])
         self.assertEqual(0, retcode)
         return
 

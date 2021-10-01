@@ -1,6 +1,3 @@
-__author__ = 'Connor Morgan-Lang'
-
-
 import subprocess
 import logging
 import sys

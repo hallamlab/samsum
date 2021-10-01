@@ -7,13 +7,17 @@ from .testing_utils import get_test_data
 class MyTestCase(unittest.TestCase):
     def setUp(self) -> None:
         from samsum import commands
+        from samsum import logger
         self.test_fa = get_test_data("fasta_test.fa")
         self.test_sam = get_test_data("samsum_test_2.sam")
+        self.test_bam = get_test_data("samsum_test_2.bam")
         self.test_ref_fa = get_test_data("samsum_test_2.fasta")
         self.output_table = os.path.join("tests/samsum_table.csv")
 
+        log = logger.prep_logging()
+
         self.ref_seq_abundances = commands.ref_sequence_abundances(aln_file=self.test_sam, seq_file=self.test_ref_fa,
-                                                                   min_aln=10, p_cov=0, map_qual=0)
+                                                                   min_aln=10, p_cov=0, map_qual=0, logger=log)
         return
 
     def tearDown(self) -> None:
@@ -46,7 +50,7 @@ class MyTestCase(unittest.TestCase):
         :return:
         """
         from samsum import file_parsers as ss_fp
-        ref_seq_lengths = ss_fp.fasta_seq_lengths(fasta_file=self.test_ref_fa)
+        ref_seq_lengths, _ = ss_fp.fasta_seq_lengths(fasta_file=self.test_ref_fa)
         self.assertEqual(277, len(ref_seq_lengths))
 
         # Parse the alignments and return the strings of reads mapped to each reference sequence
@@ -62,8 +66,13 @@ class MyTestCase(unittest.TestCase):
 
     def test_fasta_reader(self) -> None:
         from samsum import file_parsers as ss_fp
-        ref_seq_lengths = ss_fp.fasta_seq_lengths(fasta_file=self.test_fa)
+        ref_seq_lengths, _ = ss_fp.fasta_seq_lengths(fasta_file=self.test_fa)
         self.assertEqual({"contig 1": 16, "contig 2": 25}, ref_seq_lengths)
+        return
+
+    def test_mappy_parser(self):
+        from samsum import file_parsers as ss_fp
+        ss_fp.pysam_parser(aln_file=self.test_bam)
         return
 
 

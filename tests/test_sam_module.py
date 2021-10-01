@@ -61,10 +61,12 @@ class SamModuleTester(unittest.TestCase):
     def test_ref_sequence_abundances(self):
         from samsum import commands
         from samsum.classy import RefSequence
+        from samsum import logger
+        log = logger.prep_logging()
         test_sam = get_test_data("samsum_test_2.sam")
         test_asm = get_test_data("samsum_test_2.fasta")
         ref_seq_abunds = commands.ref_sequence_abundances(aln_file=test_sam, seq_file=test_asm,
-                                                          min_aln=10, p_cov=0, map_qual=0, multireads=True)
+                                                          min_aln=10, p_cov=0, map_qual=0, multireads=True, logger=log)
         e10 = ref_seq_abunds['AB-755_P22_E10_NODE_6_length_36342_cov_2156.57_ID_21']  # type: RefSequence
         self.assertEqual(e10.reads_mapped, 10)
         self.assertEqual(e10.weight_total, 5.0)

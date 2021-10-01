@@ -256,7 +256,10 @@ int SamFileParser::alignment_multiplicity_audit(vector<MATCH *> &all_alignments,
       * all_alignments: Pointer to a vector of MATCH objects that has yet to be populated
       * reads_dict: Pointer to a map indexed by read-names with QUADRUPLE values that store all reads in the SAM file
      * Functionality:
-      * 
+      * Populates a map object of QUADRUPLE instances for each aligned read.
+        These QUADRUPLEs store bools indicating whether the foward (first) and reverse (second) reads were aligned,
+        and to how many reads each were aligned to (third and fourth, respectively).
+        This map is used for rapidly identifying properly paired and multireads.
     */
     struct QUADRUPLE <bool, bool, unsigned int, unsigned int> p;
     for ( vector<MATCH *>::iterator it = all_alignments.begin(); it != all_alignments.end(); ++it)  {
