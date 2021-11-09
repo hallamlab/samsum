@@ -7,18 +7,18 @@ from .testing_utils import get_test_data
 
 class SamModuleTester(unittest.TestCase):
     def setUp(self) -> None:
-        from samsum import classy
-        self.unmapped_dat_example = classy.AlignmentDat("UNMAPPED", ['NA', '-530976544', '', '0', '415858.0'])
-        self.alignment_dat_example = classy.AlignmentDat("refseq_name", ["read_1", "1", "5S45M", "0", "1.0"])
+        from samsum import alignment
+        self.unmapped_dat_example = alignment.AlignmentDat("UNMAPPED", ['NA', '-530976544', '', '0', '415858.0'])
+        self.alignment_dat_example = alignment.AlignmentDat("refseq_name", ["read_1", "1", "5S45M", "0", "1.0"])
         self.sam_list = sorted(glob.glob(os.path.join(get_test_data("test-data"), "*.sam")))
-        self.refseq = classy.RefSequence("NODE_1", 200)
+        self.refseq = alignment.RefSequence("NODE_1", 200)
         sam_dat = {"NODE_1": [["q1", "1", "5S45M", "0", "1.0"],
                               ["q2", "1", "45M", "0", "1.0"],
                               ["q3", "1", "5S145M", "0", "1.0"],
                               ["q4", "1", "5S145M", "0", "1.0"]]}
         for r, alignments in sam_dat.items():
             while alignments:  # type: list
-                aln_dat = classy.AlignmentDat(r, alignments.pop())
+                aln_dat = alignment.AlignmentDat(r, alignments.pop())
                 self.refseq.alignments.append(aln_dat)
                 self.refseq.reads_mapped += 1
         return
@@ -60,7 +60,7 @@ class SamModuleTester(unittest.TestCase):
 
     def test_ref_sequence_abundances(self):
         from samsum import commands
-        from samsum.classy import RefSequence
+        from samsum import alignment
         from samsum import logger
         log = logger.prep_logging()
         test_sam = get_test_data("samsum_test_2.sam")

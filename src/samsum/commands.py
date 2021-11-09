@@ -2,7 +2,7 @@ import os
 import sys
 
 from samsum import file_parsers as ss_fp
-from samsum import alignment_utils as ss_aln_utils
+from samsum import alignment as ss_aln_utils
 
 
 def ref_sequence_abundances(aln_file: str, seq_file: str,
