@@ -3,7 +3,6 @@ import sys
 import logging
 import itertools
 
-from pyfastx import Fasta
 import pysam
 
 import _sam_module
@@ -71,27 +70,6 @@ def sam_parser_ext(sam_file: str, multireads=False, aln_percent=0, min_mq=0) -> 
     LOGGER.debug("%d of unique read names returned by _sam_module.\n" % len(reads_mapped))
 
     return reads_mapped
-
-
-def fasta_seq_lengths(fasta_file: str, min_seq_length=0) -> (dict, str):
-    """
-    Function for calculating the lengths of all sequences in a FASTA file.
-
-    :param fasta_file: Path to a FASTA file to be parsed
-    :param min_seq_length: The minimum length for a reference sequence to be included
-    :return: A dictionary of sequence lengths indexed by their respective sequence names
-    """
-    seq_lengths_map = {}
-    try:
-        py_fa = Fasta(fasta_file, build_index=False, full_name=True)
-    except RuntimeError as error:
-        return seq_lengths_map, str(error)
-
-    for name, seq in py_fa:  # type: (str, str)
-        if len(seq) > min_seq_length:
-            seq_lengths_map[name] = len(seq)
-
-    return seq_lengths_map, ""
 
 
 def write_summary_table(references: dict, output_table: str, samsum_exp: str, unmapped_reads: float, sep=",") -> None:

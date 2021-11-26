@@ -7,6 +7,8 @@ import re
 import multiprocessing
 import tqdm
 
+LOGGER = logging.getLogger("samsum")
+
 
 def file_prefix(file_path: str) -> str:
     return os.path.basename('.'.join(file_path.split('.')[:-1]))
@@ -137,3 +139,32 @@ def tqdm_multiprocessing(func, arguments_list: list, num_processes: int, pbar_de
     pbar.close()
 
     return result_list_tqdm
+
+
+def make_sure_dir_exists(dir_path: str) -> None:
+    """
+    Check whether a directory exists and create it if not not found.
+
+    :param dir_path:
+    :return:
+    """
+
+    if not dir_path or os.path.isdir(dir_path):
+        return
+
+    try:
+        os.mkdir(dir_path)
+    except OSError:
+        LOGGER.error("Unable to create directory for path '{}'\n".format(dir_path))
+        sys.exit(1)
+
+    return
+
+
+def int_to_str(number: int, n_digits: int) -> str:
+    x = str(number)
+    if len(x) > n_digits:
+        raise SystemExit("Unable to convert integer {} to string with {} digits.".format(number, n_digits))
+    while len(x) < n_digits:
+        x = '0' + x
+    return x
