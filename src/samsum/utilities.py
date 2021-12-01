@@ -117,14 +117,16 @@ def executable_dependency_versions(exe_dict):
     return versions_string
 
 
-def tqdm_multiprocessing(func, arguments_list: list, num_processes: int, pbar_desc: str, disable=False) -> list:
-    if len(arguments_list) == 0:
+def tqdm_multiprocessing(func, arguments_list, num_processes: int, pbar_desc: str, disable=False) -> list:
+    n_tasks = len(arguments_list)
+
+    if n_tasks == 0:
         return []
     pool = multiprocessing.Pool(processes=num_processes)
 
     jobs = []
     result_list_tqdm = []
-    pbar = tqdm.tqdm(jobs, total=len(arguments_list), desc=pbar_desc, ncols=120, disable=disable)
+    pbar = tqdm.tqdm(jobs, total=n_tasks, desc=pbar_desc, ncols=120, disable=disable)
 
     def update(*a):
         pbar.update()

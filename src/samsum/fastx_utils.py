@@ -34,6 +34,23 @@ def gen_fastx(fastx: str):
         return
 
 
+def gen_pe_read_iter_fastx(fastq_files: list, fq_fmt=0):
+    """
+
+    :param fastq_files: A list of FASTQ-formatted files
+    :param fq_fmt: 0 indicates separate files, 1 indicates interleaved paired-end reads
+    :return: Two iterators of read record tuples, one for each mate-pair library
+    """
+    fwd_fq = iter(Fastq(fastq_files[0], build_index=False, full_name=True))
+    if fq_fmt == 0:  # separate files for fwd and reverse
+        rev_fq = iter(Fastq(fastq_files[1], build_index=False, full_name=True))
+    elif fq_fmt == 1:  # interleaved fastq files
+        rev_fq = fwd_fq
+    else:
+        raise AttributeError("Bad fq format.")
+    return fwd_fq, rev_fq
+
+
 def split_fastx(fastx: str, output_dir: str, n_splits: int) -> list:
     """
 

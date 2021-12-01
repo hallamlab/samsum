@@ -1,3 +1,7 @@
-setuptools >=50.0.0
-pyfastx >=0.8.2
-mappy >=2.22
+numpy >=1.16.2
+pytest>=5.4.1
+setuptools>=50.0.0
+pyfastx>=0.8.2
+mappy>=2.22
+psutil~=5.8.0
+tqdm>=4.43.0
