@@ -50,7 +50,8 @@ class MyTestCase(unittest.TestCase):
         :return:
         """
         from samsum import file_parsers as ss_fp
-        ref_seq_lengths, _ = ss_fp.fasta_seq_lengths(fasta_file=self.test_ref_fa)
+        from samsum import fastx_utils
+        ref_seq_lengths, _ = fastx_utils.fasta_seq_lengths(fasta_file=self.test_ref_fa)
         self.assertEqual(277, len(ref_seq_lengths))
 
         # Parse the alignments and return the strings of reads mapped to each reference sequence
@@ -62,12 +63,6 @@ class MyTestCase(unittest.TestCase):
         for matches in mapped_dict.values():  # type: list
             for match in matches:
                 self.assertTrue(match.end < ref_seq_lengths[match.subject])
-        return
-
-    def test_fasta_reader(self) -> None:
-        from samsum import file_parsers as ss_fp
-        ref_seq_lengths, _ = ss_fp.fasta_seq_lengths(fasta_file=self.test_fa)
-        self.assertEqual({"contig 1": 16, "contig 2": 25}, ref_seq_lengths)
         return
 
     def test_mappy_parser(self):
