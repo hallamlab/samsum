@@ -1,11 +1,21 @@
-import gc
+import os
+import numpy as np
 import sys
 import logging
+import psutil
+from time import perf_counter
+from datetime import timedelta
 
 import mappy as mp
+from tqdm import tqdm
+from threading import Thread
+from functools import partial
 
+from samsum.multiprocessing import ThreadMap
 from samsum import fastx_utils
-from samsum import utilities
+from samsum.logger import CSVLogger
+
+LOGGER = logging.getLogger("samsum")
 
 
 class RefSequence:
@@ -245,80 +255,183 @@ class Mapper:
     A class for performing sequence alignments
     """
 
-    def __init__(self):
+    def __init__(self, num_threads=0):
+        # Input parameters
         self.query_fastx = []  # Path to the query fastx file(s)
         self.ref_fastx = ""  # Path to the reference fasta file
-        self.aln_f = ""  # Path to the alignment file (i.e. SAM or BAM)
-        self.aln_format = "sam"
         self.read_pairing = 2  # 2 == paired-end, 1 == single-end
         self.fq_fmt = 0  # 0 indicates separate files, 1 indicates interleaved paired-end reads
-        self.log = None
+        self.threads = 0
 
-        # Parsing options
+        # Output parameters
+        self.output_dir = ""  # Path for the indexed reference files and other temporary outputs
+        self.log = LOGGER
+        self.aln_f = ""  # Path to the alignment file (i.e. SAM or BAM)
+        self.aln_format = "sam"
+
+        # Alignment filtering options
         self.min_mapping_q = 0
-        self.min_aln_percent = 10
-        self.percent_coverage = 50
+        self.queries = 0
+        self.matched_queries = 0
         self.multireads = False
+
+        # Find maximum memory and set a RAM limit
+        self.set_threads(num_threads)
+        ram_mb = psutil.virtual_memory().total / (1024 * 1024)
+        self.max_ram_perc = 20
+        self.rlimit = ram_mb * (self.max_ram_perc / 100)
+        self.log.info("System memory detected to be {} Mb."
+                      "Setting RAM limit to {}% ({}).\n".format(ram_mb,
+                                                                self.max_ram_perc,
+                                                                self.rlimit))
         return
 
-    def gen_pe_read_iters(self):
-        fwd_fq = iter(mp.fastx_read(self.query_fastx[0]))
-        if self.fq_fmt == 0:  # separate files for fwd and reverse
-            rev_fq = iter(mp.fastx_read(self.query_fastx[1]))
-        elif self.fq_fmt == 1:  # interleaved fastq files
-            rev_fq = fwd_fq
+    def set_threads(self, num_threads: int) -> None:
+        """Determine the number of threads to use based on system's cores."""
+        _max_threads = 12
+        # TODO: Find number of cores
+
+        if self.threads > _max_threads:
+            self.log.warning("Number of threads specified ({}) is greater than {}, which is not recommended."
+                             "".format(self.threads, _max_threads))
+        return
+
+    def gen_pe_read_iter_fastx(self):
+        return fastx_utils.gen_pe_read_iter_fastx(self.query_fastx, self.fq_fmt)
+
+    def get_mappy_index(self):
+        if self.multireads is False:
+            max_hits = 1
         else:
-            raise AttributeError("Bad fq format.")
-        return fwd_fq, rev_fq
+            max_hits = 4
+        return mp.Aligner(fn_idx_in=self.ref_fastx, best_n=max_hits, n_threads=self.threads)
 
-    def get_pe_alignments(self, ref_seq: str, ref_name="") -> dict:
-        hits = {ref_name: 0}
-        aligner = mp.Aligner(seq=ref_seq, best_n=1)
-
-        fwd_fq, rev_fq = self.gen_pe_read_iters()
-        for fwd_mp, rev_mp in zip(fwd_fq, rev_fq):
-            for _hit in aligner.map(seq=fwd_mp[1], seq2=rev_mp[1]):
-                # print("{}\t{}\t{}\t{}".format(hit.ctg, hit.r_st, hit.r_en, hit.cigar_str))
-                hits[ref_name] += 1
-        return hits
-
-    def get_alignments(self, ref_seq: str, ref_name=""):
-        if self.read_pairing == 2:
-            self.get_pe_alignments(ref_seq, ref_name)
-
-    def idx_mappy_align(self, num_threads=2):
-        hits = {}
-        aln_idx = mp.Aligner(fn_idx_in=self.ref_fastx, best_n=1, n_threads=num_threads)
-        fwd_fq, rev_fq = self.gen_pe_read_iters()
-        for fwd_mp, rev_mp in zip(fwd_fq, rev_fq):
-            for hit in aln_idx.map(seq=fwd_mp[1], seq2=rev_mp[1]):
-                # print("{}\t{}\t{}\t{}".format(hit.ctg, hit.r_st, hit.r_en, hit.cigar_str))
-                try:
-                    hits[hit.ctg] += 1
-                except KeyError:
-                    hits[hit.ctg] = 1
-
-        return hits
-
-    def mappy_align(self, num_threads=4) -> None:
+    def idx_mappy_align(self) -> dict:
         """
-        Future function for calling BWA-MEM or minimap2 (not minimap2's Python API because speed)
-        :param num_threads:
+        Single-threaded alignment with minimap2's Python binding, mappy.
+        """
+        hits = {}
+        aln_idx = self.get_mappy_index()
+        fwd_fq, rev_fq = self.gen_pe_read_iter_fastx()
+        for fwd_read, rev_read in zip(fwd_fq, rev_fq):  # type: (tuple, tuple)
+            self.queries += 1
+            for hit in aln_idx.map(seq=fwd_read[1], seq2=rev_read[1]):  # type: mp.Alignment
+                try:
+                    hits[hit.ctg].append(hit)
+                except KeyError:
+                    hits[hit.ctg] = [hit]
+            if self.queries % 1E4:
+                if psutil.Process().memory_info().rss / (1024 * 1024) > self.rlimit:
+                    LOGGER.error("RAM limit exceeded.\n")
+                    sys.exit(1)
+
+        self.report_completion_stats(hits)
+        return hits
+
+    def map_alignment_threads(self, aln_idx: mp.Aligner):
+        """
+        Align paired-end reads to a mappy Aligner object.
+        """
+        fwd_fq, rev_fq = self.gen_pe_read_iter_fastx()
+        return ThreadMap(partial(MappyWorker, aln_idx),
+                         zip(fwd_fq, rev_fq),
+                         self.threads)
+
+    def mappy_align_multi(self) -> dict:
+        """
+        Multi-processed implementation of mappy.
         :return:
         """
-        ref_fasta = fastx_utils.gen_fastx(self.ref_fastx)
-        ref_aln_counts = {}
+        aln_idx = self.get_mappy_index()
 
-        task_list = []
-        # TODO: Can chunking reduce memory usage?
-        for name, seq in ref_fasta:
-            task_list.append([seq, name])
-        ref_aln_counts = utilities.tqdm_multiprocessing(func=self.get_pe_alignments,
-                                                        arguments_list=task_list,
-                                                        num_processes=num_threads,
-                                                        pbar_desc=self.ref_fastx)
+        results = self.map_alignment_threads(aln_idx)  # type: ThreadMap
 
+        writer = AlignMapWriter(iterator=tqdm(results,
+                                              desc="> calling",
+                                              unit=" reads",
+                                              leave=True),
+                                aligner=aln_idx,
+                                fd=self.aln_f)
+
+        t0 = perf_counter()
+        writer.start()
+        writer.join()
+        duration = perf_counter() - t0
+        num_samples = sum(num_samples for read_id, num_samples in writer.log)
+
+        self.report_completion_stats(writer.hits)
+        return writer.hits
+
+    def report_completion_stats(self, hits: dict):
+        self.log.debug("Read-pairs queried: {}".format(self.queries))
+        self.log.debug("Alignments: {}".format(sum([len(x) for x in hits.values()])))
+        self.log.debug("Memory usage: {:.2f} Mb.".format(psutil.Process().memory_info().rss / (1024 * 1024)))
+        # sys.stderr.write("> completed reads: %s\n" % len(writer.log))
+        # sys.stderr.write("> duration: %s\n" % timedelta(seconds=np.round(duration)))
+        # sys.stderr.write("> samples per second %.1E\n" % (num_samples / duration))
+        # sys.stderr.write("> done\n")
         return
+
+
+class AlignMapWriter(Thread):
+
+    def __init__(self, iterator: iter, aligner: mp.Aligner, fd: str):
+        super().__init__()
+        if not fd:
+            fd = sys.stdout
+        self.fd = fd
+        self.log = []
+        self.aligner = aligner
+        self.iterator = iterator
+        self.write_headers()
+        self.hits = {}
+        return
+
+    def write_headers(self):
+        # if self.aligner:
+        #     write_sam_header(self.aligner, fd=self.fd)
+        pass
+
+    def run(self):
+        for read, hit in self.iterator:  # type: (str, mp.Alignment)
+            if hit:
+                try:
+                    self.hits[hit.ctg].append(hit)
+                except KeyError:
+                    self.hits[hit.ctg] = [hit]
+            # if len(seq):
+            #     if self.aligner:
+            #         print(read_id, seq)
+            # write_sam(read_id, seq, qstring, mapping, fd=self.fd, unaligned=mapping is None)
+
+            # self.log.append((read_id, samples))
+
+            # else:
+            #     LOGGER.warn("> skipping empty sequence %s", read_id)
+        return
+
+
+class MappyWorker(Thread):
+    """
+    Process that reads items from an input_queue, applies a func to them and puts them on an output_queue
+    """
+
+    def __init__(self, aligner, input_queue=None, output_queue=None):
+        super().__init__()
+        self.aligner = aligner
+        self.input_queue = input_queue
+        self.output_queue = output_queue
+
+    def run(self):
+        thrbuf = mp.ThreadBuffer()
+        while True:
+            item = self.input_queue.get()
+            if item is StopIteration:
+                self.output_queue.put(item)
+                break
+            fwd_mp, rev_mp = item
+            mapping = next(self.aligner.map(seq=fwd_mp[1], seq2=rev_mp[1], buf=thrbuf), None)
+            self.output_queue.put((fwd_mp[0], mapping))
 
 
 def load_references(refseq_lengths: dict) -> dict:

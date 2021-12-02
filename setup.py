@@ -60,7 +60,8 @@ SETUP_METADATA = \
         "entry_points": {'console_scripts': ['samsum = samsum.__main__:main']},
         "classifiers": CLASSIFIERS,
         "ext_modules": [extension],
-        "install_requires": ["pysam", "pytest", "pyfastx"]
+        "zip_safe": False,
+        "install_requires": open("requirements.txt").read().splitlines()
     }
 
 setuptools.setup(**SETUP_METADATA)

@@ -4,9 +4,6 @@ import sys
 import os
 import re
 
-import multiprocessing
-import tqdm
-
 LOGGER = logging.getLogger("samsum")
 
 
@@ -115,32 +112,6 @@ def executable_dependency_versions(exe_dict):
         versions_string += "\t" + exe + ' '*n_spaces + versions_dict[exe] + "\n"
 
     return versions_string
-
-
-def tqdm_multiprocessing(func, arguments_list, num_processes: int, pbar_desc: str, disable=False) -> list:
-    n_tasks = len(arguments_list)
-
-    if n_tasks == 0:
-        return []
-    pool = multiprocessing.Pool(processes=num_processes)
-
-    jobs = []
-    result_list_tqdm = []
-    pbar = tqdm.tqdm(jobs, total=n_tasks, desc=pbar_desc, ncols=120, disable=disable)
-
-    def update(*a):
-        pbar.update()
-
-    for args in arguments_list:
-        jobs.append(pool.apply_async(func=func, args=(*args,), callback=update))
-    pool.close()
-
-    for job in pbar:
-        result_list_tqdm.append(job.get())
-
-    pbar.close()
-
-    return result_list_tqdm
 
 
 def make_sure_dir_exists(dir_path: str) -> None:

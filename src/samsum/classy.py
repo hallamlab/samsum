@@ -20,6 +20,10 @@ class SAMSumBase(ss_aln_utils.Mapper):
         self.unmapped = 0
         self.mapped_weight = 0
 
+        # Parsing options
+        self.min_aln_percent = 10
+        self.percent_coverage = 50
+
         return
 
     def get_info(self) -> None:

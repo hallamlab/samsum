@@ -1,6 +1,7 @@
 import os
 import sys
 
+import samsum.fastx_utils
 from samsum import file_parsers as ss_fp
 from samsum import alignment as ss_aln_utils
 
@@ -30,7 +31,7 @@ def ref_sequence_abundances(aln_file: str, seq_file: str,
         sys.exit(3)
 
     logger.debug("Using Pyfastx to retrieve sequence lengths from FASTA... ")
-    refseq_lengths, e = ss_fp.fasta_seq_lengths(seq_file)
+    refseq_lengths, e = samsum.fastx_utils.fasta_seq_lengths(seq_file)
     logger.debug("done.\n")
 
     if not refseq_lengths:

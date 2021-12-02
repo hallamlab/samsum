@@ -1,6 +1,44 @@
 import logging
 import os
 import sys
+import csv
+
+
+class CSVLogger:
+    def __init__(self, filename, sep=','):
+        self.filename = filename
+        if os.path.exists(self.filename):
+            with open(self.filename) as f:
+                self.columns = csv.DictReader(f).fieldnames
+        else:
+            self.columns = None
+        self.fh = open(self.filename, 'a', newline='')
+        self.csvwriter = csv.writer(self.fh, delimiter=sep)
+        self.count = 0
+
+    def set_columns(self, columns):
+        if self.columns:
+            raise Exception('Columns already set')
+        self.columns = list(columns)
+        self.csvwriter.writerow(self.columns)
+
+    def append(self, row):
+        if self.columns is None:
+            self.set_columns(row.keys())
+        self.csvwriter.writerow([row.get(k, '-') for k in self.columns])
+        self.count += 1
+        if self.count > 100:
+            self.count = 0
+            self.fh.flush()
+
+    def close(self):
+        self.fh.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.close()
 
 
 class SamsumFormatter(logging.Formatter):
